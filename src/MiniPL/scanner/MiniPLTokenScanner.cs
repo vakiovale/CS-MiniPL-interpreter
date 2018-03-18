@@ -52,12 +52,25 @@ namespace MiniPL.tokens {
       return Char.IsLetter(character);
     }
 
+    private bool isDigit(char character) {
+      return Char.IsDigit(character);
+    }
+
     private bool nextCharacterIsUnderscoreLetterOrDigit() {
       if(!hasNext()) {
         return false;
       } else {
         char peekedCharacter = peek();
         return Char.IsLetterOrDigit(peekedCharacter) || peekedCharacter == '_'; 
+      }
+    }
+
+    private bool nextCharacterIsDigit() {
+      if(!hasNext()) {
+        return false;
+      } else {
+        char peekedCharacter = peek();
+        return Char.IsDigit(peekedCharacter);
       }
     }
 
@@ -71,6 +84,10 @@ namespace MiniPL.tokens {
 
     private Token<MiniPLTokenType> createStringLiteral(String lexeme) {
       return new Token<MiniPLTokenType>(MiniPLTokenType.STRING_LITERAL, lexeme);
+    }
+
+    private Token<MiniPLTokenType> createIntegerLiteral(String lexeme) {
+      return new Token<MiniPLTokenType>(MiniPLTokenType.INTEGER_LITERAL, lexeme);
     }
 
     private void removeWhitespaceIfExists() {
@@ -104,6 +121,17 @@ namespace MiniPL.tokens {
         } else {
           return createStringLiteral(token);
         }
+      }
+
+      if(isDigit(character)) {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.Append(character);
+        while(hasNext() && nextCharacterIsDigit()) {
+          character = readNextCharacter();
+          stringBuilder.Append(character);
+        }
+        String token = stringBuilder.ToString();
+        return createIntegerLiteral(token);
       }
 
       switch(character) {

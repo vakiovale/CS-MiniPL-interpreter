@@ -169,6 +169,17 @@ namespace MiniPL.Tests.scanner.Tests {
       Assert.Equal("token_3", thirdToken.getLexeme());
     }
 
+    [Theory]
+    [InlineData("print \"\"", MiniPLTokenType.KEYWORD_PRINT)]
+    [InlineData("for i in 1..n do\n", MiniPLTokenType.KEYWORD_FOR)]
+    [InlineData("do\n", MiniPLTokenType.KEYWORD_DO)]
+    [InlineData("end\tfor\t;", MiniPLTokenType.KEYWORD_END)]
+    public void keywordsCanBeReadWhenThereIsWhitespaceAfterwards(String source, MiniPLTokenType type) {
+      this.tokenScanner = new MiniPLTokenScanner(new Scanner(source));
+      dynamic token = this.tokenScanner.readNextToken();
+      Assert.Equal(type, token.getType());
+    }
+
     [Fact]
     public void readVarKeyword() {
       this.tokenScanner = new MiniPLTokenScanner(new Scanner("var"));
@@ -245,6 +256,32 @@ namespace MiniPL.Tests.scanner.Tests {
       dynamic token = this.tokenScanner.readNextToken();
       Assert.Equal(MiniPLTokenType.KEYWORD_ASSERT, token.getType());
     }
-  }
 
+    [Fact]
+    public void readKeywordPrintBeforeQuote() {
+      this.tokenScanner = new MiniPLTokenScanner(new Scanner("print\"Hello World!\";"));
+      dynamic printToken = this.tokenScanner.readNextToken();
+      Assert.Equal(MiniPLTokenType.KEYWORD_PRINT, printToken.getType());
+    }
+
+    [Fact]
+    public void readKeywordAssertBeforeParenthesis() {
+      this.tokenScanner = new MiniPLTokenScanner(new Scanner("assert(x = 1);"));
+      dynamic assertToken = this.tokenScanner.readNextToken();
+      Assert.Equal(MiniPLTokenType.KEYWORD_ASSERT, assertToken.getType()); 
+    } 
+
+    [Theory]
+    [InlineData("0")]
+    [InlineData("1")]
+    [InlineData("100")]
+    [InlineData("98")]
+    [InlineData("77777")]
+    public void readIntegerLiterals(String source) {
+      this.tokenScanner = new MiniPLTokenScanner(new Scanner(source));
+      dynamic token = this.tokenScanner.readNextToken();
+      Assert.Equal(MiniPLTokenType.INTEGER_LITERAL, token.getType());
+    }
+  }
+ 
 }
