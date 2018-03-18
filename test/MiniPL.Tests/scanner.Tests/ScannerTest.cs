@@ -9,7 +9,6 @@ namespace MiniPL.Tests.scanner.Tests {
     private IScanner scanner;
 
     public ScannerTest() {
-      Console.WriteLine("Initializing scanner");
       scanner = new Scanner();
     }
 

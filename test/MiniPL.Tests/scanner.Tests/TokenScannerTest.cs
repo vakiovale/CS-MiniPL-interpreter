@@ -281,6 +281,41 @@ namespace MiniPL.Tests.scanner.Tests {
       this.tokenScanner = new MiniPLTokenScanner(new Scanner(source));
       dynamic token = this.tokenScanner.readNextToken();
       Assert.Equal(MiniPLTokenType.INTEGER_LITERAL, token.getType());
+      Assert.Equal(Convert.ToInt32(source), Convert.ToInt32(token.getLexeme()));
+    }
+
+    [Fact]
+    public void readTwoIntegerLiteralsSeparatedByWhitespace() {
+      this.tokenScanner = new MiniPLTokenScanner(new Scanner("1 99"));
+      dynamic firstToken = this.tokenScanner.readNextToken();
+      dynamic secondToken = this.tokenScanner.readNextToken();
+      Assert.Equal(MiniPLTokenType.INTEGER_LITERAL, firstToken.getType());
+      Assert.Equal(1, Convert.ToInt32(firstToken.getLexeme())); 
+      Assert.Equal(MiniPLTokenType.INTEGER_LITERAL, secondToken.getType());
+      Assert.Equal(99, Convert.ToInt32(secondToken.getLexeme())); 
+    }
+
+    [Theory]
+    [InlineData("_var")]
+    [InlineData("12variable")]
+    [InlineData("_ThisIs123var&!Illegal!!")]
+    public void unrecognizedSourceShouldReturnInvalidTokenWithTextAsToken(String source) {
+      this.tokenScanner = new MiniPLTokenScanner(new Scanner(source));
+      dynamic invalidToken = this.tokenScanner.readNextToken();
+      Assert.Equal(MiniPLTokenType.INVALID_TOKEN, invalidToken.getType());
+      Assert.Equal(source, invalidToken.getLexeme());
+    }
+
+    [Fact]
+    public void recognizeCorrectTokensAroundInvalidToken() {
+      this.tokenScanner = new MiniPLTokenScanner(new Scanner("var _ThisIs123var&!Illegal!! ="));
+      dynamic varToken = this.tokenScanner.readNextToken();
+      dynamic invalidToken = this.tokenScanner.readNextToken();
+      dynamic equalityToken = this.tokenScanner.readNextToken();
+      Assert.Equal(MiniPLTokenType.KEYWORD_VAR, varToken.getType());
+      Assert.Equal(MiniPLTokenType.INVALID_TOKEN, invalidToken.getType());
+      Assert.Equal("_ThisIs123var&!Illegal!!", invalidToken.getLexeme());
+      Assert.Equal(MiniPLTokenType.EQUALITY_COMPARISON, equalityToken.getType());
     }
   }
  

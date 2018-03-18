@@ -74,6 +74,15 @@ namespace MiniPL.tokens {
       }
     }
 
+    private bool nextCharacterIsLetter() {
+      if(!hasNext()) {
+        return false;
+      } else {
+        char peekedCharacter = peek();
+        return Char.IsLetter(peekedCharacter);
+      }
+    }
+
     private char peek() {
       return this.characterScanner.peek();
     }
@@ -104,13 +113,44 @@ namespace MiniPL.tokens {
       return createToken(this.keywords[key]);
     }
 
+    private Token<MiniPLTokenType> createToken(MiniPLTokenType type) {
+      return new Token<MiniPLTokenType>(type);
+    }
+
+    private Token<MiniPLTokenType> createInvalidToken(String lexeme) {
+      return new Token<MiniPLTokenType>(MiniPLTokenType.INVALID_TOKEN, lexeme);
+    }
+
+    private bool nextCharacterIsAllowedAfterDigit() {
+      if(!hasNext() || hasWhitespace()) {
+        return true;
+      } else {
+        char character = peek();
+        switch(character) {
+          case '-':
+          case '+':
+          case '*':
+          case '/':
+          case ';':
+          case '=':
+          case '<':
+            return true;
+          default:
+            return false;
+        }
+      }
+    }
+
     private Token<MiniPLTokenType> readToken() {
       removeWhitespaceIfExists();
-      char character = readNextCharacter();
 
+      StringBuilder stringBuilder = new StringBuilder();
+
+      char character = readNextCharacter();
+      stringBuilder.Append(character);
+
+      // Checkinf string literals AND keywords
       if(isLetter(character)) {
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.Append(character);
         while(hasNext() && nextCharacterIsUnderscoreLetterOrDigit()) {
           character = readNextCharacter(); 
           stringBuilder.Append(character);
@@ -123,17 +163,19 @@ namespace MiniPL.tokens {
         }
       }
 
+      // Checking integer literals
       if(isDigit(character)) {
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.Append(character);
         while(hasNext() && nextCharacterIsDigit()) {
           character = readNextCharacter();
           stringBuilder.Append(character);
         }
         String token = stringBuilder.ToString();
-        return createIntegerLiteral(token);
+        if(nextCharacterIsAllowedAfterDigit()) {
+          return createIntegerLiteral(token);
+        }
       }
 
+      // Checking special characters
       switch(character) {
         case ';':
           return createToken(MiniPLTokenType.SEMICOLON);
@@ -161,13 +203,16 @@ namespace MiniPL.tokens {
           return createToken(MiniPLTokenType.QUOTE);
         case '\\':
           return createToken(MiniPLTokenType.BACKSLASH);
-        default:
-          return new Token<MiniPLTokenType>(MiniPLTokenType.INVALID_TOKEN);
       }
-    }
 
-    private Token<MiniPLTokenType> createToken(MiniPLTokenType type) {
-      return new Token<MiniPLTokenType>(type);
+      // Checking invalid tokens
+      if(hasNext() && !hasWhitespace() && stringBuilder.Length > 0) {
+        while(hasNext() && !hasWhitespace()) {
+          stringBuilder.Append(readNextCharacter());
+        }
+      }
+      
+      return createInvalidToken(stringBuilder.ToString());
     }
   }
 
