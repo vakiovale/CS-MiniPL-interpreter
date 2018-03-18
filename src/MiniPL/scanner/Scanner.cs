@@ -3,8 +3,10 @@ using System.IO;
 
 namespace MiniPL.scanner {
 
-  // Scanner for reading characters one by one from a String.
-  // Does not backtrack.
+  /**
+    Scanner for reading characters one by one from a String.
+    Does not backtrack.
+   */
   public class Scanner : IScanner {
 
     private String source;
@@ -34,6 +36,10 @@ namespace MiniPL.scanner {
       return this.source;
     }
 
+    /**
+      Reads next character from the source. Source must be set before calling this function.
+      Throws IndexOutOfRangeException if trying to read characters from the end of the source. 
+     */
     public char readNextCharacter() {
       if(readIndex < this.length) {
         return this.source[readIndex++];
@@ -42,6 +48,10 @@ namespace MiniPL.scanner {
       }
     }
 
+    /**
+      Return true if there are more characters to read from the source.
+      Returns false if source is empty or if last character has been read.
+     */
     public bool hasNext() { 
       return this.readIndex < this.length;
     }
