@@ -82,9 +82,6 @@ namespace MiniPL.Tests.scanner.Tests {
         case ")":
           type = MiniPLTokenType.RIGHT_PARENTHESIS;
           break;
-        case "\"":
-          type = MiniPLTokenType.QUOTE;
-          break;
         case "\\":
           type = MiniPLTokenType.BACKSLASH;
           break;
@@ -110,8 +107,7 @@ namespace MiniPL.Tests.scanner.Tests {
 
     [Fact]
     public void readMultipleDifferentSingleCharTokensSeparatedWithWhiteSpace() {
-      this.tokenScanner = new MiniPLTokenScanner(new Scanner("\" \\ !\t+\n\n&"));
-      Assert.Equal(MiniPLTokenType.QUOTE, this.tokenScanner.readNextToken().getType());
+      this.tokenScanner = new MiniPLTokenScanner(new Scanner("\\ !\t+\n\n&"));
       Assert.Equal(MiniPLTokenType.BACKSLASH, this.tokenScanner.readNextToken().getType());
       Assert.Equal(MiniPLTokenType.LOGICAL_NOT, this.tokenScanner.readNextToken().getType());
       Assert.Equal(MiniPLTokenType.PLUS, this.tokenScanner.readNextToken().getType());
@@ -120,19 +116,17 @@ namespace MiniPL.Tests.scanner.Tests {
 
     [Fact]
     public void readMultipleDifferentSingleCharTokens() {
-      this.tokenScanner = new MiniPLTokenScanner(new Scanner("(\"!&<=\")"));
+      this.tokenScanner = new MiniPLTokenScanner(new Scanner("(!&<=)"));
       Assert.Equal(MiniPLTokenType.LEFT_PARENTHESIS, this.tokenScanner.readNextToken().getType());
-      Assert.Equal(MiniPLTokenType.QUOTE, this.tokenScanner.readNextToken().getType());
       Assert.Equal(MiniPLTokenType.LOGICAL_NOT, this.tokenScanner.readNextToken().getType());
       Assert.Equal(MiniPLTokenType.LOGICAL_AND, this.tokenScanner.readNextToken().getType());
       Assert.Equal(MiniPLTokenType.LESS_THAN_COMPARISON, this.tokenScanner.readNextToken().getType());
       Assert.Equal(MiniPLTokenType.EQUALITY_COMPARISON, this.tokenScanner.readNextToken().getType());
-      Assert.Equal(MiniPLTokenType.QUOTE, this.tokenScanner.readNextToken().getType());
       Assert.Equal(MiniPLTokenType.RIGHT_PARENTHESIS, this.tokenScanner.readNextToken().getType());
     }
 
     [Fact]
-    public void readStringLiteralMiddleOfSpecialCharacters() {
+    public void readIdentifierMiddleOfSpecialCharacters() {
       this.tokenScanner = new MiniPLTokenScanner(new Scanner("(!goodVariable_1)"));
       dynamic leftParenthesis = this.tokenScanner.readNextToken();
       dynamic logicalNot = this.tokenScanner.readNextToken();
@@ -141,7 +135,7 @@ namespace MiniPL.Tests.scanner.Tests {
       Assert.Equal(MiniPLTokenType.LEFT_PARENTHESIS, leftParenthesis.getType());
       Assert.Equal(MiniPLTokenType.LOGICAL_NOT, logicalNot.getType());
       Assert.Equal(MiniPLTokenType.RIGHT_PARENTHESIS, rightParenthesis.getType());
-      Assert.Equal(MiniPLTokenType.STRING_LITERAL, identifier.getType());
+      Assert.Equal(MiniPLTokenType.IDENTIFIER, identifier.getType());
       Assert.Equal("goodVariable_1", identifier.getLexeme());
     }
 
@@ -151,15 +145,15 @@ namespace MiniPL.Tests.scanner.Tests {
     [InlineData("MysticalVariable")]
     [InlineData("A_b_123_assert")]
     [InlineData("variable9_")]
-    public void readStringTokenTest(String source) {
+    public void readIdentifierTokenTest(String source) {
       this.tokenScanner = new MiniPLTokenScanner(new Scanner(source));
       dynamic token = this.tokenScanner.readNextToken();
-      Assert.Equal(MiniPLTokenType.STRING_LITERAL, token.getType());
+      Assert.Equal(MiniPLTokenType.IDENTIFIER, token.getType());
       Assert.Equal(source, token.getLexeme());
     }
 
     [Fact]
-    public void readStringLiterals() {
+    public void readIdentifiers() {
       this.tokenScanner = new MiniPLTokenScanner(new Scanner("token1 token2 token_3"));
       dynamic firstToken = this.tokenScanner.readNextToken();
       dynamic secondToken = this.tokenScanner.readNextToken();
@@ -296,12 +290,42 @@ namespace MiniPL.Tests.scanner.Tests {
     }
 
     [Theory]
+    [InlineData("\"Word\"")]
+    [InlineData("\"Hello World!\"")]
+    [InlineData("\"how are you?\"")]
+    public void readSimpleStringLiterals(String source) {
+      this.tokenScanner = new MiniPLTokenScanner(new Scanner(source));
+      dynamic stringToken = this.tokenScanner.readNextToken();
+      Assert.Equal(MiniPLTokenType.STRING_LITERAL, stringToken.getType());
+      Assert.Equal(source.Substring(1, source.Length-2), stringToken.getLexeme());
+    }
+
+    [Fact]
+    public void readStringLiterals() {
+      this.tokenScanner = new MiniPLTokenScanner(new Scanner("\"Ensimmäinen lause.\"\"print\"\" m e r k k ! \""));
+      dynamic firstStringLiteral = this.tokenScanner.readNextToken();
+      dynamic secondStringLiteral = this.tokenScanner.readNextToken();
+      dynamic thirdStringLiteral = this.tokenScanner.readNextToken();
+      Assert.Equal(MiniPLTokenType.STRING_LITERAL, firstStringLiteral.getType());
+      Assert.Equal("Ensimmäinen lause.", firstStringLiteral.getLexeme());
+      Assert.Equal(MiniPLTokenType.STRING_LITERAL, secondStringLiteral.getType());
+      Assert.Equal("print", secondStringLiteral.getLexeme());
+      Assert.Equal(MiniPLTokenType.STRING_LITERAL, thirdStringLiteral.getType());
+      Assert.Equal(" m e r k k ! ", thirdStringLiteral.getLexeme());
+    }
+
+    [Theory]
     [InlineData("_var")]
     [InlineData("12variable")]
     [InlineData("_ThisIs123var&!Illegal!!")]
+    //[InlineData("var_£assert")]
+    //[InlineData("gorilla}{")]
+    //[InlineData("apina#@_")]
+    //[InlineData("^notgood_1")]
     public void unrecognizedSourceShouldReturnInvalidTokenWithTextAsToken(String source) {
       this.tokenScanner = new MiniPLTokenScanner(new Scanner(source));
       dynamic invalidToken = this.tokenScanner.readNextToken();
+      Console.WriteLine("Lexeme: " + invalidToken.getLexeme());
       Assert.Equal(MiniPLTokenType.INVALID_TOKEN, invalidToken.getType());
       Assert.Equal(source, invalidToken.getLexeme());
     }

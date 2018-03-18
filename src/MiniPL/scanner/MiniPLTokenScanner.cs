@@ -9,6 +9,8 @@ namespace MiniPL.tokens {
 
     private IDictionary<String, MiniPLTokenType> keywords;
 
+    private StringBuilder currentTokenContent;
+
     public MiniPLTokenScanner(IScanner characterScanner) : base(characterScanner) {
       initializeKeywords();
     }
@@ -91,6 +93,10 @@ namespace MiniPL.tokens {
       return this.characterScanner.readNextCharacter();
     }
 
+    private Token<MiniPLTokenType> createIdentifier(String lexeme) {
+      return new Token<MiniPLTokenType>(MiniPLTokenType.IDENTIFIER, lexeme);
+    }
+
     private Token<MiniPLTokenType> createStringLiteral(String lexeme) {
       return new Token<MiniPLTokenType>(MiniPLTokenType.STRING_LITERAL, lexeme);
     }
@@ -144,22 +150,22 @@ namespace MiniPL.tokens {
     private Token<MiniPLTokenType> readToken() {
       removeWhitespaceIfExists();
 
-      StringBuilder stringBuilder = new StringBuilder();
+      currentTokenContent = new StringBuilder();
 
       char character = readNextCharacter();
-      stringBuilder.Append(character);
+      currentTokenContent.Append(character);
 
-      // Checkinf string literals AND keywords
+      // Checking identifiers AND keywords
       if(isLetter(character)) {
         while(hasNext() && nextCharacterIsUnderscoreLetterOrDigit()) {
           character = readNextCharacter(); 
-          stringBuilder.Append(character);
+          currentTokenContent.Append(character);
         }
-        String token = stringBuilder.ToString();
+        String token = currentTokenContent.ToString();
         if(isReservedKeyword(token)) {
           return getKeywordToken(token);
         } else {
-          return createStringLiteral(token);
+          return createIdentifier(token);
         }
       }
 
@@ -167,15 +173,34 @@ namespace MiniPL.tokens {
       if(isDigit(character)) {
         while(hasNext() && nextCharacterIsDigit()) {
           character = readNextCharacter();
-          stringBuilder.Append(character);
+          currentTokenContent.Append(character);
         }
-        String token = stringBuilder.ToString();
+        String token = currentTokenContent.ToString();
         if(nextCharacterIsAllowedAfterDigit()) {
           return createIntegerLiteral(token);
         }
       }
 
       // Checking special characters
+      if(currentTokenContent.Length == 1) {
+        Token<MiniPLTokenType> specialToken = findValidTokenStartingWithSpecialCharacter();
+        if(specialToken != null) {
+          return specialToken;
+        }
+      }
+
+      // Checking invalid tokens
+      if(hasNext() && !hasWhitespace() && currentTokenContent.Length > 0) {
+        while(hasNext() && !hasWhitespace()) {
+          currentTokenContent.Append(readNextCharacter());
+        }
+      }
+      
+      return createInvalidToken(currentTokenContent.ToString());
+    }
+
+    private Token<MiniPLTokenType> findValidTokenStartingWithSpecialCharacter() {
+      char character = currentTokenContent[0];
       switch(character) {
         case ';':
           return createToken(MiniPLTokenType.SEMICOLON);
@@ -199,20 +224,42 @@ namespace MiniPL.tokens {
           return createToken(MiniPLTokenType.LEFT_PARENTHESIS);
         case ')':
           return createToken(MiniPLTokenType.RIGHT_PARENTHESIS);
-        case '\"':
-          return createToken(MiniPLTokenType.QUOTE);
         case '\\':
           return createToken(MiniPLTokenType.BACKSLASH);
+        case '\"':
+          return tryToReadStringLiteral();
+        default:
+          return null;
       }
+    }
 
-      // Checking invalid tokens
-      if(hasNext() && !hasWhitespace() && stringBuilder.Length > 0) {
-        while(hasNext() && !hasWhitespace()) {
-          stringBuilder.Append(readNextCharacter());
+    private Token<MiniPLTokenType> tryToReadStringLiteral() {
+      StringBuilder stringLiteral = new StringBuilder();
+      bool lastCharWasEscapeCharacter = false;
+      while(hasNext() && !nextCharIsLineBreak()) {
+        char nextChar = readNextCharacter();
+        if(nextChar == '\\') {
+          lastCharWasEscapeCharacter = true;
+          continue;
+        } else {
+          lastCharWasEscapeCharacter = false;
         }
+        if(!lastCharWasEscapeCharacter && nextChar == '"') {
+          return createStringLiteral(stringLiteral.ToString());
+        }
+        stringLiteral.Append(nextChar);
+        currentTokenContent.Append(nextChar);
       }
-      
-      return createInvalidToken(stringBuilder.ToString());
+      return createInvalidToken(currentTokenContent.ToString());
+    }
+
+    private bool nextCharIsLineBreak() {
+      if(!hasNext()) {
+        return false;
+      } else {
+        char peekedCharacter = peek();
+        return peekedCharacter == '\n';
+      }
     }
   }
 
