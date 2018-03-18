@@ -33,6 +33,17 @@ namespace MiniPL.Tests.scanner.Tests {
     [Theory]
     [InlineData(";")]
     [InlineData("=")]
+    [InlineData("+")]
+    [InlineData("-")]
+    [InlineData("*")]
+    [InlineData("/")]
+    [InlineData("&")]
+    [InlineData("!")]
+    [InlineData("<")]
+    [InlineData("(")]
+    [InlineData(")")]
+    [InlineData("\"")]
+    [InlineData("\\")]
     public void readsSingleCharacterTokenFromSource(String source) {
       this.tokenScanner = new MiniPLTokenScanner(new Scanner(source));
       dynamic token = this.tokenScanner.readNextToken();
@@ -43,6 +54,39 @@ namespace MiniPL.Tests.scanner.Tests {
           break;
         case "=":
           type = MiniPLTokenType.EQUALITY_COMPARISON;
+          break;
+        case "+":
+          type = MiniPLTokenType.PLUS;
+          break;
+        case "-":
+          type = MiniPLTokenType.MINUS;
+          break;
+        case "*":
+          type = MiniPLTokenType.ASTERISK;
+          break;
+        case "/":
+          type = MiniPLTokenType.SLASH;
+          break;
+        case "&":
+          type = MiniPLTokenType.LOGICAL_AND;
+          break;
+        case "!":
+          type = MiniPLTokenType.LOGICAL_NOT;
+          break;
+        case "<":
+          type = MiniPLTokenType.LESS_THAN_COMPARISON;
+          break;
+        case "(":
+          type = MiniPLTokenType.LEFT_PARENTHESIS;
+          break;
+        case ")":
+          type = MiniPLTokenType.RIGHT_PARENTHESIS;
+          break;
+        case "\"":
+          type = MiniPLTokenType.QUOTE;
+          break;
+        case "\\":
+          type = MiniPLTokenType.BACKSLASH;
           break;
       }
       Assert.Equal(type, token.getType());
