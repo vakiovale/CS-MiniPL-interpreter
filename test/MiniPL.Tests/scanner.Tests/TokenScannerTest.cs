@@ -318,10 +318,9 @@ namespace MiniPL.Tests.scanner.Tests {
     [InlineData("_var")]
     [InlineData("12variable")]
     [InlineData("_ThisIs123var&!Illegal!!")]
-    //[InlineData("var_£assert")]
-    //[InlineData("gorilla}{")]
-    //[InlineData("apina#@_")]
-    //[InlineData("^notgood_1")]
+    [InlineData("^notgood_1")]
+    [InlineData("1^Änotgood_1")]
+    [InlineData("§½")]
     public void unrecognizedSourceShouldReturnInvalidTokenWithTextAsToken(String source) {
       this.tokenScanner = new MiniPLTokenScanner(new Scanner(source));
       dynamic invalidToken = this.tokenScanner.readNextToken();
