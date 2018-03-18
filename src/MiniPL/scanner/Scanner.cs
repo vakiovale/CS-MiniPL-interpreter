@@ -49,6 +49,18 @@ namespace MiniPL.scanner {
     }
 
     /**
+      Return next character without reading the character and moving forward.
+      Throws IndexOutOfRangeException if trying to peek characters from the end of the source.
+     */
+    public char peek() {
+      if(readIndex < this.length) {
+        return this.source[readIndex];
+      } else {
+        throw new IndexOutOfRangeException("Can't peek any more characters");
+      }
+    }
+
+    /**
       Return true if there are more characters to read from the source.
       Returns false if source is empty or if last character has been read.
      */

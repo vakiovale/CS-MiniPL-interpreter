@@ -8,6 +8,29 @@ namespace MiniPL.tokens {
     public MiniPLTokenScanner(IScanner characterScanner) : base(characterScanner) {}
 
     public override Token<MiniPLTokenType> readNextToken() { 
+      if(!hasNext()) {
+        return null;
+      } else {
+        return readToken();
+      }
+    }
+
+    private bool hasNext() {
+      return this.characterScanner.hasNext();
+    }
+
+    private bool hasWhitespace() {
+      return Char.IsWhiteSpace(this.characterScanner.peek());
+    }
+
+    private void removeWhitespace() {
+      this.characterScanner.readNextCharacter();
+    }
+
+    private Token<MiniPLTokenType> readToken() {
+      while(hasNext() && hasWhitespace()) {
+        removeWhitespace();
+      }
       char nextCharacter = this.characterScanner.readNextCharacter();
       switch(nextCharacter) {
         case ';':

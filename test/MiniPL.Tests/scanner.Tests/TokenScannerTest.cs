@@ -91,6 +91,32 @@ namespace MiniPL.Tests.scanner.Tests {
       }
       Assert.Equal(type, token.getType());
     }
+    
+    [Fact]
+    public void readMultipleSingleCharTokens() {
+      this.tokenScanner = new MiniPLTokenScanner(new Scanner(";;;"));
+      Assert.Equal(MiniPLTokenType.SEMICOLON, this.tokenScanner.readNextToken().getType());
+      Assert.Equal(MiniPLTokenType.SEMICOLON, this.tokenScanner.readNextToken().getType());
+      Assert.Equal(MiniPLTokenType.SEMICOLON, this.tokenScanner.readNextToken().getType());
+    }
+
+    [Fact]
+    public void ifNoMoreTokensThenReturnNullToken() {
+      this.tokenScanner = new MiniPLTokenScanner(new Scanner("!"));
+      this.tokenScanner.readNextToken();
+      dynamic nullToken = this.tokenScanner.readNextToken();
+      Assert.True(nullToken == null);
+    }
+
+    [Fact]
+    public void readMultipleDifferentSingleCharTokensSeparatedWithWhiteSpace() {
+      this.tokenScanner = new MiniPLTokenScanner(new Scanner("\" \\ !\t+\n\n&"));
+      Assert.Equal(MiniPLTokenType.QUOTE, this.tokenScanner.readNextToken().getType());
+      Assert.Equal(MiniPLTokenType.BACKSLASH, this.tokenScanner.readNextToken().getType());
+      Assert.Equal(MiniPLTokenType.LOGICAL_NOT, this.tokenScanner.readNextToken().getType());
+      Assert.Equal(MiniPLTokenType.PLUS, this.tokenScanner.readNextToken().getType());
+      Assert.Equal(MiniPLTokenType.LOGICAL_AND, this.tokenScanner.readNextToken().getType());
+    }
   }
 
 }

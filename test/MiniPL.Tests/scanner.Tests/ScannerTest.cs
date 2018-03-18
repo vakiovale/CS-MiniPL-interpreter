@@ -72,6 +72,23 @@ namespace MiniPL.Tests.scanner.Tests {
       scanner.readNextCharacter();
       Assert.False(scanner.hasNext(), "There should be no more characters");
     }
+
+    [Fact]
+    public void peekingCharacterShouldShowNextCharacter() {
+      scanner.setSource("ab");
+      Assert.Equal('a', scanner.peek());
+      Assert.Equal('a', scanner.peek());
+    }
+
+    [Theory]
+    [InlineData("abba")]
+    [InlineData("Gorilla!")]
+    [InlineData("\t\n\\A")]
+    public void peekingNextCharacterShouldBeSameWhenReadingNextCharacter(String source) {
+      scanner.setSource(source);
+      char peekedCharacter = scanner.peek();
+      Assert.Equal(scanner.readNextCharacter(), peekedCharacter);
+    }
   }
 
 
