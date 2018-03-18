@@ -3,6 +3,8 @@ using System.IO;
 
 namespace MiniPL.scanner {
 
+  // Scanner for reading characters one by one from a String.
+  // Does not backtrack.
   public class Scanner : IScanner {
 
     private String source;
