@@ -2,6 +2,9 @@ using System;
 
 namespace MiniPL.tokens {
 
+  /**
+    Token types that are defined by the MiniPL language
+   */
   public enum MiniPLTokenType {
       
     INVALID_TOKEN,

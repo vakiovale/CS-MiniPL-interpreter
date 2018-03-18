@@ -1,10 +1,11 @@
 using System;
+using MiniPL.tokens;
 
 namespace MiniPL.scanner {
 
-  public interface ITokenScanner {
+  public interface ITokenScanner<T> {
       
-      String getSource();
-      void setSource(String source);
+    Token<T> readNextToken();
+
   }
 }

@@ -1,18 +1,28 @@
 using System;
 using Xunit;
 using MiniPL.scanner;
+using MiniPL.tokens;
 
 namespace MiniPL.Tests.scanner.Tests {
   
   public class TokenScannerTest { 
 
-    private ITokenScanner tokenScanner;
+    private ITokenScanner<MiniPLTokenType> tokenScanner;
 
     private IScanner scanner;
 
     public TokenScannerTest() {
-      this.scanner = new Scanner();
-      this.tokenScanner = new TokenScanner(this.scanner);
+      String sampleProgram = "var nTimes : int := 0;\n"
+                           + "print \"How many times?\";\n"
+                           + "read nTimes;\n"
+                           + "var x : int;\n"
+                           + "for x in 0..nTimes-1 do\n"
+                           + "\tprint x;\n"
+                           + "\tprint \" : Hello, World!\\n\";\n"
+                           + "end for;\n"
+                           + "assert (x = nTimes);";
+      this.scanner = new Scanner(sampleProgram);
+      this.tokenScanner = new MiniPLTokenScanner(this.scanner);
     }
 
     [Fact]
@@ -20,11 +30,22 @@ namespace MiniPL.Tests.scanner.Tests {
       Assert.True(this.tokenScanner != null);
     }
 
-    [Fact]
-    public void settingSourceTest() {
-      String source = "This is the source!";
-      this.tokenScanner.setSource(source);
-      Assert.Equal(source, this.tokenScanner.getSource());
+    [Theory]
+    [InlineData(";")]
+    [InlineData("=")]
+    public void readsSingleCharacterTokenFromSource(String source) {
+      this.tokenScanner = new MiniPLTokenScanner(new Scanner(source));
+      dynamic token = this.tokenScanner.readNextToken();
+      MiniPLTokenType type = MiniPLTokenType.INVALID_TOKEN;
+      switch(source) {
+        case ";":
+          type = MiniPLTokenType.SEMICOLON;
+          break;
+        case "=":
+          type = MiniPLTokenType.EQUALITY_COMPARISON;
+          break;
+      }
+      Assert.Equal(type, token.getType());
     }
   }
 

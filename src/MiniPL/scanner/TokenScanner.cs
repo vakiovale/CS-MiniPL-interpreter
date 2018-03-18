@@ -1,20 +1,17 @@
 using System;
+using MiniPL.tokens;
 
 namespace MiniPL.scanner {
-  public class TokenScanner : ITokenScanner {
 
-    private IScanner characterScanner;
+  public abstract class TokenScanner<T> : ITokenScanner<T> {
+
+    protected IScanner characterScanner;
 
     public TokenScanner(IScanner characterScanner) {
       this.characterScanner = characterScanner;
     }
 
-    public String getSource() {
-      return this.characterScanner.getSource();
-    }
+    public abstract Token<T> readNextToken();
 
-    public void setSource(String source) {
-      this.characterScanner.setSource(source);
-    }
   }
 }
