@@ -183,6 +183,68 @@ namespace MiniPL.Tests.scanner.Tests {
       Assert.Equal(MiniPLTokenType.KEYWORD_FOR, token.getType());
     }
 
+    [Fact]
+    public void readEndKeyword() {
+      this.tokenScanner = new MiniPLTokenScanner(new Scanner("end"));
+      dynamic token = this.tokenScanner.readNextToken();
+      Assert.Equal(MiniPLTokenType.KEYWORD_END, token.getType());
+    }
+
+    [Fact]
+    public void readInKeyword() {
+      this.tokenScanner = new MiniPLTokenScanner(new Scanner("in"));
+      dynamic token = this.tokenScanner.readNextToken();
+      Assert.Equal(MiniPLTokenType.KEYWORD_IN, token.getType());
+    }
+
+    [Fact]
+    public void readDoKeyword() {
+      this.tokenScanner = new MiniPLTokenScanner(new Scanner("do"));
+      dynamic token = this.tokenScanner.readNextToken();
+      Assert.Equal(MiniPLTokenType.KEYWORD_DO, token.getType());
+    }
+
+    [Fact]
+    public void readReadKeyword() {
+      this.tokenScanner = new MiniPLTokenScanner(new Scanner("read"));
+      dynamic token = this.tokenScanner.readNextToken();
+      Assert.Equal(MiniPLTokenType.KEYWORD_READ, token.getType());
+    }
+
+    [Fact]
+    public void readPrintKeyword() {
+      this.tokenScanner = new MiniPLTokenScanner(new Scanner("print"));
+      dynamic token = this.tokenScanner.readNextToken();
+      Assert.Equal(MiniPLTokenType.KEYWORD_PRINT, token.getType());
+    }
+
+    [Fact]
+    public void readIntKeyword() {
+      this.tokenScanner = new MiniPLTokenScanner(new Scanner("int"));
+      dynamic token = this.tokenScanner.readNextToken();
+      Assert.Equal(MiniPLTokenType.TYPE_IDENTIFIER_INTEGER, token.getType());
+    }
+
+    [Fact]
+    public void readStringKeyword() {
+      this.tokenScanner = new MiniPLTokenScanner(new Scanner("string"));
+      dynamic token = this.tokenScanner.readNextToken();
+      Assert.Equal(MiniPLTokenType.TYPE_IDENTIFIER_STRING, token.getType());
+    }
+
+    [Fact]
+    public void readBoolKeyword() {
+      this.tokenScanner = new MiniPLTokenScanner(new Scanner("bool"));
+      dynamic token = this.tokenScanner.readNextToken();
+      Assert.Equal(MiniPLTokenType.TYPE_IDENTIFIER_BOOL, token.getType());
+    }
+
+    [Fact]
+    public void readAssertKeyword() {
+      this.tokenScanner = new MiniPLTokenScanner(new Scanner("assert"));
+      dynamic token = this.tokenScanner.readNextToken();
+      Assert.Equal(MiniPLTokenType.KEYWORD_ASSERT, token.getType());
+    }
   }
 
 }
