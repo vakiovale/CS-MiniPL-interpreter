@@ -1,2 +1,5 @@
 language: csharp
-solution: CS-MiniPL-interpreter.sln
+mono: none
+dotnet: 1.1.5
+script:
+ - dotnet restore
