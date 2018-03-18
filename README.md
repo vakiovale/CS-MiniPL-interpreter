@@ -1,4 +1,6 @@
-## MiniPL interpreter
+![build status](https://travis-ci.org/valtteripyyhtia/CS-MiniPL-interpreter.svg?branch=master)
+
+## MiniPL interpreter 
 
 This project is part of Compilers course in the Department of Computer Science (University of Helsinki).
 
