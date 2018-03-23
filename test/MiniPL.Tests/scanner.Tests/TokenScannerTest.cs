@@ -282,6 +282,8 @@ namespace MiniPL.Tests.scanner.Tests {
     [InlineData("^notgood_1")]
     [InlineData("1^Änotgood_1")]
     [InlineData("§½")]
+    [InlineData(".")]
+    [InlineData(".variable")]
     public void unrecognizedSourceShouldReturnInvalidTokenWithTextAsToken(String source) {
       this.tokenScanner = new MiniPLTokenScanner(new Scanner(source));
       dynamic invalidToken = this.tokenScanner.readNextToken();
@@ -317,10 +319,17 @@ namespace MiniPL.Tests.scanner.Tests {
     }
 
     [Fact]
-    public void assignmentOperatorShouldBeReadCorrectly() {
+    public void assignmentOperatorShouldBeRecognized() {
       this.tokenScanner = new MiniPLTokenScanner(new Scanner(":="));
       dynamic assignmentToken = this.tokenScanner.readNextToken();
       Assert.Equal(MiniPLTokenType.ASSIGNMENT_OPERATOR, assignmentToken.getType());
+    }
+
+    [Fact]
+    public void rangeOperatorShouldBeRecognized() {
+      this.tokenScanner = new MiniPLTokenScanner(new Scanner(".."));
+      dynamic rangeOperatorToken = this.tokenScanner.readNextToken();
+      Assert.Equal(MiniPLTokenType.RANGE_OPERATOR, rangeOperatorToken.getType());
     }
 
     public void justTest() {

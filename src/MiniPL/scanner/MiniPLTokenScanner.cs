@@ -228,9 +228,17 @@ namespace MiniPL.tokens {
           return createToken(MiniPLTokenType.BACKSLASH);
         case ':':
           if(hasNext() && peek() == '=') {
+            readNextCharacter();
             return createToken(MiniPLTokenType.ASSIGNMENT_OPERATOR);
           } else {
             return createToken(MiniPLTokenType.COLON);
+          }
+        case '.':
+          if(hasNext() && peek() == '.') {
+            readNextCharacter();
+            return createToken(MiniPLTokenType.RANGE_OPERATOR);
+          } else {
+            return null;
           }
         case '\"':
           return tryToReadStringLiteral();
