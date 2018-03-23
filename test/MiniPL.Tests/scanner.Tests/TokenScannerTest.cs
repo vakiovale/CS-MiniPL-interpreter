@@ -448,6 +448,16 @@ namespace MiniPL.Tests.scanner.Tests {
     }
 
     [Theory]
+    [InlineData(";/* This comment never ends\nso this should be the lexeme!")]
+    public void invalidTokenShouldHaveCorrectLexeme(String source) {
+      this.tokenScanner = new MiniPLTokenScanner(new Scanner(source));
+      this.tokenScanner.readNextToken();
+      dynamic invalidToken = this.tokenScanner.readNextToken();
+      Assert.Equal(MiniPLTokenType.INVALID_TOKEN, invalidToken.getType());
+      Assert.Equal("/* This comment never ends\nso this should be the lexeme!", invalidToken.getLexeme());
+    }
+
+    [Theory]
     [InlineData("v := (j + v) * x * i;")]
     [InlineData("v:=(j+v)*x*i;")]
     [InlineData("v := ( j + v ) * x * i;")]

@@ -170,7 +170,6 @@ namespace MiniPL.tokens {
 
       // Checkinf multiline comments
       if(isStartOfMultiLineComment(character)) {
-        currentTokenContent.Append(character);
         if(!skipToTheEndOfMultiLineComment()) {
           return createInvalidToken(currentTokenContent.ToString());
         } else {
@@ -254,6 +253,7 @@ namespace MiniPL.tokens {
 
     private bool isStartOfMultiLineComment(char character) {
       if(character == '/' && hasNext() && peek() == '*') {
+        this.currentTokenContent.Append(character);
         this.currentTokenContent.Append(readNextCharacter());
         return true;
       } else {
