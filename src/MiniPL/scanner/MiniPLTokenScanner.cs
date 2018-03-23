@@ -11,8 +11,22 @@ namespace MiniPL.tokens {
 
     private StringBuilder currentTokenContent;
 
+    private Token<MiniPLTokenType> token;
+
+    private char currentCharacter;
+
     public MiniPLTokenScanner(IScanner characterScanner) : base(characterScanner) {
+      initializeToken();
+      initializeCurrentCharacter();
       initializeKeywords();
+    }
+
+    private void initializeToken() {
+      this.token = null;
+    }
+
+    private void initializeCurrentCharacter() {
+      this.currentCharacter = '\0';
     }
 
     private void initializeKeywords() {
@@ -31,11 +45,10 @@ namespace MiniPL.tokens {
     }
 
     public override Token<MiniPLTokenType> readNextToken() { 
-      if(!hasNext()) {
-        return null;
-      } else {
-        return readToken();
-      }
+      initializeToken();
+      removeWhitespaceIfExists();
+      processNextToken();
+      return this.token;
     }
 
     private bool hasNext() {
@@ -47,15 +60,15 @@ namespace MiniPL.tokens {
     }
 
     private void removeWhitespace() {
-      readNextCharacter();
+      removeNextCharacter();
     }
 
-    private bool isLetter(char character) {
-      return Char.IsLetter(character);
+    private bool isLetter() {
+      return Char.IsLetter(currentCharacter);
     }
 
-    private bool isDigit(char character) {
-      return Char.IsDigit(character);
+    private bool isDigit() {
+      return Char.IsDigit(currentCharacter);
     }
 
     private bool nextCharacterIsUnderscoreLetterOrDigit() {
@@ -90,6 +103,12 @@ namespace MiniPL.tokens {
     }
 
     private char readNextCharacter() {
+      this.currentCharacter = this.characterScanner.readNextCharacter();
+      this.currentTokenContent.Append(this.currentCharacter);
+      return this.currentCharacter;
+    }
+
+    private char removeNextCharacter() {
       return this.characterScanner.readNextCharacter();
     }
 
@@ -148,85 +167,129 @@ namespace MiniPL.tokens {
       }
     }
 
-    private Token<MiniPLTokenType> readToken() {
-      removeWhitespaceIfExists();
-      if(!hasNext()) {
-        return null;
+    private void processNextToken() {
+      if(hasNext()) {
+        if(!findValidOrNullToken()) {
+          handleInvalidToken();
+        }
+      } 
+    }
+
+    private void handleInvalidToken() {
+      if(hasNext() && !hasWhitespace() && currentTokenContent.Length > 0) {
+        while(hasNext() && !hasWhitespace()) {
+          readNextCharacter();
+        }
       }
+      this.token = createInvalidToken(currentTokenContent.ToString());
+    }
 
+    private bool findValidOrNullToken() {
       currentTokenContent = new StringBuilder();
-      char character = readNextCharacter();
+      readNextCharacter();
 
-      // Checking comments
-      if(isStartOfOneLineComment(character)) {
-        skipToTheEndOfLine(); 
-        removeWhitespaceIfExists();
+      if(clearPossibleOneLineComment()) {
         if(hasNext()) {
-          character = readNextCharacter();
+          readNextCharacter();
         } else {
-          return null;
+          return true;
         }
       }
 
-      // Checkinf multiline comments
-      if(isStartOfMultiLineComment(character)) {
+      if(clearPossibleMultiLineComment()) {
+        if(this.token != null) {
+          return true;
+        }
+        if(hasNext()) {
+          readNextCharacter();
+        } else {
+          return true;
+        }
+      }
+
+      if(checkKeywordsAndIdentifiers()) {
+        return true;
+      }
+
+      if(checkIntegerLiteral()) {
+        return true;
+      }
+
+      if(checkOneAndTwoCharacterTokens()) {
+        return true;
+      }
+
+      return false;
+    }
+
+    private bool checkKeywordsAndIdentifiers() {
+      if(isLetter()) {
+        while(hasNext() && nextCharacterIsUnderscoreLetterOrDigit()) {
+          readNextCharacter(); 
+        }
+        String token = currentTokenContent.ToString();
+        if(isReservedKeyword(token)) {
+          this.token = getKeywordToken(token);
+          return true;
+        } else {
+          this.token = createIdentifier(token);
+          return true;
+        }
+      }
+      return false;
+    }
+
+    private bool checkIntegerLiteral() {
+      if(isDigit()) {
+        while(hasNext() && nextCharacterIsDigit()) {
+          readNextCharacter();
+        }
+        String token = currentTokenContent.ToString();
+        if(nextCharacterIsAllowedAfterDigit()) {
+          this.token = createIntegerLiteral(token);
+          return true;
+        }
+      }
+      return false;
+    }
+
+    private bool checkOneAndTwoCharacterTokens() {
+      if(currentTokenContent.Length == 1) {
+        Token<MiniPLTokenType> specialToken = findValidTokenStartingWithSpecialCharacter();
+        if(specialToken != null) {
+          this.token = specialToken;
+          return true;
+        }
+      }
+      return false;
+    }
+
+    private bool clearPossibleOneLineComment() {
+      if(isStartOfOneLineComment()) {
+        this.currentTokenContent.Length--;
+        skipToTheEndOfLine(); 
+        removeWhitespaceIfExists();
+        return true;
+      }
+      return false;
+    }
+
+    private bool clearPossibleMultiLineComment() {
+      if(isStartOfMultiLineComment()) {
         if(!skipToTheEndOfMultiLineComment()) {
-          return createInvalidToken(currentTokenContent.ToString());
+          this.token = createInvalidToken(currentTokenContent.ToString());
+          return true;
         } else {
           currentTokenContent = new StringBuilder();
         }
         removeWhitespaceIfExists();
         if(hasNext()) {
-          character = readNextCharacter();
+          readNextCharacter();
         } else {
-          return null;
+          return true;
         }
       }
-
-      currentTokenContent.Append(character);
-
-      // Checking identifiers AND keywords
-      if(isLetter(character)) {
-        while(hasNext() && nextCharacterIsUnderscoreLetterOrDigit()) {
-          character = readNextCharacter(); 
-          currentTokenContent.Append(character);
-        }
-        String token = currentTokenContent.ToString();
-        if(isReservedKeyword(token)) {
-          return getKeywordToken(token);
-        } else {
-          return createIdentifier(token);
-        }
-      }
-
-      // Checking integer literals
-      if(isDigit(character)) {
-        while(hasNext() && nextCharacterIsDigit()) {
-          character = readNextCharacter();
-          currentTokenContent.Append(character);
-        }
-        String token = currentTokenContent.ToString();
-        if(nextCharacterIsAllowedAfterDigit()) {
-          return createIntegerLiteral(token);
-        }
-      }
-
-      // Checking special characters
-      if(currentTokenContent.Length == 1) {
-        Token<MiniPLTokenType> specialToken = findValidTokenStartingWithSpecialCharacter();
-        if(specialToken != null) {
-          return specialToken;
-        }
-      }
-
-      // Checking invalid tokens
-      if(hasNext() && !hasWhitespace() && currentTokenContent.Length > 0) {
-        while(hasNext() && !hasWhitespace()) {
-          currentTokenContent.Append(readNextCharacter());
-        }
-      }
-      
-      return createInvalidToken(currentTokenContent.ToString());
+      return false;
     }
 
     private bool skipToTheEndOfMultiLineComment() {
@@ -234,13 +297,12 @@ namespace MiniPL.tokens {
       bool endOfMultiLineComment = false;
       while(!endOfMultiLineComment && hasNext()) {
         if(hasNext()) {
-          char character = readNextCharacter();
-          currentTokenContent.Append(character);
-          if(character == '/' && hasNext() && peek() == '*') {
-            currentTokenContent.Append(readNextCharacter());
+          readNextCharacter();
+          if(currentCharacter == '/' && hasNext() && peek() == '*') {
+            readNextCharacter();
             multiLineCommentNestLevel++;
-          } else if (character == '*' && hasNext() && peek() == '/') {
-            currentTokenContent.Append(readNextCharacter());
+          } else if (currentCharacter == '*' && hasNext() && peek() == '/') {
+            readNextCharacter();
             multiLineCommentNestLevel--;
           }
           if(multiLineCommentNestLevel == 0) {
@@ -251,10 +313,9 @@ namespace MiniPL.tokens {
       return endOfMultiLineComment;
     }
 
-    private bool isStartOfMultiLineComment(char character) {
-      if(character == '/' && hasNext() && peek() == '*') {
-        this.currentTokenContent.Append(character);
-        this.currentTokenContent.Append(readNextCharacter());
+    private bool isStartOfMultiLineComment() {
+      if(currentCharacter == '/' && hasNext() && peek() == '*') {
+        readNextCharacter();
         return true;
       } else {
         return false;
@@ -263,17 +324,16 @@ namespace MiniPL.tokens {
 
     private void skipToTheEndOfLine() {
       while(hasNext() && peek() != '\n') {
-        readNextCharacter(); 
+        removeNextCharacter(); 
       }
     }
 
-    private bool isStartOfOneLineComment(char character) {
-      return character == '/' && hasNext() && peek() == '/';
+    private bool isStartOfOneLineComment() {
+      return currentCharacter == '/' && hasNext() && peek() == '/';
     }
 
     private Token<MiniPLTokenType> findValidTokenStartingWithSpecialCharacter() {
-      char character = currentTokenContent[0];
-      switch(character) {
+      switch(currentCharacter) {
         case ';':
           return createToken(MiniPLTokenType.SEMICOLON);
         case '=':
@@ -323,14 +383,13 @@ namespace MiniPL.tokens {
       StringBuilder stringLiteral = new StringBuilder();
       bool lastCharWasEscapeCharacter = false;
       while(hasNext() && !nextCharIsLineBreak()) {
-        char nextChar = readNextCharacter();
-        if(!lastCharWasEscapeCharacter && nextChar == '\\') {
+        readNextCharacter();
+        if(!lastCharWasEscapeCharacter && currentCharacter == '\\') {
           lastCharWasEscapeCharacter = true;
-        } else if(!lastCharWasEscapeCharacter && nextChar == '"') {
+        } else if(!lastCharWasEscapeCharacter && currentCharacter == '"') {
           return createStringLiteral(stringLiteral.ToString());
         }
-        stringLiteral.Append(nextChar);
-        currentTokenContent.Append(nextChar);
+        stringLiteral.Append(currentCharacter);
         lastCharWasEscapeCharacter = false;
       }
       return createInvalidToken(currentTokenContent.ToString());
