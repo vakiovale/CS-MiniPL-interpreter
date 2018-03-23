@@ -2,12 +2,13 @@ using System;
 using System.Text;
 using System.Collections.Generic;
 using MiniPL.scanner;
+using MiniPL.tokens;
 
 namespace MiniPL.tokens {
 
   public class MiniPLTokenScanner : TokenScanner<MiniPLTokenType> {
 
-    private IDictionary<String, MiniPLTokenType> keywords;
+    private MiniPLKeywords keywords;
 
     private StringBuilder currentTokenContent;
 
@@ -30,18 +31,7 @@ namespace MiniPL.tokens {
     }
 
     private void initializeKeywords() {
-      keywords = new Dictionary<String, MiniPLTokenType>();
-      keywords.Add("var", MiniPLTokenType.KEYWORD_VAR);
-      keywords.Add("for", MiniPLTokenType.KEYWORD_FOR);
-      keywords.Add("end", MiniPLTokenType.KEYWORD_END);
-      keywords.Add("in", MiniPLTokenType.KEYWORD_IN);
-      keywords.Add("do", MiniPLTokenType.KEYWORD_DO);
-      keywords.Add("read", MiniPLTokenType.KEYWORD_READ);
-      keywords.Add("print", MiniPLTokenType.KEYWORD_PRINT);
-      keywords.Add("assert", MiniPLTokenType.KEYWORD_ASSERT);
-      keywords.Add("int", MiniPLTokenType.TYPE_IDENTIFIER_INTEGER);
-      keywords.Add("string", MiniPLTokenType.TYPE_IDENTIFIER_STRING);
-      keywords.Add("bool", MiniPLTokenType.TYPE_IDENTIFIER_BOOL);
+      this.keywords = new MiniPLKeywords();
     }
 
     public override Token<MiniPLTokenType> readNextToken() { 
@@ -112,18 +102,6 @@ namespace MiniPL.tokens {
       return this.characterScanner.readNextCharacter();
     }
 
-    private Token<MiniPLTokenType> createIdentifier(String lexeme) {
-      return new Token<MiniPLTokenType>(MiniPLTokenType.IDENTIFIER, lexeme);
-    }
-
-    private Token<MiniPLTokenType> createStringLiteral(String lexeme) {
-      return new Token<MiniPLTokenType>(MiniPLTokenType.STRING_LITERAL, lexeme);
-    }
-
-    private Token<MiniPLTokenType> createIntegerLiteral(String lexeme) {
-      return new Token<MiniPLTokenType>(MiniPLTokenType.INTEGER_LITERAL, lexeme);
-    }
-
     private void removeWhitespaceIfExists() {
       while(hasNext() && hasWhitespace()) {
         removeWhitespace();
@@ -131,19 +109,11 @@ namespace MiniPL.tokens {
     }
 
     private bool isReservedKeyword(String content) {
-      return this.keywords.ContainsKey(content);
+      return this.keywords.containsKey(content);
     }
 
     private Token<MiniPLTokenType> getKeywordToken(String key) {
-      return createToken(this.keywords[key], key);
-    }
-
-    private Token<MiniPLTokenType> createToken(MiniPLTokenType type, String lexeme) {
-      return new Token<MiniPLTokenType>(type, lexeme);
-    }
-
-    private Token<MiniPLTokenType> createInvalidToken(String lexeme) {
-      return new Token<MiniPLTokenType>(MiniPLTokenType.INVALID_TOKEN, lexeme);
+      return TokenFactory.createToken(this.keywords.get(key), key);
     }
 
     private void processNextToken() {
@@ -161,7 +131,7 @@ namespace MiniPL.tokens {
           readNextCharacter();
         }
       }
-      this.token = createInvalidToken(currentTokenContent.ToString());
+      this.token = TokenFactory.createInvalidToken(currentTokenContent.ToString());
     }
 
     private bool findValidOrNullToken() {
@@ -210,7 +180,7 @@ namespace MiniPL.tokens {
           this.token = getKeywordToken(token);
           return true;
         } else {
-          this.token = createIdentifier(token);
+          this.token = TokenFactory.createIdentifier(token);
           return true;
         }
       }
@@ -223,7 +193,7 @@ namespace MiniPL.tokens {
           readNextCharacter();
         }
         String token = currentTokenContent.ToString();
-        this.token = createIntegerLiteral(token);
+        this.token = TokenFactory.createIntegerLiteral(token);
         return true;
       }
       return false;
@@ -253,7 +223,7 @@ namespace MiniPL.tokens {
     private bool clearPossibleMultiLineComment() {
       if(isStartOfMultiLineComment()) {
         if(!skipToTheEndOfMultiLineComment()) {
-          this.token = createInvalidToken(currentTokenContent.ToString());
+          this.token = TokenFactory.createInvalidToken(currentTokenContent.ToString());
           return true;
         } else {
           currentTokenContent = new StringBuilder();
@@ -307,40 +277,40 @@ namespace MiniPL.tokens {
     private Token<MiniPLTokenType> findValidTokenStartingWithSpecialCharacter() {
       switch(currentCharacter) {
         case ';':
-          return createToken(MiniPLTokenType.SEMICOLON, ";");
+          return TokenFactory.createToken(MiniPLTokenType.SEMICOLON, ";");
         case '=':
-          return createToken(MiniPLTokenType.EQUALITY_COMPARISON, "=");
+          return TokenFactory.createToken(MiniPLTokenType.EQUALITY_COMPARISON, "=");
         case '<':
-          return createToken(MiniPLTokenType.LESS_THAN_COMPARISON, "<");
+          return TokenFactory.createToken(MiniPLTokenType.LESS_THAN_COMPARISON, "<");
         case '+':
-          return createToken(MiniPLTokenType.PLUS, "+");
+          return TokenFactory.createToken(MiniPLTokenType.PLUS, "+");
         case '-':
-          return createToken(MiniPLTokenType.MINUS, "-");
+          return TokenFactory.createToken(MiniPLTokenType.MINUS, "-");
         case '*':
-          return createToken(MiniPLTokenType.ASTERISK, "*");
+          return TokenFactory.createToken(MiniPLTokenType.ASTERISK, "*");
         case '/':
-          return createToken(MiniPLTokenType.SLASH, "/");
+          return TokenFactory.createToken(MiniPLTokenType.SLASH, "/");
         case '&':
-          return createToken(MiniPLTokenType.LOGICAL_AND, "&");
+          return TokenFactory.createToken(MiniPLTokenType.LOGICAL_AND, "&");
         case '!':
-          return createToken(MiniPLTokenType.LOGICAL_NOT, "!");
+          return TokenFactory.createToken(MiniPLTokenType.LOGICAL_NOT, "!");
         case '(':
-          return createToken(MiniPLTokenType.LEFT_PARENTHESIS, "(");
+          return TokenFactory.createToken(MiniPLTokenType.LEFT_PARENTHESIS, "(");
         case ')':
-          return createToken(MiniPLTokenType.RIGHT_PARENTHESIS, ")");
+          return TokenFactory.createToken(MiniPLTokenType.RIGHT_PARENTHESIS, ")");
         case '\\':
-          return createToken(MiniPLTokenType.BACKSLASH, "\\");
+          return TokenFactory.createToken(MiniPLTokenType.BACKSLASH, "\\");
         case ':':
           if(hasNext() && peek() == '=') {
             readNextCharacter();
-            return createToken(MiniPLTokenType.ASSIGNMENT_OPERATOR, ":=");
+            return TokenFactory.createToken(MiniPLTokenType.ASSIGNMENT_OPERATOR, ":=");
           } else {
-            return createToken(MiniPLTokenType.COLON, ":");
+            return TokenFactory.createToken(MiniPLTokenType.COLON, ":");
           }
         case '.':
           if(hasNext() && peek() == '.') {
             readNextCharacter();
-            return createToken(MiniPLTokenType.RANGE_OPERATOR, "..");
+            return TokenFactory.createToken(MiniPLTokenType.RANGE_OPERATOR, "..");
           } else {
             return null;
           }
@@ -359,12 +329,12 @@ namespace MiniPL.tokens {
         if(!lastCharWasEscapeCharacter && currentCharacter == '\\') {
           lastCharWasEscapeCharacter = true;
         } else if(!lastCharWasEscapeCharacter && currentCharacter == '"') {
-          return createStringLiteral(stringLiteral.ToString());
+          return TokenFactory.createStringLiteral(stringLiteral.ToString());
         }
         stringLiteral.Append(currentCharacter);
         lastCharWasEscapeCharacter = false;
       }
-      return createInvalidToken(currentTokenContent.ToString());
+      return TokenFactory.createInvalidToken(currentTokenContent.ToString());
     }
 
     private bool nextCharIsLineBreak() {
