@@ -133,6 +133,7 @@ namespace MiniPL.tokens {
       } else {
         char character = peek();
         switch(character) {
+          case '.':
           case '-':
           case '+':
           case '*':
@@ -149,10 +150,40 @@ namespace MiniPL.tokens {
 
     private Token<MiniPLTokenType> readToken() {
       removeWhitespaceIfExists();
+      if(!hasNext()) {
+        return null;
+      }
 
       currentTokenContent = new StringBuilder();
-
       char character = readNextCharacter();
+
+      // Checking comments
+      if(isStartOfOneLineComment(character)) {
+        skipToTheEndOfLine(); 
+        removeWhitespaceIfExists();
+        if(hasNext()) {
+          character = readNextCharacter();
+        } else {
+          return null;
+        }
+      }
+
+      // Checkinf multiline comments
+      if(isStartOfMultiLineComment(character)) {
+        currentTokenContent.Append(character);
+        if(!skipToTheEndOfMultiLineComment()) {
+          return createInvalidToken(currentTokenContent.ToString());
+        } else {
+          currentTokenContent = new StringBuilder();
+        }
+        removeWhitespaceIfExists();
+        if(hasNext()) {
+          character = readNextCharacter();
+        } else {
+          return null;
+        }
+      }
+
       currentTokenContent.Append(character);
 
       // Checking identifiers AND keywords
@@ -197,6 +228,47 @@ namespace MiniPL.tokens {
       }
       
       return createInvalidToken(currentTokenContent.ToString());
+    }
+
+    private bool skipToTheEndOfMultiLineComment() {
+      int multiLineCommentNestLevel = 1;
+      bool endOfMultiLineComment = false;
+      while(!endOfMultiLineComment && hasNext()) {
+        if(hasNext()) {
+          char character = readNextCharacter();
+          currentTokenContent.Append(character);
+          if(character == '/' && hasNext() && peek() == '*') {
+            currentTokenContent.Append(readNextCharacter());
+            multiLineCommentNestLevel++;
+          } else if (character == '*' && hasNext() && peek() == '/') {
+            currentTokenContent.Append(readNextCharacter());
+            multiLineCommentNestLevel--;
+          }
+          if(multiLineCommentNestLevel == 0) {
+            endOfMultiLineComment = true;
+          }
+        }
+      }
+      return endOfMultiLineComment;
+    }
+
+    private bool isStartOfMultiLineComment(char character) {
+      if(character == '/' && hasNext() && peek() == '*') {
+        this.currentTokenContent.Append(readNextCharacter());
+        return true;
+      } else {
+        return false;
+      }
+    }
+
+    private void skipToTheEndOfLine() {
+      while(hasNext() && peek() != '\n') {
+        readNextCharacter(); 
+      }
+    }
+
+    private bool isStartOfOneLineComment(char character) {
+      return character == '/' && hasNext() && peek() == '/';
     }
 
     private Token<MiniPLTokenType> findValidTokenStartingWithSpecialCharacter() {

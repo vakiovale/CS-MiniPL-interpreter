@@ -30,6 +30,33 @@ namespace MiniPL.Tests.scanner.Tests {
       Assert.True(this.tokenScanner != null);
     }
 
+    [Fact]
+    public void readingEmptySourceShouldReturnNullToken() {
+      this.tokenScanner = new MiniPLTokenScanner(new Scanner(""));
+      Assert.True(this.tokenScanner.isEndOfSource());
+      Assert.True(this.tokenScanner.readNextToken() == null);
+    }
+
+    [Fact]
+    public void ifAllCharactersHaveBeenReadScannerShouldInform() {
+      this.tokenScanner = new MiniPLTokenScanner(new Scanner(";"));
+      Assert.True(!this.tokenScanner.isEndOfSource());
+      this.tokenScanner.readNextToken();
+      Assert.True(this.tokenScanner.isEndOfSource());
+    }
+
+    [Theory]
+    [InlineData("\n")]
+    [InlineData(" \n")]
+    [InlineData(" ")]
+    [InlineData("\t")]
+    [InlineData("\t \t")]
+    [InlineData("\n \n")]
+    public void readingSourceWithOnlyWhitespaceShouldReturnNullToken(String source) {
+      this.tokenScanner = new MiniPLTokenScanner(new Scanner(source));
+      Assert.True(this.tokenScanner.readNextToken() == null);
+    }
+
     [Theory]
     [InlineData(";", MiniPLTokenType.SEMICOLON)]
     [InlineData("=", MiniPLTokenType.EQUALITY_COMPARISON)]
@@ -330,6 +357,94 @@ namespace MiniPL.Tests.scanner.Tests {
       this.tokenScanner = new MiniPLTokenScanner(new Scanner(".."));
       dynamic rangeOperatorToken = this.tokenScanner.readNextToken();
       Assert.Equal(MiniPLTokenType.RANGE_OPERATOR, rangeOperatorToken.getType());
+    }
+
+    [Fact]
+    public void rangeOperatorShouldBeRecognizedBetweenStringLiterals() {
+      this.tokenScanner = new MiniPLTokenScanner(new Scanner("\"left\"..\"right\""));
+      dynamic leftLiteral = this.tokenScanner.readNextToken();
+      dynamic rangeOperator = this.tokenScanner.readNextToken();
+      dynamic rightLiteral = this.tokenScanner.readNextToken();
+      Assert.Equal(MiniPLTokenType.RANGE_OPERATOR, rangeOperator.getType());
+      Assert.Equal(MiniPLTokenType.STRING_LITERAL, leftLiteral.getType());
+      Assert.Equal(MiniPLTokenType.STRING_LITERAL, rightLiteral.getType());
+    }
+
+    [Fact]
+    public void rangeOperatorShouldBeRecognizedBetweenIntegers() {
+      this.tokenScanner = new MiniPLTokenScanner(new Scanner("0..10"));
+      dynamic leftNumber = this.tokenScanner.readNextToken();
+      dynamic rangeOperator = this.tokenScanner.readNextToken();
+      dynamic rightNumber = this.tokenScanner.readNextToken();
+      Assert.Equal(MiniPLTokenType.RANGE_OPERATOR, rangeOperator.getType());
+      Assert.Equal(MiniPLTokenType.INTEGER_LITERAL, leftNumber.getType());
+      Assert.Equal(MiniPLTokenType.INTEGER_LITERAL, rightNumber.getType());
+    }
+
+    [Fact]
+    public void rangeOperatorShouldBeRecognizedBetweenVariables() {
+      this.tokenScanner = new MiniPLTokenScanner(new Scanner("start_..end_"));
+      dynamic left = this.tokenScanner.readNextToken();
+      dynamic rangeOperator = this.tokenScanner.readNextToken();
+      dynamic right = this.tokenScanner.readNextToken();
+      Assert.Equal(MiniPLTokenType.RANGE_OPERATOR, rangeOperator.getType());
+      Assert.Equal(MiniPLTokenType.IDENTIFIER, left.getType());
+      Assert.Equal("start_", left.getLexeme());
+      Assert.Equal(MiniPLTokenType.IDENTIFIER, right.getType());
+      Assert.Equal("end_", right.getLexeme());
+    }
+
+    [Fact]
+    public void commentSectionShouldBeSkippedToTheEndOfTheLine() {
+      this.tokenScanner = new MiniPLTokenScanner(new Scanner("var_;//This comment should be ignored var := \\n ** . ..\nvar x;"));
+      dynamic firstIdentifier = this.tokenScanner.readNextToken();
+      dynamic firstSemicolon = this.tokenScanner.readNextToken();
+      dynamic varKeyword = this.tokenScanner.readNextToken();
+      dynamic secondIdentifier = this.tokenScanner.readNextToken();
+      dynamic secondSemicolon = this.tokenScanner.readNextToken();
+      Assert.Equal(MiniPLTokenType.IDENTIFIER, firstIdentifier.getType());
+      Assert.Equal(MiniPLTokenType.SEMICOLON, firstSemicolon.getType());
+      Assert.Equal(MiniPLTokenType.KEYWORD_VAR, varKeyword.getType());
+      Assert.Equal(MiniPLTokenType.IDENTIFIER, secondIdentifier.getType());
+      Assert.Equal(MiniPLTokenType.SEMICOLON, secondSemicolon.getType());
+    }
+
+    [Fact]
+    public void complexSingleLineCommentTest() {
+      this.tokenScanner = new MiniPLTokenScanner(new Scanner(";\n // This is just a comment\n;"));
+      dynamic firstSemicolon = this.tokenScanner.readNextToken();
+      dynamic lastSemicolon = this.tokenScanner.readNextToken();
+      Assert.True(this.tokenScanner.isEndOfSource());
+      Assert.Equal(MiniPLTokenType.SEMICOLON, firstSemicolon.getType());
+      Assert.Equal(MiniPLTokenType.SEMICOLON, lastSemicolon.getType());
+    }
+
+    [Fact]
+    public void sourceCanEndInComment() {
+      this.tokenScanner = new MiniPLTokenScanner(new Scanner(";\n // This is just a comment"));
+      Assert.False(this.tokenScanner.isEndOfSource());
+      dynamic lastToken = this.tokenScanner.readNextToken();
+      dynamic shouldBeNull = this.tokenScanner.readNextToken();
+      Assert.Equal(MiniPLTokenType.SEMICOLON, lastToken.getType());
+      Assert.True(shouldBeNull == null);
+      Assert.True(this.tokenScanner.isEndOfSource());
+    }
+
+    [Theory]
+    [InlineData("a/* Multi line comment */b")]
+    [InlineData("a /* Multi line comment */ b")]
+    [InlineData("a/*/* Multi line comment */*/b")]
+    [InlineData("a/** Multi line comment *\\ */b")]
+    [InlineData("a/*\n\n/*\n Multi line commen\nt\n */\n*/\n\tb")]
+    [InlineData("a\n/*/*\n Multi /*l*/in\n/*e co\nm***/men\nt\n */\n*/\n\tb")]
+    public void multiLineCommentsShouldBeReadCorrectly(String source) {
+      this.tokenScanner = new MiniPLTokenScanner(new Scanner(source));
+      dynamic firstIdentifier = this.tokenScanner.readNextToken();
+      dynamic secondIdentifier = this.tokenScanner.readNextToken();
+      Assert.Equal("a", firstIdentifier.getLexeme());
+      Assert.Equal(MiniPLTokenType.IDENTIFIER, firstIdentifier.getType());
+      Assert.Equal("b", secondIdentifier.getLexeme());
+      Assert.Equal(MiniPLTokenType.IDENTIFIER, secondIdentifier.getType());
     }
 
     public void justTest() {
