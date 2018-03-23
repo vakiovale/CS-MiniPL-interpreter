@@ -482,14 +482,51 @@ namespace MiniPL.Tests.scanner.Tests {
       Assert.Equal(MiniPLTokenType.SEMICOLON, semicolon.getType());
     }
 
-    public void justTest() {
-      dynamic token = null;
-      do {
-        token = this.tokenScanner.readNextToken();
-        if(token != null) {
-          Console.WriteLine(token.getType() + " " + (token.getLexeme() == null ? "" : token.getLexeme()));
-        }
-      } while(token != null);
+    [Fact]
+    public void shouldReadCorrectTokensFromSimpleTestProgramSource() {
+      Assert.Equal(MiniPLTokenType.KEYWORD_VAR, this.tokenScanner.readNextToken().getType());
+      Assert.Equal(MiniPLTokenType.IDENTIFIER, this.tokenScanner.readNextToken().getType());
+      Assert.Equal(MiniPLTokenType.COLON, this.tokenScanner.readNextToken().getType());
+      Assert.Equal(MiniPLTokenType.TYPE_IDENTIFIER_INTEGER, this.tokenScanner.readNextToken().getType());
+      Assert.Equal(MiniPLTokenType.ASSIGNMENT_OPERATOR, this.tokenScanner.readNextToken().getType());
+      Assert.Equal(MiniPLTokenType.INTEGER_LITERAL, this.tokenScanner.readNextToken().getType());
+      Assert.Equal(MiniPLTokenType.SEMICOLON, this.tokenScanner.readNextToken().getType());
+      Assert.Equal(MiniPLTokenType.KEYWORD_PRINT, this.tokenScanner.readNextToken().getType());
+      Assert.Equal(MiniPLTokenType.STRING_LITERAL, this.tokenScanner.readNextToken().getType());
+      Assert.Equal(MiniPLTokenType.SEMICOLON, this.tokenScanner.readNextToken().getType());
+      Assert.Equal(MiniPLTokenType.KEYWORD_READ, this.tokenScanner.readNextToken().getType());
+      Assert.Equal(MiniPLTokenType.IDENTIFIER, this.tokenScanner.readNextToken().getType());
+      Assert.Equal(MiniPLTokenType.SEMICOLON, this.tokenScanner.readNextToken().getType());
+      Assert.Equal(MiniPLTokenType.KEYWORD_VAR, this.tokenScanner.readNextToken().getType());
+      Assert.Equal(MiniPLTokenType.IDENTIFIER, this.tokenScanner.readNextToken().getType());
+      Assert.Equal(MiniPLTokenType.COLON, this.tokenScanner.readNextToken().getType());
+      Assert.Equal(MiniPLTokenType.TYPE_IDENTIFIER_INTEGER, this.tokenScanner.readNextToken().getType());
+      Assert.Equal(MiniPLTokenType.SEMICOLON, this.tokenScanner.readNextToken().getType());
+      Assert.Equal(MiniPLTokenType.KEYWORD_FOR, this.tokenScanner.readNextToken().getType());
+      Assert.Equal(MiniPLTokenType.IDENTIFIER, this.tokenScanner.readNextToken().getType());
+      Assert.Equal(MiniPLTokenType.KEYWORD_IN, this.tokenScanner.readNextToken().getType());
+      Assert.Equal(MiniPLTokenType.INTEGER_LITERAL, this.tokenScanner.readNextToken().getType());
+      Assert.Equal(MiniPLTokenType.RANGE_OPERATOR, this.tokenScanner.readNextToken().getType());
+      Assert.Equal(MiniPLTokenType.IDENTIFIER, this.tokenScanner.readNextToken().getType());
+      Assert.Equal(MiniPLTokenType.MINUS, this.tokenScanner.readNextToken().getType());
+      Assert.Equal(MiniPLTokenType.INTEGER_LITERAL, this.tokenScanner.readNextToken().getType());
+      Assert.Equal(MiniPLTokenType.KEYWORD_DO, this.tokenScanner.readNextToken().getType());
+      Assert.Equal(MiniPLTokenType.KEYWORD_PRINT, this.tokenScanner.readNextToken().getType());
+      Assert.Equal(MiniPLTokenType.IDENTIFIER, this.tokenScanner.readNextToken().getType());
+      Assert.Equal(MiniPLTokenType.SEMICOLON, this.tokenScanner.readNextToken().getType());
+      Assert.Equal(MiniPLTokenType.KEYWORD_PRINT, this.tokenScanner.readNextToken().getType());
+      Assert.Equal(MiniPLTokenType.STRING_LITERAL, this.tokenScanner.readNextToken().getType());
+      Assert.Equal(MiniPLTokenType.SEMICOLON, this.tokenScanner.readNextToken().getType());
+      Assert.Equal(MiniPLTokenType.KEYWORD_END, this.tokenScanner.readNextToken().getType());
+      Assert.Equal(MiniPLTokenType.KEYWORD_FOR, this.tokenScanner.readNextToken().getType());
+      Assert.Equal(MiniPLTokenType.SEMICOLON, this.tokenScanner.readNextToken().getType());
+      Assert.Equal(MiniPLTokenType.KEYWORD_ASSERT, this.tokenScanner.readNextToken().getType());
+      Assert.Equal(MiniPLTokenType.LEFT_PARENTHESIS, this.tokenScanner.readNextToken().getType());
+      Assert.Equal(MiniPLTokenType.IDENTIFIER, this.tokenScanner.readNextToken().getType());
+      Assert.Equal(MiniPLTokenType.EQUALITY_COMPARISON, this.tokenScanner.readNextToken().getType());
+      Assert.Equal(MiniPLTokenType.IDENTIFIER, this.tokenScanner.readNextToken().getType());
+      Assert.Equal(MiniPLTokenType.RIGHT_PARENTHESIS, this.tokenScanner.readNextToken().getType());
+      Assert.Equal(MiniPLTokenType.SEMICOLON, this.tokenScanner.readNextToken().getType());
     }
   }
  
