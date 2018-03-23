@@ -227,7 +227,11 @@ namespace MiniPL.tokens {
         case '\\':
           return createToken(MiniPLTokenType.BACKSLASH);
         case ':':
-          return createToken(MiniPLTokenType.COLON);
+          if(hasNext() && peek() == '=') {
+            return createToken(MiniPLTokenType.ASSIGNMENT_OPERATOR);
+          } else {
+            return createToken(MiniPLTokenType.COLON);
+          }
         case '\"':
           return tryToReadStringLiteral();
         default:

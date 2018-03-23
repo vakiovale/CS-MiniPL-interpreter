@@ -317,6 +317,12 @@ namespace MiniPL.Tests.scanner.Tests {
     }
 
     [Fact]
+    public void assignmentOperatorShouldBeReadCorrectly() {
+      this.tokenScanner = new MiniPLTokenScanner(new Scanner(":="));
+      dynamic assignmentToken = this.tokenScanner.readNextToken();
+      Assert.Equal(MiniPLTokenType.ASSIGNMENT_OPERATOR, assignmentToken.getType());
+    }
+
     public void justTest() {
       dynamic token = null;
       do {
