@@ -447,6 +447,41 @@ namespace MiniPL.Tests.scanner.Tests {
       Assert.Equal(MiniPLTokenType.IDENTIFIER, secondIdentifier.getType());
     }
 
+    [Theory]
+    [InlineData("v := (j + v) * x * i;")]
+    [InlineData("v:=(j+v)*x*i;")]
+    [InlineData("v := ( j + v ) * x * i;")]
+    [InlineData("v:=( j +v) *x* i;")]
+    [InlineData("v:=( j+ v)* x *i;")]
+    [InlineData("v \t\n\n:= (\nj +\t v)\n\t\n *\n x *\t i;")]
+    public void shouldBeAbleToReadComplexExpressionWithOrWithoutWhitespace(String source) {
+      this.tokenScanner = new MiniPLTokenScanner(new Scanner(source));
+      dynamic firstVIdentifier = this.tokenScanner.readNextToken();
+      dynamic assignmentOperator = this.tokenScanner.readNextToken();
+      dynamic leftParenthesis = this.tokenScanner.readNextToken();
+      dynamic jIdentifier = this.tokenScanner.readNextToken();
+      dynamic plusOperator = this.tokenScanner.readNextToken();
+      dynamic lastVIdentifier = this.tokenScanner.readNextToken();
+      dynamic rightParenthesis = this.tokenScanner.readNextToken();
+      dynamic firstMultiplication = this.tokenScanner.readNextToken();
+      dynamic xIdentifier = this.tokenScanner.readNextToken();
+      dynamic secondMultiplication = this.tokenScanner.readNextToken();
+      dynamic iIdentifier = this.tokenScanner.readNextToken();
+      dynamic semicolon = this.tokenScanner.readNextToken();
+      Assert.Equal(MiniPLTokenType.IDENTIFIER, firstVIdentifier.getType());
+      Assert.Equal(MiniPLTokenType.ASSIGNMENT_OPERATOR, assignmentOperator.getType());
+      Assert.Equal(MiniPLTokenType.LEFT_PARENTHESIS, leftParenthesis.getType());
+      Assert.Equal(MiniPLTokenType.IDENTIFIER, jIdentifier.getType());
+      Assert.Equal(MiniPLTokenType.PLUS, plusOperator.getType());
+      Assert.Equal(MiniPLTokenType.IDENTIFIER, lastVIdentifier.getType());
+      Assert.Equal(MiniPLTokenType.RIGHT_PARENTHESIS, rightParenthesis.getType());
+      Assert.Equal(MiniPLTokenType.ASTERISK, firstMultiplication.getType());
+      Assert.Equal(MiniPLTokenType.IDENTIFIER, xIdentifier.getType());
+      Assert.Equal(MiniPLTokenType.ASTERISK, secondMultiplication.getType());
+      Assert.Equal(MiniPLTokenType.IDENTIFIER, iIdentifier.getType());
+      Assert.Equal(MiniPLTokenType.SEMICOLON, semicolon.getType());
+    }
+
     public void justTest() {
       dynamic token = null;
       do {
