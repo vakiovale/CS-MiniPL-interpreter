@@ -226,6 +226,8 @@ namespace MiniPL.tokens {
           return createToken(MiniPLTokenType.RIGHT_PARENTHESIS);
         case '\\':
           return createToken(MiniPLTokenType.BACKSLASH);
+        case ':':
+          return createToken(MiniPLTokenType.COLON);
         case '\"':
           return tryToReadStringLiteral();
         default:
@@ -238,17 +240,14 @@ namespace MiniPL.tokens {
       bool lastCharWasEscapeCharacter = false;
       while(hasNext() && !nextCharIsLineBreak()) {
         char nextChar = readNextCharacter();
-        if(nextChar == '\\') {
+        if(!lastCharWasEscapeCharacter && nextChar == '\\') {
           lastCharWasEscapeCharacter = true;
-          continue;
-        } else {
-          lastCharWasEscapeCharacter = false;
-        }
-        if(!lastCharWasEscapeCharacter && nextChar == '"') {
+        } else if(!lastCharWasEscapeCharacter && nextChar == '"') {
           return createStringLiteral(stringLiteral.ToString());
         }
         stringLiteral.Append(nextChar);
         currentTokenContent.Append(nextChar);
+        lastCharWasEscapeCharacter = false;
       }
       return createInvalidToken(currentTokenContent.ToString());
     }

@@ -35,7 +35,8 @@ namespace MiniPL.tokens {
     KEYWORD_ASSERT,
     IDENTIFIER,
     STRING_LITERAL,
-    INTEGER_LITERAL
+    INTEGER_LITERAL,
+    COLON
 
   }
 }

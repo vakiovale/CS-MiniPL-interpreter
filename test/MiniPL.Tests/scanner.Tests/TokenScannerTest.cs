@@ -31,61 +31,22 @@ namespace MiniPL.Tests.scanner.Tests {
     }
 
     [Theory]
-    [InlineData(";")]
-    [InlineData("=")]
-    [InlineData("+")]
-    [InlineData("-")]
-    [InlineData("*")]
-    [InlineData("/")]
-    [InlineData("&")]
-    [InlineData("!")]
-    [InlineData("<")]
-    [InlineData("(")]
-    [InlineData(")")]
-    [InlineData("\"")]
-    [InlineData("\\")]
-    public void readsSingleCharacterTokenFromSource(String source) {
+    [InlineData(";", MiniPLTokenType.SEMICOLON)]
+    [InlineData("=", MiniPLTokenType.EQUALITY_COMPARISON)]
+    [InlineData("+", MiniPLTokenType.PLUS)]
+    [InlineData("-", MiniPLTokenType.MINUS)]
+    [InlineData("*", MiniPLTokenType.ASTERISK)]
+    [InlineData("/", MiniPLTokenType.SLASH)]
+    [InlineData("&", MiniPLTokenType.LOGICAL_AND)]
+    [InlineData("!", MiniPLTokenType.LOGICAL_NOT)]
+    [InlineData("<", MiniPLTokenType.LESS_THAN_COMPARISON)]
+    [InlineData("(", MiniPLTokenType.LEFT_PARENTHESIS)]
+    [InlineData(")", MiniPLTokenType.RIGHT_PARENTHESIS)]
+    [InlineData("\\", MiniPLTokenType.BACKSLASH)]
+    [InlineData(":", MiniPLTokenType.COLON)]
+    public void readsSingleCharacterTokenFromSource(String source, MiniPLTokenType type) {
       this.tokenScanner = new MiniPLTokenScanner(new Scanner(source));
       dynamic token = this.tokenScanner.readNextToken();
-      MiniPLTokenType type = MiniPLTokenType.INVALID_TOKEN;
-      switch(source) {
-        case ";":
-          type = MiniPLTokenType.SEMICOLON;
-          break;
-        case "=":
-          type = MiniPLTokenType.EQUALITY_COMPARISON;
-          break;
-        case "+":
-          type = MiniPLTokenType.PLUS;
-          break;
-        case "-":
-          type = MiniPLTokenType.MINUS;
-          break;
-        case "*":
-          type = MiniPLTokenType.ASTERISK;
-          break;
-        case "/":
-          type = MiniPLTokenType.SLASH;
-          break;
-        case "&":
-          type = MiniPLTokenType.LOGICAL_AND;
-          break;
-        case "!":
-          type = MiniPLTokenType.LOGICAL_NOT;
-          break;
-        case "<":
-          type = MiniPLTokenType.LESS_THAN_COMPARISON;
-          break;
-        case "(":
-          type = MiniPLTokenType.LEFT_PARENTHESIS;
-          break;
-        case ")":
-          type = MiniPLTokenType.RIGHT_PARENTHESIS;
-          break;
-        case "\\":
-          type = MiniPLTokenType.BACKSLASH;
-          break;
-      }
       Assert.Equal(type, token.getType());
     }
     
@@ -324,7 +285,6 @@ namespace MiniPL.Tests.scanner.Tests {
     public void unrecognizedSourceShouldReturnInvalidTokenWithTextAsToken(String source) {
       this.tokenScanner = new MiniPLTokenScanner(new Scanner(source));
       dynamic invalidToken = this.tokenScanner.readNextToken();
-      Console.WriteLine("Lexeme: " + invalidToken.getLexeme());
       Assert.Equal(MiniPLTokenType.INVALID_TOKEN, invalidToken.getType());
       Assert.Equal(source, invalidToken.getLexeme());
     }
@@ -339,6 +299,32 @@ namespace MiniPL.Tests.scanner.Tests {
       Assert.Equal(MiniPLTokenType.INVALID_TOKEN, invalidToken.getType());
       Assert.Equal("_ThisIs123var&!Illegal!!", invalidToken.getLexeme());
       Assert.Equal(MiniPLTokenType.EQUALITY_COMPARISON, equalityToken.getType());
+    }
+
+    [Fact]
+    public void handleEscapeCharacterInsideStringLiteral() {
+      this.tokenScanner = new MiniPLTokenScanner(new Scanner("\"Word\\n\""));
+      dynamic stringToken = this.tokenScanner.readNextToken();
+      Assert.Equal("Word\\n", stringToken.getLexeme());
+    }
+
+    [Fact]
+    public void checkCorrectNumberOfEscapeCharactersInStringLiteral() {
+      this.tokenScanner = new MiniPLTokenScanner(new Scanner("\"\\\\\\\""));
+      dynamic stringToken = this.tokenScanner.readNextToken();
+      Assert.True(stringToken.getLexeme().Length == 3);
+      Assert.Equal("\\\\\\", stringToken.getLexeme());
+    }
+
+    [Fact]
+    public void justTest() {
+      dynamic token = null;
+      do {
+        token = this.tokenScanner.readNextToken();
+        if(token != null) {
+          Console.WriteLine(token.getType() + " " + (token.getLexeme() == null ? "" : token.getLexeme()));
+        }
+      } while(token != null);
     }
   }
  
