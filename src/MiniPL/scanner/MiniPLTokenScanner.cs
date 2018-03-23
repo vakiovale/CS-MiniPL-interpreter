@@ -188,7 +188,17 @@ namespace MiniPL.tokens {
       currentTokenContent = new StringBuilder();
       readNextCharacter();
 
-      if(clearPossibleOneLineComment()) {
+      if(checkComments() || 
+         checkKeywordsAndIdentifiers() || 
+         checkIntegerLiteral() || 
+         checkOneAndTwoCharacterTokens())
+        return true;
+
+      return false;
+    }
+
+    private bool checkComments() {
+      while(clearPossibleOneLineComment()) {
         if(hasNext()) {
           readNextCharacter();
         } else {
@@ -196,7 +206,7 @@ namespace MiniPL.tokens {
         }
       }
 
-      if(clearPossibleMultiLineComment()) {
+      while(clearPossibleMultiLineComment()) {
         if(this.token != null) {
           return true;
         }
@@ -205,18 +215,6 @@ namespace MiniPL.tokens {
         } else {
           return true;
         }
-      }
-
-      if(checkKeywordsAndIdentifiers()) {
-        return true;
-      }
-
-      if(checkIntegerLiteral()) {
-        return true;
-      }
-
-      if(checkOneAndTwoCharacterTokens()) {
-        return true;
       }
 
       return false;
@@ -283,11 +281,7 @@ namespace MiniPL.tokens {
           currentTokenContent = new StringBuilder();
         }
         removeWhitespaceIfExists();
-        if(hasNext()) {
-          readNextCharacter();
-        } else {
-          return true;
-        }
+        return true;
       }
       return false;
     }

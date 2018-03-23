@@ -430,6 +430,20 @@ namespace MiniPL.Tests.scanner.Tests {
       Assert.True(this.tokenScanner.isEndOfSource());
     }
 
+    [Fact]
+    public void multipleCommentsCanBeSkipped() {
+      this.tokenScanner = new MiniPLTokenScanner(new Scanner(";//first\n//second\n;"));
+      Assert.Equal(MiniPLTokenType.SEMICOLON, this.tokenScanner.readNextToken().getType());
+      Assert.Equal(MiniPLTokenType.SEMICOLON, this.tokenScanner.readNextToken().getType());
+    }
+
+    [Fact]
+    public void multipleMultiLineCommentsCanBeSkipped() {
+      this.tokenScanner = new MiniPLTokenScanner(new Scanner(";/*first*/\n/*second*/\n;"));
+      Assert.Equal(MiniPLTokenType.SEMICOLON, this.tokenScanner.readNextToken().getType());
+      Assert.Equal(MiniPLTokenType.SEMICOLON, this.tokenScanner.readNextToken().getType());
+    }
+
     [Theory]
     [InlineData("a/* Multi line comment */b")]
     [InlineData("a /* Multi line comment */ b")]
