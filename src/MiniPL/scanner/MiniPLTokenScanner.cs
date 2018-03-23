@@ -46,7 +46,7 @@ namespace MiniPL.tokens {
 
     public override Token<MiniPLTokenType> readNextToken() { 
       initializeToken();
-      removeWhitespaceIfExists();
+      initializeCurrentCharacter();
       processNextToken();
       return this.token;
     }
@@ -135,39 +135,19 @@ namespace MiniPL.tokens {
     }
 
     private Token<MiniPLTokenType> getKeywordToken(String key) {
-      return createToken(this.keywords[key]);
+      return createToken(this.keywords[key], key);
     }
 
-    private Token<MiniPLTokenType> createToken(MiniPLTokenType type) {
-      return new Token<MiniPLTokenType>(type);
+    private Token<MiniPLTokenType> createToken(MiniPLTokenType type, String lexeme) {
+      return new Token<MiniPLTokenType>(type, lexeme);
     }
 
     private Token<MiniPLTokenType> createInvalidToken(String lexeme) {
       return new Token<MiniPLTokenType>(MiniPLTokenType.INVALID_TOKEN, lexeme);
     }
 
-    private bool nextCharacterIsAllowedAfterDigit() {
-      if(!hasNext() || hasWhitespace()) {
-        return true;
-      } else {
-        char character = peek();
-        switch(character) {
-          case '.':
-          case '-':
-          case '+':
-          case '*':
-          case '/':
-          case ';':
-          case '=':
-          case '<':
-            return true;
-          default:
-            return false;
-        }
-      }
-    }
-
     private void processNextToken() {
+      removeWhitespaceIfExists();
       if(hasNext()) {
         if(!findValidOrNullToken()) {
           handleInvalidToken();
@@ -243,10 +223,8 @@ namespace MiniPL.tokens {
           readNextCharacter();
         }
         String token = currentTokenContent.ToString();
-        if(nextCharacterIsAllowedAfterDigit()) {
-          this.token = createIntegerLiteral(token);
-          return true;
-        }
+        this.token = createIntegerLiteral(token);
+        return true;
       }
       return false;
     }
@@ -329,40 +307,40 @@ namespace MiniPL.tokens {
     private Token<MiniPLTokenType> findValidTokenStartingWithSpecialCharacter() {
       switch(currentCharacter) {
         case ';':
-          return createToken(MiniPLTokenType.SEMICOLON);
+          return createToken(MiniPLTokenType.SEMICOLON, ";");
         case '=':
-          return createToken(MiniPLTokenType.EQUALITY_COMPARISON);
+          return createToken(MiniPLTokenType.EQUALITY_COMPARISON, "=");
         case '<':
-          return createToken(MiniPLTokenType.LESS_THAN_COMPARISON);
+          return createToken(MiniPLTokenType.LESS_THAN_COMPARISON, "<");
         case '+':
-          return createToken(MiniPLTokenType.PLUS);
+          return createToken(MiniPLTokenType.PLUS, "+");
         case '-':
-          return createToken(MiniPLTokenType.MINUS);
+          return createToken(MiniPLTokenType.MINUS, "-");
         case '*':
-          return createToken(MiniPLTokenType.ASTERISK);
+          return createToken(MiniPLTokenType.ASTERISK, "*");
         case '/':
-          return createToken(MiniPLTokenType.SLASH);
+          return createToken(MiniPLTokenType.SLASH, "/");
         case '&':
-          return createToken(MiniPLTokenType.LOGICAL_AND);
+          return createToken(MiniPLTokenType.LOGICAL_AND, "&");
         case '!':
-          return createToken(MiniPLTokenType.LOGICAL_NOT);
+          return createToken(MiniPLTokenType.LOGICAL_NOT, "!");
         case '(':
-          return createToken(MiniPLTokenType.LEFT_PARENTHESIS);
+          return createToken(MiniPLTokenType.LEFT_PARENTHESIS, "(");
         case ')':
-          return createToken(MiniPLTokenType.RIGHT_PARENTHESIS);
+          return createToken(MiniPLTokenType.RIGHT_PARENTHESIS, ")");
         case '\\':
-          return createToken(MiniPLTokenType.BACKSLASH);
+          return createToken(MiniPLTokenType.BACKSLASH, "\\");
         case ':':
           if(hasNext() && peek() == '=') {
             readNextCharacter();
-            return createToken(MiniPLTokenType.ASSIGNMENT_OPERATOR);
+            return createToken(MiniPLTokenType.ASSIGNMENT_OPERATOR, ":=");
           } else {
-            return createToken(MiniPLTokenType.COLON);
+            return createToken(MiniPLTokenType.COLON, ":");
           }
         case '.':
           if(hasNext() && peek() == '.') {
             readNextCharacter();
-            return createToken(MiniPLTokenType.RANGE_OPERATOR);
+            return createToken(MiniPLTokenType.RANGE_OPERATOR, "..");
           } else {
             return null;
           }

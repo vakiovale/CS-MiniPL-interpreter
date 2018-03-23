@@ -75,6 +75,7 @@ namespace MiniPL.Tests.scanner.Tests {
       this.tokenScanner = new MiniPLTokenScanner(new Scanner(source));
       dynamic token = this.tokenScanner.readNextToken();
       Assert.Equal(type, token.getType());
+      Assert.Equal(source, token.getLexeme());
     }
     
     [Fact]
@@ -304,10 +305,9 @@ namespace MiniPL.Tests.scanner.Tests {
 
     [Theory]
     [InlineData("_var")]
-    [InlineData("12variable")]
     [InlineData("_ThisIs123var&!Illegal!!")]
     [InlineData("^notgood_1")]
-    [InlineData("1^Änotgood_1")]
+    [InlineData("^Änotgood_1")]
     [InlineData("§½")]
     [InlineData(".")]
     [InlineData(".variable")]
@@ -316,6 +316,14 @@ namespace MiniPL.Tests.scanner.Tests {
       dynamic invalidToken = this.tokenScanner.readNextToken();
       Assert.Equal(MiniPLTokenType.INVALID_TOKEN, invalidToken.getType());
       Assert.Equal(source, invalidToken.getLexeme());
+    }
+
+    [Fact]
+    public void umlautInIdentifierShouldBeAllowed() {
+      this.tokenScanner = new MiniPLTokenScanner(new Scanner("ääkköset"));
+      dynamic token = this.tokenScanner.readNextToken();
+      Assert.Equal(MiniPLTokenType.IDENTIFIER, token.getType());
+      Assert.Equal("ääkköset", token.getLexeme());
     }
 
     [Fact]
@@ -350,6 +358,7 @@ namespace MiniPL.Tests.scanner.Tests {
       this.tokenScanner = new MiniPLTokenScanner(new Scanner(":="));
       dynamic assignmentToken = this.tokenScanner.readNextToken();
       Assert.Equal(MiniPLTokenType.ASSIGNMENT_OPERATOR, assignmentToken.getType());
+      Assert.Equal(":=", assignmentToken.getLexeme());
     }
 
     [Fact]
@@ -357,6 +366,7 @@ namespace MiniPL.Tests.scanner.Tests {
       this.tokenScanner = new MiniPLTokenScanner(new Scanner(".."));
       dynamic rangeOperatorToken = this.tokenScanner.readNextToken();
       Assert.Equal(MiniPLTokenType.RANGE_OPERATOR, rangeOperatorToken.getType());
+      Assert.Equal("..", rangeOperatorToken.getLexeme());
     }
 
     [Fact]
