@@ -48,6 +48,37 @@ namespace MiniPL.scanner {
       this.tokenCreator = new TokenCreator();
     }
 
+    private void processNextToken() {
+      removeWhitespaceIfExists();
+      if(hasNext()) {
+        if(!findValidOrNullToken()) {
+          handleInvalidToken();
+        }
+      } 
+    }
+
+    private bool findValidOrNullToken() {
+      currentTokenContent = new StringBuilder();
+      readNextCharacter();
+
+      if(!removePossibleComments() ||
+         checkKeywordsAndIdentifiers() || 
+         checkIntegerLiteral() || 
+         checkOneAndTwoCharacterTokens())
+        return true;
+
+      return false;
+    }
+
+    private void handleInvalidToken() {
+      if(hasNext() && !hasWhitespace() && currentTokenContent.Length > 0) {
+        while(hasNext() && !hasWhitespace()) {
+          readNextCharacter();
+        }
+      }
+      this.token = tokenCreator.createInvalidToken(currentTokenContent.ToString());
+    }
+
     private bool hasNext() {
       return this.characterScanner.hasNext();
     }
@@ -121,44 +152,6 @@ namespace MiniPL.scanner {
       return this.keywords.containsKey(content);
     }
 
-    private Token<MiniPLTokenType> getKeywordToken(String key) {
-      return tokenCreator.createToken(this.keywords.get(key), key);
-    }
-
-    private void processNextToken() {
-      removeWhitespaceIfExists();
-      if(hasNext()) {
-        if(!findValidOrNullToken()) {
-          handleInvalidToken();
-        }
-      } 
-    }
-
-    private void handleInvalidToken() {
-      if(hasNext() && !hasWhitespace() && currentTokenContent.Length > 0) {
-        while(hasNext() && !hasWhitespace()) {
-          readNextCharacter();
-        }
-      }
-      this.token = tokenCreator.createInvalidToken(currentTokenContent.ToString());
-    }
-
-    private bool findValidOrNullToken() {
-      currentTokenContent = new StringBuilder();
-      readNextCharacter();
-
-      if(!removePossibleComments()) {
-        return true;
-      }
-
-      if(checkKeywordsAndIdentifiers() || 
-         checkIntegerLiteral() || 
-         checkOneAndTwoCharacterTokens())
-        return true;
-
-      return false;
-    }
-
     private bool removePossibleComments() {
       while(clearPossibleOneLineComment() || clearPossibleMultiLineComment()) {
         if(this.token != null) {
@@ -178,12 +171,12 @@ namespace MiniPL.scanner {
         while(hasNext() && nextCharacterIsUnderscoreLetterOrDigit()) {
           readNextCharacter(); 
         }
-        String token = currentTokenContent.ToString();
-        if(isReservedKeyword(token)) {
-          this.token = getKeywordToken(token);
+        String lexeme = currentTokenContent.ToString();
+        if(isReservedKeyword(lexeme)) {
+          this.token = getKeywordToken(lexeme);
           return true;
         } else {
-          this.token = tokenCreator.createIdentifier(token);
+          this.token = tokenCreator.createIdentifier(lexeme);
           return true;
         }
       }
@@ -347,6 +340,10 @@ namespace MiniPL.scanner {
         char peekedCharacter = peek();
         return peekedCharacter == '\n';
       }
+    }
+
+    private Token<MiniPLTokenType> getKeywordToken(String key) {
+      return tokenCreator.createToken(this.keywords.get(key), key);
     }
   }
 
