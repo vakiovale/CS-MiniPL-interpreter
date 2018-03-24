@@ -13,9 +13,5 @@ namespace MiniPL.scanner {
 
     public abstract Token<T> readNextToken();
 
-    public bool isEndOfSource() {
-      return !this.characterScanner.hasNext();
-    }
-
   }
 }

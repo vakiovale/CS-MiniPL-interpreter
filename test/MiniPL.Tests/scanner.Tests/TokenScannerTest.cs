@@ -33,16 +33,14 @@ namespace MiniPL.Tests.scanner.Tests {
     [Fact]
     public void readingEmptySourceShouldReturnNullToken() {
       this.tokenScanner = new MiniPLTokenScanner(new Scanner(""));
-      Assert.True(this.tokenScanner.isEndOfSource());
       Assert.True(this.tokenScanner.readNextToken() == null);
     }
 
     [Fact]
-    public void ifAllCharactersHaveBeenReadScannerShouldInform() {
+    public void ifAllCharactersHaveBeenReadScannerShouldReturnNull() {
       this.tokenScanner = new MiniPLTokenScanner(new Scanner(";"));
-      Assert.True(!this.tokenScanner.isEndOfSource());
       this.tokenScanner.readNextToken();
-      Assert.True(this.tokenScanner.isEndOfSource());
+      Assert.True(this.tokenScanner.readNextToken() == null);
     }
 
     [Theory]
@@ -424,7 +422,6 @@ namespace MiniPL.Tests.scanner.Tests {
       this.tokenScanner = new MiniPLTokenScanner(new Scanner(";\n // This is just a comment\n;"));
       dynamic firstSemicolon = this.tokenScanner.readNextToken();
       dynamic lastSemicolon = this.tokenScanner.readNextToken();
-      Assert.True(this.tokenScanner.isEndOfSource());
       Assert.Equal(MiniPLTokenType.SEMICOLON, firstSemicolon.getType());
       Assert.Equal(MiniPLTokenType.SEMICOLON, lastSemicolon.getType());
     }
@@ -432,12 +429,10 @@ namespace MiniPL.Tests.scanner.Tests {
     [Fact]
     public void sourceCanEndInComment() {
       this.tokenScanner = new MiniPLTokenScanner(new Scanner(";\n // This is just a comment"));
-      Assert.False(this.tokenScanner.isEndOfSource());
       dynamic lastToken = this.tokenScanner.readNextToken();
       dynamic shouldBeNull = this.tokenScanner.readNextToken();
       Assert.Equal(MiniPLTokenType.SEMICOLON, lastToken.getType());
       Assert.True(shouldBeNull == null);
-      Assert.True(this.tokenScanner.isEndOfSource());
     }
 
     [Fact]
