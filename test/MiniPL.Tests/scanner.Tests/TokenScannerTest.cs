@@ -442,7 +442,14 @@ namespace MiniPL.Tests.scanner.Tests {
 
     [Fact]
     public void multipleCommentsCanBeSkipped() {
-      this.tokenScanner = new MiniPLTokenScanner(new Scanner(";//first\n//second\n;"));
+      this.tokenScanner = new MiniPLTokenScanner(new Scanner("; //first\n//second\n;"));
+      Assert.Equal(MiniPLTokenType.SEMICOLON, this.tokenScanner.readNextToken().getType());
+      Assert.Equal(MiniPLTokenType.SEMICOLON, this.tokenScanner.readNextToken().getType());
+    }
+
+    [Fact]
+    public void multipleDifferentCommentsCanBeSkipped() {
+      this.tokenScanner = new MiniPLTokenScanner(new Scanner("; //line comment\n/*commmet*/\n//line comment\n/*comment*/;"));
       Assert.Equal(MiniPLTokenType.SEMICOLON, this.tokenScanner.readNextToken().getType());
       Assert.Equal(MiniPLTokenType.SEMICOLON, this.tokenScanner.readNextToken().getType());
     }

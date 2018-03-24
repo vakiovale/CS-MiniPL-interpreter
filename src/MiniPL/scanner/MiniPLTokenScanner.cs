@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using MiniPL.scanner;
 using MiniPL.tokens;
 
-namespace MiniPL.tokens {
+namespace MiniPL.scanner {
 
   public class MiniPLTokenScanner : TokenScanner<MiniPLTokenType> {
 
@@ -14,12 +14,17 @@ namespace MiniPL.tokens {
 
     private Token<MiniPLTokenType> token;
 
+    private int columnNumber;
+
+    private int rowNumber;
+
     private char currentCharacter;
 
     public MiniPLTokenScanner(IScanner characterScanner) : base(characterScanner) {
       initializeToken();
       initializeCurrentCharacter();
       initializeKeywords();
+      initializeRowAndColumnNumbers();
     }
 
     private void initializeToken() {
@@ -32,6 +37,11 @@ namespace MiniPL.tokens {
 
     private void initializeKeywords() {
       this.keywords = new MiniPLKeywords();
+    }
+
+    private void initializeRowAndColumnNumbers() {
+      this.rowNumber = 1;
+      this.columnNumber = 1;
     }
 
     public override Token<MiniPLTokenType> readNextToken() { 
@@ -95,11 +105,22 @@ namespace MiniPL.tokens {
     private char readNextCharacter() {
       this.currentCharacter = this.characterScanner.readNextCharacter();
       this.currentTokenContent.Append(this.currentCharacter);
+      handleRowAndColumnNumbering();
       return this.currentCharacter;
     }
 
-    private char removeNextCharacter() {
-      return this.characterScanner.readNextCharacter();
+    private void removeNextCharacter() {
+      this.characterScanner.readNextCharacter();
+      handleRowAndColumnNumbering();
+    }
+
+    private void handleRowAndColumnNumbering() {
+      if(this.currentCharacter == '\n') {
+        rowNumber++;
+        columnNumber = 1;
+      } else {
+        columnNumber++;
+      }
     }
 
     private void removeWhitespaceIfExists() {
@@ -138,8 +159,11 @@ namespace MiniPL.tokens {
       currentTokenContent = new StringBuilder();
       readNextCharacter();
 
-      if(checkComments() || 
-         checkKeywordsAndIdentifiers() || 
+      if(!removePossibleComments()) {
+        return true;
+      }
+
+      if(checkKeywordsAndIdentifiers() || 
          checkIntegerLiteral() || 
          checkOneAndTwoCharacterTokens())
         return true;
@@ -147,27 +171,18 @@ namespace MiniPL.tokens {
       return false;
     }
 
-    private bool checkComments() {
-      while(clearPossibleOneLineComment()) {
-        if(hasNext()) {
-          readNextCharacter();
-        } else {
-          return true;
-        }
-      }
-
-      while(clearPossibleMultiLineComment()) {
+    private bool removePossibleComments() {
+      while(clearPossibleOneLineComment() || clearPossibleMultiLineComment()) {
         if(this.token != null) {
-          return true;
+          return false;
         }
         if(hasNext()) {
           readNextCharacter();
         } else {
-          return true;
+          return false;
         }
       }
-
-      return false;
+      return true;
     }
 
     private bool checkKeywordsAndIdentifiers() {
