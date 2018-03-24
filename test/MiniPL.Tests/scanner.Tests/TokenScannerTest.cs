@@ -488,6 +488,23 @@ namespace MiniPL.Tests.scanner.Tests {
       Assert.Equal("/* This comment never ends\nso this should be the lexeme!", invalidToken.getLexeme());
     }
 
+    [Fact]
+    public void tokenHasCorrectRowAndColumnNumbers() {
+      this.tokenScanner = new MiniPLTokenScanner(new Scanner("var H;\nx + y / 2;\n;"));
+      dynamic first = this.tokenScanner.readNextToken();
+      dynamic second = this.tokenScanner.readNextToken();
+      dynamic third = this.tokenScanner.readNextToken();
+      dynamic fourth = this.tokenScanner.readNextToken();
+      Assert.Equal(1, first.getRowNumber()); 
+      Assert.Equal(1, first.getColumnNumber()); 
+      Assert.Equal(1, second.getRowNumber()); 
+      Assert.Equal(5, second.getColumnNumber()); 
+      Assert.Equal(1, third.getRowNumber()); 
+      Assert.Equal(6, third.getColumnNumber()); 
+      Assert.Equal(2, fourth.getRowNumber()); 
+      Assert.Equal(1, fourth.getColumnNumber()); 
+    }
+
     [Theory]
     [InlineData("v := (j + v) * x * i;")]
     [InlineData("v:=(j+v)*x*i;")]

@@ -14,9 +14,7 @@ namespace MiniPL.scanner {
 
     private Token<MiniPLTokenType> token;
 
-    private int columnNumber;
-
-    private int rowNumber;
+    private TokenCreator tokenCreator;
 
     private char currentCharacter;
 
@@ -24,7 +22,14 @@ namespace MiniPL.scanner {
       initializeToken();
       initializeCurrentCharacter();
       initializeKeywords();
-      initializeRowAndColumnNumbers();
+      initializeTokenCreator();
+    }
+
+    public override Token<MiniPLTokenType> readNextToken() { 
+      initializeToken();
+      initializeCurrentCharacter();
+      processNextToken();
+      return this.token;
     }
 
     private void initializeToken() {
@@ -39,16 +44,8 @@ namespace MiniPL.scanner {
       this.keywords = new MiniPLKeywords();
     }
 
-    private void initializeRowAndColumnNumbers() {
-      this.rowNumber = 1;
-      this.columnNumber = 1;
-    }
-
-    public override Token<MiniPLTokenType> readNextToken() { 
-      initializeToken();
-      initializeCurrentCharacter();
-      processNextToken();
-      return this.token;
+    private void initializeTokenCreator() {
+      this.tokenCreator = new TokenCreator();
     }
 
     private bool hasNext() {
@@ -105,22 +102,13 @@ namespace MiniPL.scanner {
     private char readNextCharacter() {
       this.currentCharacter = this.characterScanner.readNextCharacter();
       this.currentTokenContent.Append(this.currentCharacter);
-      handleRowAndColumnNumbering();
+      this.tokenCreator.update(this.currentCharacter);
       return this.currentCharacter;
     }
 
     private void removeNextCharacter() {
-      this.characterScanner.readNextCharacter();
-      handleRowAndColumnNumbering();
-    }
-
-    private void handleRowAndColumnNumbering() {
-      if(this.currentCharacter == '\n') {
-        rowNumber++;
-        columnNumber = 1;
-      } else {
-        columnNumber++;
-      }
+      this.currentCharacter = this.characterScanner.readNextCharacter();
+      this.tokenCreator.update(this.currentCharacter);
     }
 
     private void removeWhitespaceIfExists() {
@@ -134,7 +122,7 @@ namespace MiniPL.scanner {
     }
 
     private Token<MiniPLTokenType> getKeywordToken(String key) {
-      return TokenFactory.createToken(this.keywords.get(key), key);
+      return tokenCreator.createToken(this.keywords.get(key), key);
     }
 
     private void processNextToken() {
@@ -152,7 +140,7 @@ namespace MiniPL.scanner {
           readNextCharacter();
         }
       }
-      this.token = TokenFactory.createInvalidToken(currentTokenContent.ToString());
+      this.token = tokenCreator.createInvalidToken(currentTokenContent.ToString());
     }
 
     private bool findValidOrNullToken() {
@@ -195,7 +183,7 @@ namespace MiniPL.scanner {
           this.token = getKeywordToken(token);
           return true;
         } else {
-          this.token = TokenFactory.createIdentifier(token);
+          this.token = tokenCreator.createIdentifier(token);
           return true;
         }
       }
@@ -208,7 +196,7 @@ namespace MiniPL.scanner {
           readNextCharacter();
         }
         String token = currentTokenContent.ToString();
-        this.token = TokenFactory.createIntegerLiteral(token);
+        this.token = tokenCreator.createIntegerLiteral(token);
         return true;
       }
       return false;
@@ -238,7 +226,7 @@ namespace MiniPL.scanner {
     private bool clearPossibleMultiLineComment() {
       if(isStartOfMultiLineComment()) {
         if(!skipToTheEndOfMultiLineComment()) {
-          this.token = TokenFactory.createInvalidToken(currentTokenContent.ToString());
+          this.token = tokenCreator.createInvalidToken(currentTokenContent.ToString());
           return true;
         } else {
           currentTokenContent = new StringBuilder();
@@ -292,40 +280,40 @@ namespace MiniPL.scanner {
     private Token<MiniPLTokenType> findValidTokenStartingWithSpecialCharacter() {
       switch(currentCharacter) {
         case ';':
-          return TokenFactory.createToken(MiniPLTokenType.SEMICOLON, ";");
+          return tokenCreator.createToken(MiniPLTokenType.SEMICOLON, ";");
         case '=':
-          return TokenFactory.createToken(MiniPLTokenType.EQUALITY_COMPARISON, "=");
+          return tokenCreator.createToken(MiniPLTokenType.EQUALITY_COMPARISON, "=");
         case '<':
-          return TokenFactory.createToken(MiniPLTokenType.LESS_THAN_COMPARISON, "<");
+          return tokenCreator.createToken(MiniPLTokenType.LESS_THAN_COMPARISON, "<");
         case '+':
-          return TokenFactory.createToken(MiniPLTokenType.PLUS, "+");
+          return tokenCreator.createToken(MiniPLTokenType.PLUS, "+");
         case '-':
-          return TokenFactory.createToken(MiniPLTokenType.MINUS, "-");
+          return tokenCreator.createToken(MiniPLTokenType.MINUS, "-");
         case '*':
-          return TokenFactory.createToken(MiniPLTokenType.ASTERISK, "*");
+          return tokenCreator.createToken(MiniPLTokenType.ASTERISK, "*");
         case '/':
-          return TokenFactory.createToken(MiniPLTokenType.SLASH, "/");
+          return tokenCreator.createToken(MiniPLTokenType.SLASH, "/");
         case '&':
-          return TokenFactory.createToken(MiniPLTokenType.LOGICAL_AND, "&");
+          return tokenCreator.createToken(MiniPLTokenType.LOGICAL_AND, "&");
         case '!':
-          return TokenFactory.createToken(MiniPLTokenType.LOGICAL_NOT, "!");
+          return tokenCreator.createToken(MiniPLTokenType.LOGICAL_NOT, "!");
         case '(':
-          return TokenFactory.createToken(MiniPLTokenType.LEFT_PARENTHESIS, "(");
+          return tokenCreator.createToken(MiniPLTokenType.LEFT_PARENTHESIS, "(");
         case ')':
-          return TokenFactory.createToken(MiniPLTokenType.RIGHT_PARENTHESIS, ")");
+          return tokenCreator.createToken(MiniPLTokenType.RIGHT_PARENTHESIS, ")");
         case '\\':
-          return TokenFactory.createToken(MiniPLTokenType.BACKSLASH, "\\");
+          return tokenCreator.createToken(MiniPLTokenType.BACKSLASH, "\\");
         case ':':
           if(hasNext() && peek() == '=') {
             readNextCharacter();
-            return TokenFactory.createToken(MiniPLTokenType.ASSIGNMENT_OPERATOR, ":=");
+            return tokenCreator.createToken(MiniPLTokenType.ASSIGNMENT_OPERATOR, ":=");
           } else {
-            return TokenFactory.createToken(MiniPLTokenType.COLON, ":");
+            return tokenCreator.createToken(MiniPLTokenType.COLON, ":");
           }
         case '.':
           if(hasNext() && peek() == '.') {
             readNextCharacter();
-            return TokenFactory.createToken(MiniPLTokenType.RANGE_OPERATOR, "..");
+            return tokenCreator.createToken(MiniPLTokenType.RANGE_OPERATOR, "..");
           } else {
             return null;
           }
@@ -344,12 +332,12 @@ namespace MiniPL.scanner {
         if(!lastCharWasEscapeCharacter && currentCharacter == '\\') {
           lastCharWasEscapeCharacter = true;
         } else if(!lastCharWasEscapeCharacter && currentCharacter == '"') {
-          return TokenFactory.createStringLiteral(stringLiteral.ToString());
+          return tokenCreator.createStringLiteral(stringLiteral.ToString());
         }
         stringLiteral.Append(currentCharacter);
         lastCharWasEscapeCharacter = false;
       }
-      return TokenFactory.createInvalidToken(currentTokenContent.ToString());
+      return tokenCreator.createInvalidToken(currentTokenContent.ToString());
     }
 
     private bool nextCharIsLineBreak() {
