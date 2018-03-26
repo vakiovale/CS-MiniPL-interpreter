@@ -148,11 +148,25 @@ namespace MiniPL.Tests {
 
     [Theory]
     [InlineData("var a : int := 10;")]
+    [InlineData("var b : int;")]
+    [InlineData("var b : string;")]
+    [InlineData("var b : string := \"Live long and\" + \" prosper!\";")]
+    [InlineData("var trueValue : bool;")]
+    [InlineData("var trueValue : bool := pointsFromThisCourse < 1000;")]
     public void checkCorrectDeclarationAndAssignment(string source) {
-      Console.WriteLine(":" + source);
       this.parser = getParser(source);
       Assert.True(this.parser.checkSyntax());
-      Console.WriteLine(source);
+    }
+
+    [Theory]
+    [InlineData("var x;")]
+    [InlineData("var x := 10;")]
+    [InlineData("x : int := 10;")]
+    [InlineData("var : int;")]
+    [InlineData("var b : int := 1000 := 99;")]
+    public void checkIllegalVariableDeclarations(string source) {
+      this.parser = getParser(source);
+      Assert.False(this.parser.checkSyntax());
     }
 
 
