@@ -68,23 +68,62 @@ namespace MiniPL.parser {
 
     private bool matchProgram() {
       readToken();
+      bool syntaxOk = true;
       do {
-        if(matchStatement()) {
-          readToken();
-          if(!matchSemicolon()) {
-            addError("Expected a semicolon after a statement.");
-            return false;
-          }
-        } else {
-          return false;
+        if(!tryToHandleNextStatement()) {
+          syntaxOk = false;
         }
         readToken();
       } while(hasMoreTokens());
+      return syntaxOk;
+    }
+
+    private bool tryToHandleNextStatement() {
+      if(matchStatement()) {
+        readToken();
+        if(!matchSemicolon()) {
+          addError("Expected a semicolon after a statement.");
+          return false;
+        }
+      } else {
+        return false;
+      }
       return true;
     }
 
     private bool matchStatement() {
-      if(matchRead()) {
+      if(matchVar()) {
+        readToken();
+        if(matchIdentifier()) {
+          readToken();
+          if(matchColon()) {
+            readToken();
+            if(matchType()) {
+              if(peekType(MiniPLTokenType.ASSIGNMENT_OPERATOR)) {
+                readToken();
+                matchAssignment();
+                readToken();
+                if(matchExpression()) {
+                  return true;
+                } else {
+                  addError("Expected an expression after an assignment operator.");
+                  return false;
+                }
+              }
+              return true;
+            } else {
+              addError("Expected a type (int, string, bool) for an identifier.");
+            }
+          } else {
+            addError("Missing a colon (:) after variable name.");
+            return false;
+          }
+        } else {
+          addError("Expected an identifier name for the variable.");
+          return false;
+        }
+        return true;
+      } else if (matchRead()) {
         readToken();
         return matchIdentifier();
       } else if(matchPrint()) {
@@ -101,9 +140,7 @@ namespace MiniPL.parser {
             } else {
               addError("Expected a closing right parenthesis after expression.");
             }
-          } else {
-            addError("Expected an expression.");
-          }
+          } 
         } else {
           addError("Expected a left parenthesis after assert.");
         }
@@ -116,17 +153,29 @@ namespace MiniPL.parser {
     private bool matchExpression() {
       if(matchNot()) {
         readToken();
-        return matchOperand();
+        if(matchOperand()) {
+          return true;
+        } else {
+          addError("Expected an operand after logical not operator.");
+          return false;
+        }
       } else if(matchOperand()) {
         if(peekType(first("operation"))) {
           readToken();
           matchOperation();
           readToken();
-          return matchOperand(); 
+          if(matchOperand()) {
+            return true;
+          } else {
+            addError("Expected an operand after an operation.");
+            return false;
+          }
         }
         return true;
+      } else {
+        addError("Illegal start of an expression. An expression can't begin with '" + this.currentToken.getLexeme() + "'.");
+        return false;
       }
-      return false;
     }
 
     private bool peekType(ICollection<MiniPLTokenType> set) {
@@ -180,6 +229,26 @@ namespace MiniPL.parser {
         return false;
     }
 
+    private bool matchType() {
+      return matchTypeInt() || matchTypeString() || matchTypeBool();
+    }
+
+    private bool matchTypeInt() {
+      return match(MiniPLTokenType.TYPE_IDENTIFIER_INTEGER);
+    }
+
+    private bool matchTypeString() {
+      return match(MiniPLTokenType.TYPE_IDENTIFIER_STRING);
+    }
+
+    private bool matchTypeBool() {
+      return match(MiniPLTokenType.TYPE_IDENTIFIER_BOOL);
+    }
+
+    private bool matchAssignment() {
+      return match(MiniPLTokenType.ASSIGNMENT_OPERATOR);
+    }
+
     private bool matchPlus() {
       return match(MiniPLTokenType.PLUS);
     }
@@ -216,8 +285,16 @@ namespace MiniPL.parser {
       return match(MiniPLTokenType.SEMICOLON);
     }
 
+    private bool matchColon() {
+      return match(MiniPLTokenType.COLON);
+    }
+
     private bool matchRead() {
       return match(MiniPLTokenType.KEYWORD_READ);
+    }
+
+    private bool matchVar() {
+      return match(MiniPLTokenType.KEYWORD_VAR);
     }
 
     private bool matchPrint() {

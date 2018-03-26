@@ -131,10 +131,30 @@ namespace MiniPL.Tests {
     [Theory]
     [InlineData("assert (apina = gorilla);")]
     [InlineData("assert (1 + 2);")]
+    [InlineData("assert (gorilla + \"BAD MONKEY!\");")]
     public void checkCorrectAssertStatements(string source) {
       this.parser = getParser(source);
       Assert.True(this.parser.checkSyntax());
     }
+
+    [Theory]
+    [InlineData("assert apina = gorilla;")]
+    [InlineData("assert (1 / !(BAD));")]
+    [InlineData("assert gorilla + \"BAD MONKEY!\");")]
+    public void checkIllegalAssertStatements(string source) {
+      this.parser = getParser(source);
+      Assert.False(this.parser.checkSyntax());
+    }
+
+    [Theory]
+    [InlineData("var a : int := 10;")]
+    public void checkCorrectDeclarationAndAssignment(string source) {
+      Console.WriteLine(":" + source);
+      this.parser = getParser(source);
+      Assert.True(this.parser.checkSyntax());
+      Console.WriteLine(source);
+    }
+
 
   }
 
