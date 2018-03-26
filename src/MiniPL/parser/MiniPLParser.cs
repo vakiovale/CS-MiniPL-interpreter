@@ -13,10 +13,13 @@ namespace MiniPL.parser {
 
     private Token<MiniPLTokenType> nextToken;
 
+    private IList<string> errorMessages;
+
     public MiniPLParser(ITokenScanner<MiniPLTokenType> scanner) {
       this.scanner = scanner;
       this.currentToken = null;
       this.nextToken = null;
+      this.errorMessages = new List<string>();
     }
     
     private Token<MiniPLTokenType> readToken() {
@@ -28,6 +31,9 @@ namespace MiniPL.parser {
         this.nextToken = this.scanner.readNextToken();
       } else {
         this.currentToken = null;
+      }
+      if(this.currentToken != null && this.currentToken.getType() == MiniPLTokenType.INVALID_TOKEN) {
+        addError("Invalid token found: " + this.currentToken.getLexeme());
       }
       return this.currentToken;
     }
@@ -46,7 +52,18 @@ namespace MiniPL.parser {
     }
 
     public bool checkSyntax() {
-      return matchProgram();
+      bool syntaxOk = matchProgram();
+      foreach(string errorMessage in errorMessages) {
+        Console.WriteLine(errorMessage);
+      }
+      return syntaxOk;
+    }
+
+    private void addError(string message) {
+      if(this.currentToken != null) {
+        message = "[Row: " + this.currentToken.getRowNumber() + ", Column: " + this.currentToken.getColumnNumber() + "] " + message;
+      }
+      errorMessages.Add(message);
     }
 
     private bool matchProgram() {
@@ -55,6 +72,7 @@ namespace MiniPL.parser {
         if(matchStatement()) {
           readToken();
           if(!matchSemicolon()) {
+            addError("Expected a semicolon after a statement.");
             return false;
           }
         } else {
@@ -72,6 +90,25 @@ namespace MiniPL.parser {
       } else if(matchPrint()) {
         readToken();
         return matchExpression();
+      } else if(matchAssert()) {
+        readToken();
+        if(matchLeftParenthesis()) {
+          readToken();
+          if(matchExpression()) {
+            readToken();
+            if(matchRightParenthesis()) {
+              return true;
+            } else {
+              addError("Expected a closing right parenthesis after expression.");
+            }
+          } else {
+            addError("Expected an expression.");
+          }
+        } else {
+          addError("Expected a left parenthesis after assert.");
+        }
+      } else {
+        addError("Illegal start of a statement. A statement can't begin with '" + this.currentToken.getLexeme() + "'.");
       }
       return false;
     }
@@ -187,6 +224,10 @@ namespace MiniPL.parser {
       return match(MiniPLTokenType.KEYWORD_PRINT);
     }
 
+    private bool matchAssert() {
+      return match(MiniPLTokenType.KEYWORD_ASSERT);
+    }
+
     private bool match(MiniPLTokenType type) {
       if(currentToken == null) {
         return false;
@@ -196,20 +237,20 @@ namespace MiniPL.parser {
     }
 
     private ICollection<MiniPLTokenType> first(string rule) {
-      ICollection<MiniPLTokenType> followSet = new HashSet<MiniPLTokenType>();
+      ICollection<MiniPLTokenType> firstSet = new HashSet<MiniPLTokenType>();
       switch(rule) {
         case "operation":
-          followSet.Add(MiniPLTokenType.PLUS);
-          followSet.Add(MiniPLTokenType.MINUS);
-          followSet.Add(MiniPLTokenType.ASTERISK);
-          followSet.Add(MiniPLTokenType.SLASH);
-          followSet.Add(MiniPLTokenType.LOGICAL_AND);
-          followSet.Add(MiniPLTokenType.LOGICAL_NOT);
-          followSet.Add(MiniPLTokenType.EQUALITY_COMPARISON);
-          followSet.Add(MiniPLTokenType.LESS_THAN_COMPARISON);
+          firstSet.Add(MiniPLTokenType.PLUS);
+          firstSet.Add(MiniPLTokenType.MINUS);
+          firstSet.Add(MiniPLTokenType.ASTERISK);
+          firstSet.Add(MiniPLTokenType.SLASH);
+          firstSet.Add(MiniPLTokenType.LOGICAL_AND);
+          firstSet.Add(MiniPLTokenType.LOGICAL_NOT);
+          firstSet.Add(MiniPLTokenType.EQUALITY_COMPARISON);
+          firstSet.Add(MiniPLTokenType.LESS_THAN_COMPARISON);
           break;
       }
-      return followSet;
+      return firstSet;
     }
 
     private ICollection<MiniPLTokenType> follow(string rule) {

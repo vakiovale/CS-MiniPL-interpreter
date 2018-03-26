@@ -55,10 +55,20 @@ namespace MiniPL.Tests {
     }
 
     [Theory]
+    [InlineData("\"Hello World!\";")]
+    [InlineData("end;")]
+    [InlineData("100;")]
+    public void testIllegalStartOfAStatement(string source) {
+      this.parser = getParser(source);
+      Assert.False(this.parser.checkSyntax());
+    }
+
+    [Theory]
     [InlineData("print \"Hello World!\";")]
     [InlineData("print (\"Hello World!\");")]
     [InlineData("print \"Hello\" + \"World\";")]
     [InlineData("print 1;")]
+    [InlineData("print !1;")]
     [InlineData("print (1);")]
     [InlineData("print 1 + 2;")]
     [InlineData("print (1 + 2) + 3;")]
@@ -72,19 +82,60 @@ namespace MiniPL.Tests {
     [InlineData("print trueValue;")]
     [InlineData("print !trueValue;")]
     [InlineData("print (!trueValue) & trueValue;")]
+    [InlineData("print (!(trueValue)) = 3;")]
+    [InlineData("print (!trueValue) = 3;")]
     [InlineData("print 2 < 3;")]
-    public void checkPrintStatementWithExpressions(string source) {
+    [InlineData("print ((2 < 3));")]
+    [InlineData("print ((2 < (3)));")]
+    [InlineData("print (((2 < 3)));")]
+    [InlineData("print (((2 < 3)));\nprint (!trueValue) = 3;")]
+    public void testDifferentExpressions(string source) {
       this.parser = getParser(source);
       Assert.True(this.parser.checkSyntax());
     }
 
     [Theory]
     [InlineData("print \"Hello World!\"")]
+    [InlineData("print 2 > 3;")]
+    [InlineData("print !2 = 3;")]
+    [InlineData("print !trueValue = 3;")]
+    [InlineData("print !(trueValue) = 3;")]
+    [InlineData("print 1 + 2 + 3;")]
+    [InlineData("print 1 + - 2;")]
+    [InlineData("print -1;")]
+    [InlineData("print 1 + (-1);")]
+    [InlineData("print ((1 + 2);")]
+    [InlineData("print (1 + 2));")]
     public void checkIllegalExpressionsWithPrintStatement(string source) {
       this.parser = getParser(source);
       Assert.False(this.parser.checkSyntax());
     }
+
+    [Theory]
+    [InlineData("read apina;")]
+    [InlineData("read gorilla2;")]
+    public void checkReadStatementAndIdentifiers(string source) {
+      this.parser = getParser(source);
+      Assert.True(this.parser.checkSyntax());
+    }
     
+    [Theory]
+    [InlineData("read 12;")]
+    [InlineData("read !variable;")]
+    [InlineData("read \"WORD!\";")]
+    public void checkIllegalReadStatements(string source) {
+      this.parser = getParser(source);
+      Assert.False(this.parser.checkSyntax());
+    }
+
+    [Theory]
+    [InlineData("assert (apina = gorilla);")]
+    [InlineData("assert (1 + 2);")]
+    public void checkCorrectAssertStatements(string source) {
+      this.parser = getParser(source);
+      Assert.True(this.parser.checkSyntax());
+    }
+
   }
 
 }
