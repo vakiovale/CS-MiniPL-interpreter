@@ -92,6 +92,81 @@ namespace MiniPL.parser {
     }
 
     private bool matchStatement() {
+      if(match(first("var_declaration"))) {
+        return doVarDeclarationProcedure();
+      } else if (match(first("read"))) {
+        return doReadProcedure();
+      } else if(match(first("print"))) {
+        return doPrintProcedure();        
+      } else if(match(first("assert"))) {
+        return doAssertProcedure();
+      } else if(match(first("var_assignment"))) {
+        return doVarAssignmentProcedure();
+      }
+      return false;
+    }
+
+    private bool doReadProcedure() {
+      if(matchRead()) {
+        readToken();
+        return matchIdentifier();
+      } else {
+        return false;
+      }
+    }
+
+    private bool doPrintProcedure() {
+      if(matchPrint()) {
+        readToken();
+        return matchExpression();
+      } else {
+        return false;
+      }
+    }
+
+    private bool doAssertProcedure() {
+      if(matchAssert()) {
+        readToken();
+        if(matchLeftParenthesis()) {
+          readToken();
+          if(matchExpression()) {
+            readToken();
+            if(matchRightParenthesis()) {
+              return true;
+            } else {
+              addError("Expected a closing right parenthesis after expression.");
+            }
+          } 
+        } else {
+          addError("Expected a left parenthesis after assert.");
+        }
+      } else {
+        addError("Illegal start of a statement. A statement can't begin with '" + this.currentToken.getLexeme() + "'.");
+      }
+      return false;
+    }
+
+    private bool doVarAssignmentProcedure() {
+      if(matchIdentifier()) {
+        readToken();
+        if(matchAssignment()) {
+          readToken();
+          if(matchExpression()) {
+            return true;
+          } else {
+            addError("Expected an expression after an assignment operator.");
+            return false;
+          }
+        } else {
+          addError("Expected an assignment operator after an identifier.");
+          return false;
+        }
+      } else {
+        return false;
+      }
+    }
+
+    private bool doVarDeclarationProcedure() {
       if(matchVar()) {
         readToken();
         if(matchIdentifier()) {
@@ -123,29 +198,6 @@ namespace MiniPL.parser {
           return false;
         }
         return true;
-      } else if (matchRead()) {
-        readToken();
-        return matchIdentifier();
-      } else if(matchPrint()) {
-        readToken();
-        return matchExpression();
-      } else if(matchAssert()) {
-        readToken();
-        if(matchLeftParenthesis()) {
-          readToken();
-          if(matchExpression()) {
-            readToken();
-            if(matchRightParenthesis()) {
-              return true;
-            } else {
-              addError("Expected a closing right parenthesis after expression.");
-            }
-          } 
-        } else {
-          addError("Expected a left parenthesis after assert.");
-        }
-      } else {
-        addError("Illegal start of a statement. A statement can't begin with '" + this.currentToken.getLexeme() + "'.");
       }
       return false;
     }
@@ -313,6 +365,14 @@ namespace MiniPL.parser {
       }
     }
 
+    private bool match(ICollection<MiniPLTokenType> set) {
+      if(currentToken == null) {
+        return false;
+      } else {
+        return set.Contains(currentToken.getType());
+      }
+    }
+
     private ICollection<MiniPLTokenType> first(string rule) {
       ICollection<MiniPLTokenType> firstSet = new HashSet<MiniPLTokenType>();
       switch(rule) {
@@ -325,6 +385,21 @@ namespace MiniPL.parser {
           firstSet.Add(MiniPLTokenType.LOGICAL_NOT);
           firstSet.Add(MiniPLTokenType.EQUALITY_COMPARISON);
           firstSet.Add(MiniPLTokenType.LESS_THAN_COMPARISON);
+          break;
+        case "var_declaration":
+          firstSet.Add(MiniPLTokenType.KEYWORD_VAR);
+          break;
+        case "var_assignment":
+          firstSet.Add(MiniPLTokenType.IDENTIFIER);
+          break;
+        case "read":
+          firstSet.Add(MiniPLTokenType.KEYWORD_READ);
+          break;
+        case "print":
+          firstSet.Add(MiniPLTokenType.KEYWORD_PRINT);
+          break;
+        case "assert":
+          firstSet.Add(MiniPLTokenType.KEYWORD_ASSERT);
           break;
       }
       return firstSet;

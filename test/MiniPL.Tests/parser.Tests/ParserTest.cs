@@ -48,6 +48,17 @@ namespace MiniPL.Tests {
       Assert.False(this.parser.checkSyntax());
     }
 
+    [Theory]
+    [InlineData(";")]
+    [InlineData("")]
+    [InlineData(null)]
+    [InlineData("var := 10")]
+    [InlineData("var .= 10;")]
+    public void checkIllegalPrograms(string source) {
+      this.parser = getParser(source);
+      Assert.False(this.parser.checkSyntax());
+    }
+
     [Fact]
     public void checkSimpleFailingSyntaxForTwoLineProgram() {
       this.parser = getParser("read word;\nread read;");
@@ -169,6 +180,34 @@ namespace MiniPL.Tests {
       Assert.False(this.parser.checkSyntax());
     }
 
+    [Theory]
+    [InlineData("variable := 2;")]
+    [InlineData("variable := \"Jeah\";")]
+    [InlineData("variable := \"Jeah\" + \"Jeah\";")]
+    [InlineData("variable := otherVariable;")]
+    [InlineData("variable := otherVariable - 3;")]
+    [InlineData("variable := (otherVariable - (3));")]
+    [InlineData("variable := !otherVariable;")]
+    [InlineData("variable := left < right;")]
+    [InlineData("variable := left = right;")]
+    [InlineData("variable := (left / right);")]
+    [InlineData("variable:=10;")]
+    public void checkCorrectVariableAssignment(string source) {
+      this.parser = getParser(source);
+      Assert.True(this.parser.checkSyntax());
+    }
+
+    [Theory]
+    [InlineData(":= 10;")]
+    [InlineData("variable := !;")]
+    [InlineData("varx := !;")]
+    [InlineData("var := 10;")]
+    [InlineData("varx := ;")]
+    [InlineData("varx:=;")]
+    public void checkIllegalVariableAssignment(string source) {
+      this.parser = getParser(source);
+      Assert.False(this.parser.checkSyntax());
+    }
 
   }
 
