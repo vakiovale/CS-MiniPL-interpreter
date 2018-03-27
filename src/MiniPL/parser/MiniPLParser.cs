@@ -148,7 +148,6 @@ namespace MiniPL.parser {
     }
 
     private bool doForProcedure() {
-      Console.WriteLine("for!");
       if(matchFor()) {
         readToken();
         if(matchIdentifier()) {

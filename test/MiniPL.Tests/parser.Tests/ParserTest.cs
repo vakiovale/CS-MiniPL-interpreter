@@ -238,6 +238,11 @@ namespace MiniPL.Tests {
       Assert.False(this.parser.checkSyntax());
     }
 
+    [Fact]
+    public void checkSyntaxOfASampleProgram() {
+      Assert.True(this.parser.checkSyntax());
+    }
+
   }
 
 }
