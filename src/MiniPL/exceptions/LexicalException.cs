@@ -4,27 +4,9 @@ using MiniPL.tokens;
 
 namespace MiniPL.exceptions {
 
-  public class LexicalException : Exception
+  public class LexicalException : MiniPLException
   {
-
-    private string message;
-
-    public LexicalException(string message, Token<MiniPLTokenType> token) : base(constructMessage(message, token)) {
-      this.message = "LEXICAL ERROR: " + constructMessage(message, token);
-    }
-
-    public string getMessage() {
-      return this.message;
-    }
-
-    private static string constructMessage(string message, Token<MiniPLTokenType> token)
-    {
-      if(token != null) {
-        return "[Row: " + token.getRowNumber() + ", Column: " + token.getColumnNumber() + "] " + message;
-      } else {
-        return message;
-      }
-    }
+    public LexicalException(string message, Token<MiniPLTokenType> token) : base("LEXICAL ERROR: " + message, token) { }
   }
 
 }

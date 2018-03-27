@@ -59,13 +59,10 @@ namespace MiniPL.parser {
       bool syntaxOk = false;
       try {
         syntaxOk = matchProgram();
-      } catch(SyntaxException syntaxException) {
-        Console.WriteLine(syntaxException.getMessage());
+      } catch(MiniPLException exception) {
+        Console.WriteLine(exception.getMessage());
         syntaxOk = false;
-      } catch(LexicalException LexicalException) {
-        Console.WriteLine(LexicalException.getMessage());
-        syntaxOk = false;
-      }
+      }      
       return syntaxOk;
     }
 
@@ -103,7 +100,7 @@ namespace MiniPL.parser {
       } else if(tm.isSymbol(first("assert"))) {
         doAssertProcedure();
       } else {
-        syntaxError("Illegal start of a statement. " + (this.currentToken != null ? "A statement can't begin with '" + this.currentToken.getLexeme() + "'." : "."));
+        syntaxError("Illegal start of a statement. " + (this.currentToken != null ? "A statement can't begin with '" + this.currentToken.getLexeme() + "'." : ""));
       }
     }
 

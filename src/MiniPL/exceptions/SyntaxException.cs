@@ -4,27 +4,9 @@ using MiniPL.tokens;
 
 namespace MiniPL.exceptions {
 
-  public class SyntaxException : Exception
+  public class SyntaxException : MiniPLException
   {
-
-    private string message;
-
-    public SyntaxException(string message, Token<MiniPLTokenType> token) : base(constructMessage(message, token)) {
-      this.message = "SYNTAX ERROR: " + constructMessage(message, token);
-    }
-
-    public string getMessage() {
-      return this.message;
-    }
-
-    private static string constructMessage(string message, Token<MiniPLTokenType> token)
-    {
-      if(token != null) {
-        return "[Row: " + token.getRowNumber() + ", Column: " + token.getColumnNumber() + "] " + message;
-      } else {
-        return message;
-      }
-    }
+    public SyntaxException(string message, Token<MiniPLTokenType> token) : base("SYNTAX ERROR: " + message, token) { }
   }
 
 }
