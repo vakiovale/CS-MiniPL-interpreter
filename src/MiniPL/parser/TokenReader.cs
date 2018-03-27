@@ -47,7 +47,7 @@ namespace MiniPL.parser {
       return this.nextToken != null && this.nextToken.getType().Equals(type);
     }
 
-    internal MiniPLTokenType getNextTokensType() {
+    public MiniPLTokenType getNextTokensType() {
       return this.nextToken.getType();
     }
   }

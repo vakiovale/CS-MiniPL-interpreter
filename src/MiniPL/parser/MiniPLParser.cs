@@ -3,6 +3,7 @@ using MiniPL.scanner;
 using MiniPL.tokens;
 using System.Collections.Generic;
 using MiniPL.exceptions;
+using MiniPL.syntax;
 
 namespace MiniPL.parser {
 
@@ -14,10 +15,17 @@ namespace MiniPL.parser {
 
     private FirstAndFollow firstAndFollow;
 
+    private bool syntaxOk;
+
     public MiniPLParser(TokenReader tokenReader) {
       initializeTokenMatcher();
       initializeTokenReader(tokenReader);
       intializeFirstAndFollow();
+      initializeSyntaxFlag();
+    }
+
+    private void initializeSyntaxFlag() {
+      this.syntaxOk = true;
     }
 
     private void initializeTokenMatcher() {
@@ -41,52 +49,67 @@ namespace MiniPL.parser {
     }
 
     public bool checkSyntax() {
-      bool syntaxOk = false;
-      try {
-        syntaxOk = matchProgram();
-      } catch(MiniPLException exception) {
-        Console.WriteLine(exception.getMessage());
-        syntaxOk = false;
-      }      
+      readToken();
+      doProgramProcedure();
       return syntaxOk;
     }
 
-    private bool matchProgram() {
-      readToken();
-      doStatementListProcedure();
-      return true;
+    private void doProgramProcedure() {
+      try {
+        doStatementListProcedure();
+      } catch(MiniPLException exception) {
+        exceptionRecovery(exception, MiniPLSymbols.PROGRAM, doProgramProcedure);
+      }  
+    }
+
+    private void exceptionRecovery(MiniPLException exception, MiniPLSymbols symbol, Action procedureMethod) {
+      Console.WriteLine(exception.getMessage());
+      syntaxOk = false;
+      do {
+        readToken();
+        Token<MiniPLTokenType> goodToken = this.tokenReader.token();
+        if(goodToken != null) {
+          if(this.firstAndFollow.firstContains(symbol, goodToken.getType())) {
+            procedureMethod(); 
+            return;
+          }
+          if(this.firstAndFollow.followContains(symbol, goodToken.getType())) {
+            return;
+          }
+        }
+      } while(this.tokenReader.hasNextToken());
     }
 
     private void doStatementListProcedure() {
-      doStatemenProcedure();
-      while(peekType(firstAndFollow.first("statement"))) {
-        readToken();
+      try {
         doStatemenProcedure();
+        while(peekType(firstAndFollow.first(MiniPLSymbols.PROGRAM))) {
+          readToken();
+          doStatemenProcedure();
+        }
+      } catch(MiniPLException exception) {
+        exceptionRecovery(exception, MiniPLSymbols.STATEMENT_LIST, doStatementListProcedure); 
       }
     }
 
     private void doStatemenProcedure() {
-      matchStatement();
-      readToken();
-      tokenMatcher.matchSemicolon();
-    }
-
-    private void matchStatement() {
-      if(tokenMatcher.isSymbol(first("var_declaration"))) {
+      if(tokenMatcher.isSymbol(first(MiniPLSymbols.VAR_DECLARATION))) {
         doVarDeclarationProcedure();
-      } else if(tokenMatcher.isSymbol(first("var_assignment"))) {
+      } else if(tokenMatcher.isSymbol(first(MiniPLSymbols.VAR_ASSIGNMENT))) {
         doVarAssignmentProcedure();
-      } else if(tokenMatcher.isSymbol(first("for"))) {
+      } else if(tokenMatcher.isSymbol(first(MiniPLSymbols.FOR_LOOP))) {
         doForProcedure(); 
-      } else if(tokenMatcher.isSymbol(first("read"))) {
+      } else if(tokenMatcher.isSymbol(first(MiniPLSymbols.READ_PROCEDURE))) {
         doReadProcedure();
-      } else if(tokenMatcher.isSymbol(first("print"))) {
+      } else if(tokenMatcher.isSymbol(first(MiniPLSymbols.PRINT_PROCEDURE))) {
         doPrintProcedure();        
-      } else if(tokenMatcher.isSymbol(first("assert"))) {
+      } else if(tokenMatcher.isSymbol(first(MiniPLSymbols.ASSERT_PROCEDURE))) {
         doAssertProcedure();
       } else {
         syntaxError("Illegal start of a statement. " + (tokenReader.token() != null ? "A statement can't begin with '" + tokenReader.token().getLexeme() + "'." : ""));
       }
+      readToken();
+      tokenMatcher.matchSemicolon();
     }
 
     private void doReadProcedure() {
@@ -170,7 +193,7 @@ namespace MiniPL.parser {
         return;
       } 
       doOperandProcedure();
-      if(peekType(first("operation"))) {
+      if(peekType(first(MiniPLSymbols.OPERATION))) {
         readToken();
         doOperationProcedure();
         readToken();
@@ -219,8 +242,8 @@ namespace MiniPL.parser {
       throw new LexicalException(message, tokenReader.token());
     }
 
-    private ICollection<MiniPLTokenType> first(string rule) {
-      return firstAndFollow.first(rule);
+    private ICollection<MiniPLTokenType> first(MiniPLSymbols symbol) {
+      return firstAndFollow.first(symbol);
     }
   }
 }

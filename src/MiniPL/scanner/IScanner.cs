@@ -10,5 +10,6 @@ namespace MiniPL.scanner {
     char readNextCharacter();
     char peek();
     bool hasNext();
+
   }
 }
