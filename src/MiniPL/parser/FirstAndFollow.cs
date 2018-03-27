@@ -8,7 +8,7 @@ namespace MiniPL.parser {
 
     private IDictionary<String, ICollection<MiniPLTokenType>> firstMap;
 
-    private IDictionary<String, ICollection<MiniPLTokenType>> followMap;
+    //private IDictionary<String, ICollection<MiniPLTokenType>> followMap;
 
     public FirstAndFollow() {
       initializeFirstSet();

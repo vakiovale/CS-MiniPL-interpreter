@@ -8,51 +8,36 @@ namespace MiniPL.parser {
 
   public class MiniPLParser : IParser {
 
-    private ITokenScanner<MiniPLTokenType> scanner;
+    private TokenReader tokenReader;
 
-    private Token<MiniPLTokenType> currentToken;
-
-    private Token<MiniPLTokenType> nextToken;
-    
     private TokenMatcher tm;
 
     private FirstAndFollow firstAndFollow;
 
     public MiniPLParser(ITokenScanner<MiniPLTokenType> scanner) {
-      this.scanner = scanner;
-      this.currentToken = null;
-      this.nextToken = null;
+      initializeTokenMatcher();
+      initializeTokenReader(scanner);
+      intializeFirstAndFollow();
+    }
+
+    private void initializeTokenMatcher() {
       this.tm = new TokenMatcher();
-      this.firstAndFollow = new FirstAndFollow();
     }
     
-    private Token<MiniPLTokenType> readToken() {
-      if(this.currentToken == null) {
-        this.currentToken = this.scanner.readNextToken();
-        this.nextToken = this.scanner.readNextToken();
-        this.tm.setToken(this.currentToken);
-      } else if(this.nextToken != null) {
-        this.currentToken = this.nextToken;
-        this.nextToken = this.scanner.readNextToken();
-        this.tm.setToken(this.currentToken);
-      } else {
-        this.currentToken = null;
-        this.tm.setToken(this.currentToken);
-      }
-      if(this.currentToken != null && this.currentToken.getType() == MiniPLTokenType.INVALID_TOKEN) {
-        lexicalError("Invalid token '" + this.currentToken.getLexeme() + "'.");
-      }
-      return this.currentToken;
+    private void initializeTokenReader(ITokenScanner<MiniPLTokenType> scanner) {
+      this.tokenReader = new TokenReader(scanner);
     }
 
-    private void initializeFirstTokens() {
-      this.currentToken = this.scanner.readNextToken();
-      this.nextToken = this.scanner.readNextToken();
-      this.tm.setToken(this.currentToken);
+    private void intializeFirstAndFollow() {
+      this.firstAndFollow = new FirstAndFollow();
     }
 
-    private bool hasMoreTokens() {
-      return this.currentToken != null;
+    private void readToken() {
+      Token<MiniPLTokenType> token = tokenReader.readToken();
+      if(token != null && token.getType() == MiniPLTokenType.INVALID_TOKEN) {
+        lexicalError("Invalid token '" + token.getLexeme() + "'.");
+      }
+      this.tm.setToken(token);
     }
 
     public bool checkSyntax() {
@@ -100,7 +85,7 @@ namespace MiniPL.parser {
       } else if(tm.isSymbol(first("assert"))) {
         doAssertProcedure();
       } else {
-        syntaxError("Illegal start of a statement. " + (this.currentToken != null ? "A statement can't begin with '" + this.currentToken.getLexeme() + "'." : ""));
+        syntaxError("Illegal start of a statement. " + (tokenReader.token() != null ? "A statement can't begin with '" + tokenReader.token().getLexeme() + "'." : ""));
       }
     }
 
@@ -164,7 +149,7 @@ namespace MiniPL.parser {
       tm.matchColon();
       readToken();
       doTypeProcedure();
-      if(peekType(MiniPLTokenType.ASSIGNMENT_OPERATOR)) {
+      if(tokenReader.isNextTokensType(MiniPLTokenType.ASSIGNMENT_OPERATOR)) {
         readToken();
         tm.matchAssignment();
         readToken();
@@ -205,12 +190,12 @@ namespace MiniPL.parser {
          tm.isSymbol(MiniPLTokenType.LOGICAL_AND) || 
          tm.isSymbol(MiniPLTokenType.LOGICAL_NOT))
         return;
-      throw new SyntaxException("Expected an operation.", this.currentToken);
+      throw new SyntaxException("Expected an operation.", tokenReader.token());
     }
 
     private bool peekType(ICollection<MiniPLTokenType> set) {
-      if(this.nextToken != null) {
-        return set.Contains(this.nextToken.getType());
+      if(tokenReader.hasNextToken()) {
+        return set.Contains(tokenReader.getNextTokensType());
       }
       return false;
     }
@@ -227,15 +212,11 @@ namespace MiniPL.parser {
     }
 
     private void syntaxError(string message) {
-      throw new SyntaxException(message, this.currentToken);
+      throw new SyntaxException(message, tokenReader.token());
     }
 
     private void lexicalError(string message) {
-      throw new LexicalException(message, this.currentToken);
-    }
-
-    private bool peekType(MiniPLTokenType type) {
-      return this.nextToken != null && this.nextToken.getType().Equals(type);
+      throw new LexicalException(message, tokenReader.token());
     }
 
     private ICollection<MiniPLTokenType> first(string rule) {
