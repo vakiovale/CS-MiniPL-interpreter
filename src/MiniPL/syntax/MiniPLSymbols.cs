@@ -15,8 +15,9 @@ namespace MiniPL.syntax {
     FOR_LOOP,
     READ_PROCEDURE,
     PRINT_PROCEDURE,
-    ASSERT_PROCEDURE
-        
+    ASSERT_PROCEDURE,
+    TYPE
+
   }
 
 }
