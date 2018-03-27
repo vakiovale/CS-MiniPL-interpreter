@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace MiniPL.logger {
 
-  public class TestLogger : Logger {
+  public class TestLogger : ILogger {
 
     private IList<string> logs;
 

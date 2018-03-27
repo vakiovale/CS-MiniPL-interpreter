@@ -2,7 +2,7 @@ using System;
 
 namespace MiniPL.logger {
 
-  public interface Logger {
+  public interface ILogger {
 
     void log(string log);
         

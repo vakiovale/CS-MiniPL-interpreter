@@ -15,8 +15,7 @@ namespace MiniPL.exceptions {
       return this.message;
     }
 
-    private static string constructMessage(string message, Token<MiniPLTokenType> token)
-    {
+    private static string constructMessage(string message, Token<MiniPLTokenType> token) {
       if(token != null) {
         return "[Row: " + token.getRowNumber() + ", Column: " + token.getColumnNumber() + "] " + message;
       } else {

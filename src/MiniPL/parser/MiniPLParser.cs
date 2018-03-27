@@ -10,7 +10,7 @@ namespace MiniPL.parser {
 
   public class MiniPLParser : IParser {
 
-    private Logger logger;
+    private ILogger logger;
 
     private TokenReader tokenReader;
 
@@ -22,7 +22,7 @@ namespace MiniPL.parser {
 
     private bool syntaxOk;
 
-    public MiniPLParser(TokenReader tokenReader, Logger logger) {
+    public MiniPLParser(TokenReader tokenReader, ILogger logger) {
       initializeLogger(logger);
       initializeTokenMatcher();
       initializeTokenReader(tokenReader);
@@ -31,7 +31,7 @@ namespace MiniPL.parser {
       initializeSyntaxFlag();
     }
 
-    private void initializeLogger(Logger logger) {
+    private void initializeLogger(ILogger logger) {
       this.logger = logger;
     }
 
