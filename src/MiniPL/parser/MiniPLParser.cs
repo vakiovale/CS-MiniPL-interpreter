@@ -4,10 +4,13 @@ using MiniPL.tokens;
 using System.Collections.Generic;
 using MiniPL.exceptions;
 using MiniPL.syntax;
+using MiniPL.logger;
 
 namespace MiniPL.parser {
 
   public class MiniPLParser : IParser {
+
+    private Logger logger;
 
     private TokenReader tokenReader;
 
@@ -17,11 +20,16 @@ namespace MiniPL.parser {
 
     private bool syntaxOk;
 
-    public MiniPLParser(TokenReader tokenReader) {
+    public MiniPLParser(TokenReader tokenReader, Logger logger) {
+      initializeLogger(logger);
       initializeTokenMatcher();
       initializeTokenReader(tokenReader);
       intializeFirstAndFollow();
       initializeSyntaxFlag();
+    }
+
+    private void initializeLogger(Logger logger) {
+      this.logger = logger;
     }
 
     private void initializeSyntaxFlag() {
@@ -54,16 +62,8 @@ namespace MiniPL.parser {
       return syntaxOk;
     }
 
-    private void doProgramProcedure() {
-      try {
-        doStatementListProcedure();
-      } catch(MiniPLException exception) {
-        exceptionRecovery(exception, MiniPLSymbols.PROGRAM, doProgramProcedure);
-      }  
-    }
-
     private void exceptionRecovery(MiniPLException exception, MiniPLSymbols symbol, Action procedureMethod) {
-      Console.WriteLine(exception.getMessage());
+      logger.log(exception.getMessage());
       syntaxOk = false;
       do {
         readToken();
@@ -80,6 +80,14 @@ namespace MiniPL.parser {
       } while(this.tokenReader.hasNextToken());
     }
 
+    private void doProgramProcedure() {
+      try {
+        doStatementListProcedure();
+      } catch(MiniPLException exception) {
+        exceptionRecovery(exception, MiniPLSymbols.PROGRAM, doProgramProcedure);
+      }  
+    }
+
     private void doStatementListProcedure() {
       try {
         doStatemenProcedure();
@@ -93,17 +101,17 @@ namespace MiniPL.parser {
     }
 
     private void doStatemenProcedure() {
-      if(tokenMatcher.isSymbol(first(MiniPLSymbols.VAR_DECLARATION))) {
+      if(tokenMatcher.isTokenTypeInCollection(first(MiniPLSymbols.VAR_DECLARATION))) {
         doVarDeclarationProcedure();
-      } else if(tokenMatcher.isSymbol(first(MiniPLSymbols.VAR_ASSIGNMENT))) {
+      } else if(tokenMatcher.isTokenTypeInCollection(first(MiniPLSymbols.VAR_ASSIGNMENT))) {
         doVarAssignmentProcedure();
-      } else if(tokenMatcher.isSymbol(first(MiniPLSymbols.FOR_LOOP))) {
+      } else if(tokenMatcher.isTokenTypeInCollection(first(MiniPLSymbols.FOR_LOOP))) {
         doForProcedure(); 
-      } else if(tokenMatcher.isSymbol(first(MiniPLSymbols.READ_PROCEDURE))) {
+      } else if(tokenMatcher.isTokenTypeInCollection(first(MiniPLSymbols.READ_PROCEDURE))) {
         doReadProcedure();
-      } else if(tokenMatcher.isSymbol(first(MiniPLSymbols.PRINT_PROCEDURE))) {
+      } else if(tokenMatcher.isTokenTypeInCollection(first(MiniPLSymbols.PRINT_PROCEDURE))) {
         doPrintProcedure();        
-      } else if(tokenMatcher.isSymbol(first(MiniPLSymbols.ASSERT_PROCEDURE))) {
+      } else if(tokenMatcher.isTokenTypeInCollection(first(MiniPLSymbols.ASSERT_PROCEDURE))) {
         doAssertProcedure();
       } else {
         syntaxError("Illegal start of a statement. " + (tokenReader.token() != null ? "A statement can't begin with '" + tokenReader.token().getLexeme() + "'." : ""));
@@ -181,13 +189,13 @@ namespace MiniPL.parser {
     }
 
     private void doTypeProcedure() {
-      if(tokenMatcher.isSymbol(MiniPLTokenType.TYPE_IDENTIFIER_INTEGER) || tokenMatcher.isSymbol(MiniPLTokenType.TYPE_IDENTIFIER_STRING) || tokenMatcher.isSymbol(MiniPLTokenType.TYPE_IDENTIFIER_BOOL))
+      if(tokenMatcher.isTokenType(MiniPLTokenType.TYPE_IDENTIFIER_INTEGER) || tokenMatcher.isTokenType(MiniPLTokenType.TYPE_IDENTIFIER_STRING) || tokenMatcher.isTokenType(MiniPLTokenType.TYPE_IDENTIFIER_BOOL))
         return;
       syntaxError("Expected a type (int, string, bool).");
     }
 
     private void doExpressionProcedure() {
-      if(tokenMatcher.isSymbol(MiniPLTokenType.LOGICAL_NOT)) {
+      if(tokenMatcher.isTokenType(MiniPLTokenType.LOGICAL_NOT)) {
         readToken();
         doOperandProcedure();
         return;
@@ -204,14 +212,14 @@ namespace MiniPL.parser {
     }
 
     private void doOperationProcedure() {
-      if(tokenMatcher.isSymbol(MiniPLTokenType.PLUS) || 
-         tokenMatcher.isSymbol(MiniPLTokenType.MINUS) || 
-         tokenMatcher.isSymbol(MiniPLTokenType.ASTERISK) || 
-         tokenMatcher.isSymbol(MiniPLTokenType.SLASH) || 
-         tokenMatcher.isSymbol(MiniPLTokenType.LESS_THAN_COMPARISON) || 
-         tokenMatcher.isSymbol(MiniPLTokenType.EQUALITY_COMPARISON) || 
-         tokenMatcher.isSymbol(MiniPLTokenType.LOGICAL_AND) || 
-         tokenMatcher.isSymbol(MiniPLTokenType.LOGICAL_NOT))
+      if(tokenMatcher.isTokenType(MiniPLTokenType.PLUS) || 
+         tokenMatcher.isTokenType(MiniPLTokenType.MINUS) || 
+         tokenMatcher.isTokenType(MiniPLTokenType.ASTERISK) || 
+         tokenMatcher.isTokenType(MiniPLTokenType.SLASH) || 
+         tokenMatcher.isTokenType(MiniPLTokenType.LESS_THAN_COMPARISON) || 
+         tokenMatcher.isTokenType(MiniPLTokenType.EQUALITY_COMPARISON) || 
+         tokenMatcher.isTokenType(MiniPLTokenType.LOGICAL_AND) || 
+         tokenMatcher.isTokenType(MiniPLTokenType.LOGICAL_NOT))
         return;
       throw new SyntaxException("Expected an operation.", tokenReader.token());
     }
@@ -224,7 +232,7 @@ namespace MiniPL.parser {
     }
 
     private void doOperandProcedure() {
-      if(tokenMatcher.isSymbol(MiniPLTokenType.INTEGER_LITERAL) || tokenMatcher.isSymbol(MiniPLTokenType.STRING_LITERAL) || tokenMatcher.isSymbol(MiniPLTokenType.IDENTIFIER)) {
+      if(tokenMatcher.isTokenType(MiniPLTokenType.INTEGER_LITERAL) || tokenMatcher.isTokenType(MiniPLTokenType.STRING_LITERAL) || tokenMatcher.isTokenType(MiniPLTokenType.IDENTIFIER)) {
         return;
       } 
       tokenMatcher.matchLeftParenthesis();

@@ -141,7 +141,7 @@ namespace MiniPL.parser {
       }
     }
 
-    public bool isSymbol(MiniPLTokenType type) {
+    public bool isTokenType(MiniPLTokenType type) {
       if(this.token == null) {
         return false;
       } else {
@@ -149,7 +149,7 @@ namespace MiniPL.parser {
       }
     }
 
-    public bool isSymbol(ICollection<MiniPLTokenType> set) {
+    public bool isTokenTypeInCollection(ICollection<MiniPLTokenType> set) {
       if(this.token == null) {
         return false;
       } else {

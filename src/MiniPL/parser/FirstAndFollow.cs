@@ -16,6 +16,30 @@ namespace MiniPL.parser {
       initializeFollowSet();
     }
 
+    public bool followContains(MiniPLSymbols symbol, MiniPLTokenType tokenType) {
+      if(followMap.ContainsKey(symbol)) {
+        return followMap[symbol].Contains(tokenType);
+      } else {
+        return false;
+      }
+    }
+
+    public bool firstContains(MiniPLSymbols symbol, MiniPLTokenType tokenType) {
+      if(firstMap.ContainsKey(symbol)) {
+        return firstMap[symbol].Contains(tokenType);
+      } else {
+        return false;
+      }
+    }
+
+    public ICollection<MiniPLTokenType> first(MiniPLSymbols symbol) {
+      if(firstMap.ContainsKey(symbol)) {
+        return firstMap[symbol];
+      } else {
+        return new HashSet<MiniPLTokenType>();
+      }
+    }
+
     private void initializeFirstSet() {
       firstMap = new Dictionary<MiniPLSymbols, ICollection<MiniPLTokenType>>();
 
@@ -112,26 +136,6 @@ namespace MiniPL.parser {
         if(!newCollection.Contains(element)) {
           newCollection.Add(element);
         }
-      }
-    }
-
-    public bool followContains(MiniPLSymbols symbol, MiniPLTokenType miniPLTokenType) {
-      return false;
-    }
-
-    public bool firstContains(MiniPLSymbols symbol, MiniPLTokenType tokenType) {
-      if(firstMap.ContainsKey(symbol)) {
-        return firstMap[symbol].Contains(tokenType);
-      } else {
-        return false;
-      }
-    }
-
-    public ICollection<MiniPLTokenType> first(MiniPLSymbols symbol) {
-      if(firstMap.ContainsKey(symbol)) {
-        return firstMap[symbol];
-      } else {
-        return new HashSet<MiniPLTokenType>();
       }
     }
 
