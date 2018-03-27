@@ -209,6 +209,35 @@ namespace MiniPL.Tests {
       Assert.False(this.parser.checkSyntax());
     }
 
+    [Theory]
+    [InlineData("for x in 0..nTimes-1 do\n"
+                + "\tprint x;\n"
+                + "\tprint \" : Hello, World!\\n\";\n"
+                + "end for;\n")]
+    [InlineData("for word in ((x - 13)*word) .. hello < 3 do assert(word); end for;")]
+    [InlineData("for i in 1..10 do print \"Moi!\"; end for;")]
+    [InlineData("for i in 1..10 do print \"Hello!\"; end for;")]
+    [InlineData("for i in 1..10 do print \"Hello!\"; end for;for i in 1..10 do print \"Hello!\"; end for;")]
+    [InlineData("for i in 1..10 do print \"Hello!\"; end for; \nfor i in 1..10 do print \"Hello!\"; end for;")]
+    [InlineData("for i in 1..10 do for i in 1..10 do print \"Hello!\"; end for; end for; \nfor i in 1..10 do print \"Hello!\"; for i in 1..10 do for i in 1..10 do print \"Hello!\"; end for; end for; end for;")]
+    public void checkCorrectForLoop(string source) {
+      this.parser = getParser(source);
+      Assert.True(this.parser.checkSyntax());
+    }
+
+    [Theory]
+    [InlineData("for i in 1..10 do ; end for;")]
+    [InlineData("for i in 1.10 do print \"Hello!\"; end for;")]
+    [InlineData("for i 1..10 do print \"Hello!\"; end for;")]
+    [InlineData("for i in 1..10 do print \"Hello!\" end for;")]
+    [InlineData("for i in 1..10 do print \"Hello!\"; for;")]
+    [InlineData("for i in 1..10 do print \"Hello!\"; end;")]
+    [InlineData("for i in 1..10 do for i in 1..10 do print \"Hello!\"; end for; end for; \nfor i in 1..10 do print \"Hello!\"; for i in 1..10 do for i in 1..10 do print \"Hello!\"; end for; end for; print \"Missing end for!\";")]
+    public void checkIllegalForLoop(string source) {
+      this.parser = getParser(source);
+      Assert.False(this.parser.checkSyntax());
+    }
+
   }
 
 }

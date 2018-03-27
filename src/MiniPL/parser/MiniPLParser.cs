@@ -85,23 +85,24 @@ namespace MiniPL.parser {
           addError("Expected a semicolon after a statement.");
           return false;
         }
-      } else {
-        return false;
-      }
-      return true;
+        return true;
+      } 
+      return false;
     }
 
     private bool matchStatement() {
       if(match(first("var_declaration"))) {
         return doVarDeclarationProcedure();
-      } else if (match(first("read"))) {
+      } else if(match(first("var_assignment"))) {
+        return doVarAssignmentProcedure();
+      } else if(match(first("for"))) {
+        return doForProcedure(); 
+      } else if(match(first("read"))) {
         return doReadProcedure();
       } else if(match(first("print"))) {
         return doPrintProcedure();        
       } else if(match(first("assert"))) {
         return doAssertProcedure();
-      } else if(match(first("var_assignment"))) {
-        return doVarAssignmentProcedure();
       }
       return false;
     }
@@ -142,6 +143,72 @@ namespace MiniPL.parser {
         }
       } else {
         addError("Illegal start of a statement. A statement can't begin with '" + this.currentToken.getLexeme() + "'.");
+      }
+      return false;
+    }
+
+    private bool doForProcedure() {
+      Console.WriteLine("for!");
+      if(matchFor()) {
+        readToken();
+        if(matchIdentifier()) {
+          readToken();
+          if(matchIn()) {
+            readToken();
+            if(matchExpression()) {
+              readToken();
+              if(matchRange()) {
+                readToken();
+                if(matchExpression()) {
+                  readToken();
+                  if(matchDo()) {
+                    bool syntaxOk = false;
+                    do {
+                      readToken();
+                      syntaxOk = tryToHandleNextStatement();
+                      if(!syntaxOk) {
+                        return false;
+                      }
+                      if(peekType(MiniPLTokenType.KEYWORD_END)) {
+                        break;
+                      }
+                    } while(syntaxOk);
+                    readToken();
+                    if(matchEnd()) {
+                      readToken();
+                      if(matchFor()) {
+                        return true;
+                      } else {
+                        addError("Expected keyword 'for' at the end of the for loop.");
+                      }
+                    } else {
+                      addError("Expected a closing keyword 'end' after for loop.");
+                      return false;
+                    }
+                  } else {
+                    addError("Expected keyword 'do'.");
+                    return false;
+                  }
+                } else {
+                  addError("Expected an expression for the right-hand side of range.");
+                  return false;
+                }
+              } else {
+                addError("Expected a range operator '..'.");
+                return false;
+              }
+            } else {
+              addError("Expected an expression for the left-hand side of range.");
+              return false;
+            }
+          } else {
+            addError("Expected keyword 'in'.");
+            return false;
+          }
+        } else {
+          addError("Expected an identifier.");
+          return false;
+        }
       }
       return false;
     }
@@ -252,6 +319,26 @@ namespace MiniPL.parser {
 
     private bool peekType(MiniPLTokenType type) {
       return this.nextToken != null && this.nextToken.getType().Equals(type);
+    }
+
+    private bool matchDo() {
+      return match(MiniPLTokenType.KEYWORD_DO);
+    }
+
+    private bool matchRange() {
+      return match(MiniPLTokenType.RANGE_OPERATOR); 
+    }
+
+    private bool matchFor() {
+      return match(MiniPLTokenType.KEYWORD_FOR);
+    }
+
+    private bool matchIn() {
+      return match(MiniPLTokenType.KEYWORD_IN);
+    }
+
+    private bool matchEnd() {
+      return match(MiniPLTokenType.KEYWORD_END);
     }
 
     private bool matchIdentifier() {
@@ -392,6 +479,9 @@ namespace MiniPL.parser {
         case "var_assignment":
           firstSet.Add(MiniPLTokenType.IDENTIFIER);
           break;
+        case "for":
+          firstSet.Add(MiniPLTokenType.KEYWORD_FOR);
+          break;
         case "read":
           firstSet.Add(MiniPLTokenType.KEYWORD_READ);
           break;
@@ -403,19 +493,6 @@ namespace MiniPL.parser {
           break;
       }
       return firstSet;
-    }
-
-    private ICollection<MiniPLTokenType> follow(string rule) {
-      ICollection<MiniPLTokenType> followSet = new HashSet<MiniPLTokenType>();
-      switch(rule) {
-        case "opnd":
-          followSet.Add(MiniPLTokenType.INTEGER_LITERAL);
-          followSet.Add(MiniPLTokenType.STRING_LITERAL);
-          followSet.Add(MiniPLTokenType.IDENTIFIER);
-          followSet.Add(MiniPLTokenType.LEFT_PARENTHESIS);
-          break;
-      }
-      return followSet;
     }
   }
 
