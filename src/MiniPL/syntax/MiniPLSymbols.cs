@@ -2,7 +2,7 @@ using System;
 
 namespace MiniPL.syntax {
 
-  public enum MiniPLSymbols {
+  public enum MiniPLSymbol {
 
     PROGRAM,
     STATEMENT_LIST,

@@ -7,16 +7,16 @@ namespace MiniPL.parser {
 
   public class FirstAndFollow {
 
-    private IDictionary<MiniPLSymbols, ICollection<MiniPLTokenType>> firstMap;
+    private IDictionary<MiniPLSymbol, ICollection<MiniPLTokenType>> firstMap;
 
-    private IDictionary<MiniPLSymbols, ICollection<MiniPLTokenType>> followMap;
+    private IDictionary<MiniPLSymbol, ICollection<MiniPLTokenType>> followMap;
 
     public FirstAndFollow() {
       initializeFirstSet();
       initializeFollowSet();
     }
 
-    public bool followContains(MiniPLSymbols symbol, MiniPLTokenType tokenType) {
+    public bool followContains(MiniPLSymbol symbol, MiniPLTokenType tokenType) {
       if(followMap.ContainsKey(symbol)) {
         return followMap[symbol].Contains(tokenType);
       } else {
@@ -24,7 +24,7 @@ namespace MiniPL.parser {
       }
     }
 
-    public bool firstContains(MiniPLSymbols symbol, MiniPLTokenType tokenType) {
+    public bool firstContains(MiniPLSymbol symbol, MiniPLTokenType tokenType) {
       if(firstMap.ContainsKey(symbol)) {
         return firstMap[symbol].Contains(tokenType);
       } else {
@@ -32,7 +32,7 @@ namespace MiniPL.parser {
       }
     }
 
-    public ICollection<MiniPLTokenType> first(MiniPLSymbols symbol) {
+    public ICollection<MiniPLTokenType> first(MiniPLSymbol symbol) {
       if(firstMap.ContainsKey(symbol)) {
         return firstMap[symbol];
       } else {
@@ -41,13 +41,13 @@ namespace MiniPL.parser {
     }
 
     private void initializeFirstSet() {
-      firstMap = new Dictionary<MiniPLSymbols, ICollection<MiniPLTokenType>>();
+      firstMap = new Dictionary<MiniPLSymbol, ICollection<MiniPLTokenType>>();
 
       ICollection<MiniPLTokenType> type = new HashSet<MiniPLTokenType>();
       type.Add(MiniPLTokenType.TYPE_IDENTIFIER_INTEGER);
       type.Add(MiniPLTokenType.TYPE_IDENTIFIER_STRING);
       type.Add(MiniPLTokenType.TYPE_IDENTIFIER_BOOL);
-      firstMap.Add(MiniPLSymbols.TYPE, type);
+      firstMap.Add(MiniPLSymbol.TYPE, type);
 
       ICollection<MiniPLTokenType> operation = new HashSet<MiniPLTokenType>();
       operation.Add(MiniPLTokenType.PLUS);
@@ -58,20 +58,20 @@ namespace MiniPL.parser {
       operation.Add(MiniPLTokenType.LOGICAL_NOT);
       operation.Add(MiniPLTokenType.EQUALITY_COMPARISON);
       operation.Add(MiniPLTokenType.LESS_THAN_COMPARISON);
-      firstMap.Add(MiniPLSymbols.OPERATION, operation);
+      firstMap.Add(MiniPLSymbol.OPERATION, operation);
 
       ICollection<MiniPLTokenType> operand = new HashSet<MiniPLTokenType>();
       operand.Add(MiniPLTokenType.INTEGER_LITERAL);
       operand.Add(MiniPLTokenType.STRING_LITERAL);
       operand.Add(MiniPLTokenType.IDENTIFIER);
       operand.Add(MiniPLTokenType.LEFT_PARENTHESIS);
-      firstMap.Add(MiniPLSymbols.OPERAND, operand);
+      firstMap.Add(MiniPLSymbol.OPERAND, operand);
 
       ICollection<MiniPLTokenType> expression = new HashSet<MiniPLTokenType>();
-      expression = union(firstMap[MiniPLSymbols.OPERAND], expression);
+      expression = union(firstMap[MiniPLSymbol.OPERAND], expression);
       expression.Add(MiniPLTokenType.LOGICAL_NOT);
       expression.Add(MiniPLTokenType.LOGICAL_NOT);
-      firstMap.Add(MiniPLSymbols.EXPRESSION, expression);
+      firstMap.Add(MiniPLSymbol.EXPRESSION, expression);
 
       ICollection<MiniPLTokenType> statement = new HashSet<MiniPLTokenType>();
       statement.Add(MiniPLTokenType.KEYWORD_VAR);
@@ -80,99 +80,99 @@ namespace MiniPL.parser {
       statement.Add(MiniPLTokenType.KEYWORD_READ);
       statement.Add(MiniPLTokenType.KEYWORD_PRINT);
       statement.Add(MiniPLTokenType.KEYWORD_ASSERT);
-      firstMap.Add(MiniPLSymbols.STATEMENT, statement);
+      firstMap.Add(MiniPLSymbol.STATEMENT, statement);
 
       ICollection<MiniPLTokenType> statementList = new HashSet<MiniPLTokenType>();
-      statementList = union(firstMap[MiniPLSymbols.STATEMENT], statementList);
-      firstMap.Add(MiniPLSymbols.STATEMENT_LIST, statement);
+      statementList = union(firstMap[MiniPLSymbol.STATEMENT], statementList);
+      firstMap.Add(MiniPLSymbol.STATEMENT_LIST, statement);
 
       ICollection<MiniPLTokenType> program = new HashSet<MiniPLTokenType>();
-      program = union(firstMap[MiniPLSymbols.STATEMENT_LIST], program);
-      firstMap.Add(MiniPLSymbols.PROGRAM, program);
+      program = union(firstMap[MiniPLSymbol.STATEMENT_LIST], program);
+      firstMap.Add(MiniPLSymbol.PROGRAM, program);
 
       ICollection<MiniPLTokenType> var_declaration = new HashSet<MiniPLTokenType>();
       var_declaration.Add(MiniPLTokenType.KEYWORD_VAR);
-      firstMap.Add(MiniPLSymbols.VAR_DECLARATION, var_declaration);
+      firstMap.Add(MiniPLSymbol.VAR_DECLARATION, var_declaration);
       
       ICollection<MiniPLTokenType> var_assignment = new HashSet<MiniPLTokenType>();
       var_assignment.Add(MiniPLTokenType.IDENTIFIER);
-      firstMap.Add(MiniPLSymbols.VAR_ASSIGNMENT, var_assignment);
+      firstMap.Add(MiniPLSymbol.VAR_ASSIGNMENT, var_assignment);
 
       ICollection<MiniPLTokenType> for_loop = new HashSet<MiniPLTokenType>();
       for_loop.Add(MiniPLTokenType.KEYWORD_FOR);
-      firstMap.Add(MiniPLSymbols.FOR_LOOP, for_loop);
+      firstMap.Add(MiniPLSymbol.FOR_LOOP, for_loop);
       
       ICollection<MiniPLTokenType> read = new HashSet<MiniPLTokenType>();
       read.Add(MiniPLTokenType.KEYWORD_READ);
-      firstMap.Add(MiniPLSymbols.READ_PROCEDURE, read);
+      firstMap.Add(MiniPLSymbol.READ_PROCEDURE, read);
 
       ICollection<MiniPLTokenType> print = new HashSet<MiniPLTokenType>();
       print.Add(MiniPLTokenType.KEYWORD_PRINT);
-      firstMap.Add(MiniPLSymbols.PRINT_PROCEDURE, print);
+      firstMap.Add(MiniPLSymbol.PRINT_PROCEDURE, print);
 
       ICollection<MiniPLTokenType> assert = new HashSet<MiniPLTokenType>();
       assert.Add(MiniPLTokenType.KEYWORD_ASSERT);
-      firstMap.Add(MiniPLSymbols.ASSERT_PROCEDURE, assert);
+      firstMap.Add(MiniPLSymbol.ASSERT_PROCEDURE, assert);
     }
 
     private void initializeFollowSet() {
-      followMap = new Dictionary<MiniPLSymbols, ICollection<MiniPLTokenType>>();
+      followMap = new Dictionary<MiniPLSymbol, ICollection<MiniPLTokenType>>();
 
       ICollection<MiniPLTokenType> type = new HashSet<MiniPLTokenType>();
       type.Add(MiniPLTokenType.SEMICOLON);
       type.Add(MiniPLTokenType.ASSIGNMENT_OPERATOR);
-      followMap.Add(MiniPLSymbols.TYPE, type);
+      followMap.Add(MiniPLSymbol.TYPE, type);
 
       ICollection<MiniPLTokenType> operation = new HashSet<MiniPLTokenType>();
-      operation = union(firstMap[MiniPLSymbols.OPERAND], operation);
-      followMap.Add(MiniPLSymbols.OPERATION, operation);
+      operation = union(firstMap[MiniPLSymbol.OPERAND], operation);
+      followMap.Add(MiniPLSymbol.OPERATION, operation);
 
       ICollection<MiniPLTokenType> operand = new HashSet<MiniPLTokenType>();
       operand.Add(MiniPLTokenType.SEMICOLON);
-      operand = union(firstMap[MiniPLSymbols.OPERATION], operand);
-      followMap.Add(MiniPLSymbols.OPERAND, operand);
+      operand = union(firstMap[MiniPLSymbol.OPERATION], operand);
+      followMap.Add(MiniPLSymbol.OPERAND, operand);
 
       ICollection<MiniPLTokenType> expression = new HashSet<MiniPLTokenType>();
       expression.Add(MiniPLTokenType.SEMICOLON);
       expression.Add(MiniPLTokenType.RANGE_OPERATOR);
       expression.Add(MiniPLTokenType.KEYWORD_DO);
       expression.Add(MiniPLTokenType.RIGHT_PARENTHESIS);
-      followMap.Add(MiniPLSymbols.EXPRESSION, expression);
+      followMap.Add(MiniPLSymbol.EXPRESSION, expression);
 
       ICollection<MiniPLTokenType> statement = new HashSet<MiniPLTokenType>();
       statement.Add(MiniPLTokenType.SEMICOLON);
-      followMap.Add(MiniPLSymbols.STATEMENT, statement);
+      followMap.Add(MiniPLSymbol.STATEMENT, statement);
 
       ICollection<MiniPLTokenType> var_declaration = new HashSet<MiniPLTokenType>();
       var_declaration.Add(MiniPLTokenType.SEMICOLON);
-      followMap.Add(MiniPLSymbols.VAR_DECLARATION, var_declaration);
+      followMap.Add(MiniPLSymbol.VAR_DECLARATION, var_declaration);
       
       ICollection<MiniPLTokenType> var_assignment = new HashSet<MiniPLTokenType>();
       var_assignment.Add(MiniPLTokenType.SEMICOLON);
-      followMap.Add(MiniPLSymbols.VAR_ASSIGNMENT, var_assignment);
+      followMap.Add(MiniPLSymbol.VAR_ASSIGNMENT, var_assignment);
 
       ICollection<MiniPLTokenType> for_loop = new HashSet<MiniPLTokenType>();
       for_loop.Add(MiniPLTokenType.SEMICOLON);
-      followMap.Add(MiniPLSymbols.FOR_LOOP, for_loop);
+      followMap.Add(MiniPLSymbol.FOR_LOOP, for_loop);
       
       ICollection<MiniPLTokenType> read = new HashSet<MiniPLTokenType>();
       read.Add(MiniPLTokenType.SEMICOLON);
-      followMap.Add(MiniPLSymbols.READ_PROCEDURE, read);
+      followMap.Add(MiniPLSymbol.READ_PROCEDURE, read);
 
       ICollection<MiniPLTokenType> print = new HashSet<MiniPLTokenType>();
       print.Add(MiniPLTokenType.SEMICOLON);
-      followMap.Add(MiniPLSymbols.PRINT_PROCEDURE, print);
+      followMap.Add(MiniPLSymbol.PRINT_PROCEDURE, print);
 
       ICollection<MiniPLTokenType> assert = new HashSet<MiniPLTokenType>();
       assert.Add(MiniPLTokenType.SEMICOLON);
-      followMap.Add(MiniPLSymbols.ASSERT_PROCEDURE, assert);
+      followMap.Add(MiniPLSymbol.ASSERT_PROCEDURE, assert);
 
       ICollection<MiniPLTokenType> statementList = new HashSet<MiniPLTokenType>();
       statementList.Add(MiniPLTokenType.KEYWORD_END);
-      followMap.Add(MiniPLSymbols.STATEMENT_LIST, statementList);
+      followMap.Add(MiniPLSymbol.STATEMENT_LIST, statementList);
 
       ICollection<MiniPLTokenType> program = new HashSet<MiniPLTokenType>();
-      followMap.Add(MiniPLSymbols.PROGRAM, program);
+      followMap.Add(MiniPLSymbol.PROGRAM, program);
     }
 
     private ICollection<MiniPLTokenType> union(ICollection<MiniPLTokenType> collection, ICollection<MiniPLTokenType> otherCollection) {

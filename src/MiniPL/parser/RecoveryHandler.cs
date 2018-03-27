@@ -18,7 +18,7 @@ namespace MiniPL.parser {
       this.firstAndFollow = firstAndFollow;
     }
 
-    public void tryToRecoverFromException(MiniPLSymbols symbol, Action procedureMethod) {
+    public void tryToRecoverFromException(MiniPLSymbol symbol, Action procedureMethod) {
       do {
         readToken();
         Token<MiniPLTokenType> goodToken = this.tokenReader.token();
