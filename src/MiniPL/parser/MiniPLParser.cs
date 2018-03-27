@@ -10,22 +10,22 @@ namespace MiniPL.parser {
 
     private TokenReader tokenReader;
 
-    private TokenMatcher tm;
+    private TokenMatcher tokenMatcher;
 
     private FirstAndFollow firstAndFollow;
 
-    public MiniPLParser(ITokenScanner<MiniPLTokenType> scanner) {
+    public MiniPLParser(TokenReader tokenReader) {
       initializeTokenMatcher();
-      initializeTokenReader(scanner);
+      initializeTokenReader(tokenReader);
       intializeFirstAndFollow();
     }
 
     private void initializeTokenMatcher() {
-      this.tm = new TokenMatcher();
+      this.tokenMatcher = new TokenMatcher();
     }
     
-    private void initializeTokenReader(ITokenScanner<MiniPLTokenType> scanner) {
-      this.tokenReader = new TokenReader(scanner);
+    private void initializeTokenReader(TokenReader reader) {
+      this.tokenReader = reader;
     }
 
     private void intializeFirstAndFollow() {
@@ -37,7 +37,7 @@ namespace MiniPL.parser {
       if(token != null && token.getType() == MiniPLTokenType.INVALID_TOKEN) {
         lexicalError("Invalid token '" + token.getLexeme() + "'.");
       }
-      this.tm.setToken(token);
+      this.tokenMatcher.setToken(token);
     }
 
     public bool checkSyntax() {
@@ -68,21 +68,21 @@ namespace MiniPL.parser {
     private void doStatemenProcedure() {
       matchStatement();
       readToken();
-      tm.matchSemicolon();
+      tokenMatcher.matchSemicolon();
     }
 
     private void matchStatement() {
-      if(tm.isSymbol(first("var_declaration"))) {
+      if(tokenMatcher.isSymbol(first("var_declaration"))) {
         doVarDeclarationProcedure();
-      } else if(tm.isSymbol(first("var_assignment"))) {
+      } else if(tokenMatcher.isSymbol(first("var_assignment"))) {
         doVarAssignmentProcedure();
-      } else if(tm.isSymbol(first("for"))) {
+      } else if(tokenMatcher.isSymbol(first("for"))) {
         doForProcedure(); 
-      } else if(tm.isSymbol(first("read"))) {
+      } else if(tokenMatcher.isSymbol(first("read"))) {
         doReadProcedure();
-      } else if(tm.isSymbol(first("print"))) {
+      } else if(tokenMatcher.isSymbol(first("print"))) {
         doPrintProcedure();        
-      } else if(tm.isSymbol(first("assert"))) {
+      } else if(tokenMatcher.isSymbol(first("assert"))) {
         doAssertProcedure();
       } else {
         syntaxError("Illegal start of a statement. " + (tokenReader.token() != null ? "A statement can't begin with '" + tokenReader.token().getLexeme() + "'." : ""));
@@ -90,81 +90,81 @@ namespace MiniPL.parser {
     }
 
     private void doReadProcedure() {
-      tm.matchRead();
+      tokenMatcher.matchRead();
       readToken();
-      tm.matchIdentifier();
+      tokenMatcher.matchIdentifier();
     }
 
     private void doPrintProcedure() {
-      tm.matchPrint();
+      tokenMatcher.matchPrint();
       readToken();
       doExpressionProcedure();
     }
 
     private void doAssertProcedure() {
-      tm.matchAssert();
+      tokenMatcher.matchAssert();
       readToken();
-      tm.matchLeftParenthesis();
+      tokenMatcher.matchLeftParenthesis();
       readToken();
       doExpressionProcedure();
       readToken();
-      tm.matchRightParenthesis();
+      tokenMatcher.matchRightParenthesis();
     }
 
     private void doForProcedure() {
-      tm.matchFor();
+      tokenMatcher.matchFor();
       readToken();
-      tm.matchIdentifier();
+      tokenMatcher.matchIdentifier();
       readToken();
-      tm.matchIn();
-      readToken();
-      doExpressionProcedure();
-      readToken();
-      tm.matchRange();
+      tokenMatcher.matchIn();
       readToken();
       doExpressionProcedure();
       readToken();
-      tm.matchDo();
+      tokenMatcher.matchRange();
+      readToken();
+      doExpressionProcedure();
+      readToken();
+      tokenMatcher.matchDo();
       readToken();
       doStatementListProcedure();
       readToken();
-      tm.matchEnd();
+      tokenMatcher.matchEnd();
       readToken();
-      tm.matchFor();
+      tokenMatcher.matchFor();
     }
 
     private void doVarAssignmentProcedure() {
-      tm.matchIdentifier();
+      tokenMatcher.matchIdentifier();
       readToken();
-      tm.matchAssignment();
+      tokenMatcher.matchAssignment();
       readToken();
       doExpressionProcedure();
     }
 
     private void doVarDeclarationProcedure() {
-      tm.matchVar();
+      tokenMatcher.matchVar();
       readToken();
-      tm.matchIdentifier();
+      tokenMatcher.matchIdentifier();
       readToken();
-      tm.matchColon();
+      tokenMatcher.matchColon();
       readToken();
       doTypeProcedure();
       if(tokenReader.isNextTokensType(MiniPLTokenType.ASSIGNMENT_OPERATOR)) {
         readToken();
-        tm.matchAssignment();
+        tokenMatcher.matchAssignment();
         readToken();
         doExpressionProcedure();
       }
     }
 
     private void doTypeProcedure() {
-      if(tm.isSymbol(MiniPLTokenType.TYPE_IDENTIFIER_INTEGER) || tm.isSymbol(MiniPLTokenType.TYPE_IDENTIFIER_STRING) || tm.isSymbol(MiniPLTokenType.TYPE_IDENTIFIER_BOOL))
+      if(tokenMatcher.isSymbol(MiniPLTokenType.TYPE_IDENTIFIER_INTEGER) || tokenMatcher.isSymbol(MiniPLTokenType.TYPE_IDENTIFIER_STRING) || tokenMatcher.isSymbol(MiniPLTokenType.TYPE_IDENTIFIER_BOOL))
         return;
       syntaxError("Expected a type (int, string, bool).");
     }
 
     private void doExpressionProcedure() {
-      if(tm.isSymbol(MiniPLTokenType.LOGICAL_NOT)) {
+      if(tokenMatcher.isSymbol(MiniPLTokenType.LOGICAL_NOT)) {
         readToken();
         doOperandProcedure();
         return;
@@ -181,14 +181,14 @@ namespace MiniPL.parser {
     }
 
     private void doOperationProcedure() {
-      if(tm.isSymbol(MiniPLTokenType.PLUS) || 
-         tm.isSymbol(MiniPLTokenType.MINUS) || 
-         tm.isSymbol(MiniPLTokenType.ASTERISK) || 
-         tm.isSymbol(MiniPLTokenType.SLASH) || 
-         tm.isSymbol(MiniPLTokenType.LESS_THAN_COMPARISON) || 
-         tm.isSymbol(MiniPLTokenType.EQUALITY_COMPARISON) || 
-         tm.isSymbol(MiniPLTokenType.LOGICAL_AND) || 
-         tm.isSymbol(MiniPLTokenType.LOGICAL_NOT))
+      if(tokenMatcher.isSymbol(MiniPLTokenType.PLUS) || 
+         tokenMatcher.isSymbol(MiniPLTokenType.MINUS) || 
+         tokenMatcher.isSymbol(MiniPLTokenType.ASTERISK) || 
+         tokenMatcher.isSymbol(MiniPLTokenType.SLASH) || 
+         tokenMatcher.isSymbol(MiniPLTokenType.LESS_THAN_COMPARISON) || 
+         tokenMatcher.isSymbol(MiniPLTokenType.EQUALITY_COMPARISON) || 
+         tokenMatcher.isSymbol(MiniPLTokenType.LOGICAL_AND) || 
+         tokenMatcher.isSymbol(MiniPLTokenType.LOGICAL_NOT))
         return;
       throw new SyntaxException("Expected an operation.", tokenReader.token());
     }
@@ -201,14 +201,14 @@ namespace MiniPL.parser {
     }
 
     private void doOperandProcedure() {
-      if(tm.isSymbol(MiniPLTokenType.INTEGER_LITERAL) || tm.isSymbol(MiniPLTokenType.STRING_LITERAL) || tm.isSymbol(MiniPLTokenType.IDENTIFIER)) {
+      if(tokenMatcher.isSymbol(MiniPLTokenType.INTEGER_LITERAL) || tokenMatcher.isSymbol(MiniPLTokenType.STRING_LITERAL) || tokenMatcher.isSymbol(MiniPLTokenType.IDENTIFIER)) {
         return;
       } 
-      tm.matchLeftParenthesis();
+      tokenMatcher.matchLeftParenthesis();
       readToken();
       doExpressionProcedure();
       readToken();
-      tm.matchRightParenthesis();
+      tokenMatcher.matchRightParenthesis();
     }
 
     private void syntaxError(string message) {

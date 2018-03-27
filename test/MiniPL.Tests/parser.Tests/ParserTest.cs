@@ -27,7 +27,7 @@ namespace MiniPL.Tests {
     }
 
     private MiniPLParser getParser(string source) {
-      return new MiniPLParser(ScannerFactory.createMiniPLScanner(source));
+      return new MiniPLParser(new TokenReader(ScannerFactory.createMiniPLScanner(source)));
     }
 
     [Fact]
