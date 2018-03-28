@@ -179,6 +179,7 @@ namespace MiniPL.Tests {
     [InlineData("x : int := 10;")]
     [InlineData("var : int;")]
     [InlineData("var b : int := 1000 := 99;")]
+    [InlineData("var $DOLLARBOY := 10;")]
     public void checkIllegalVariableDeclarations(string source) {
       this.parser = getParser(source);
       Assert.False(this.parser.checkSyntax());

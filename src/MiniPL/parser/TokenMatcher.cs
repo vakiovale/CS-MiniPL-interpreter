@@ -131,7 +131,7 @@ namespace MiniPL.parser {
 
     public bool match(MiniPLTokenType type, string errorToken) {
       if(this.token == null) {
-        throw new SyntaxException("Expected " + errorToken + ". Could not find any token.", token);
+        throw new SyntaxException("Expected " + errorToken, token);
       } else {
         if(this.token.getType().Equals(type)) {
           return true;

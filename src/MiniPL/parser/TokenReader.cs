@@ -35,6 +35,10 @@ namespace MiniPL.parser {
       return this.currentToken;
     }
 
+    public Token<MiniPLTokenType> getNextToken() {
+      return this.nextToken;
+    }
+
     public bool hasNextToken() {
       return this.nextToken != null;
     }
@@ -50,6 +54,7 @@ namespace MiniPL.parser {
     public MiniPLTokenType getNextTokensType() {
       return this.nextToken.getType();
     }
+
   }
 
 }

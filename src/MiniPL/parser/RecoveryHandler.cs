@@ -19,6 +19,9 @@ namespace MiniPL.parser {
     }
 
     public void tryToRecoverFromException(MiniPLSymbol symbol, Action procedureMethod) {
+      if(nextTokenShouldEndRecovery(symbol)) {
+        return;
+      }
       do {
         readToken();
         Token<MiniPLTokenType> goodToken = this.tokenReader.token();
@@ -30,10 +33,17 @@ namespace MiniPL.parser {
           if(this.firstAndFollow.followContains(symbol, goodToken.getType())) {
             return;
           }
+          if(nextTokenShouldEndRecovery(symbol)) {
+            return;
+          }
         }
       } while(this.tokenReader.hasNextToken());
     }
-        
+
+    private bool nextTokenShouldEndRecovery(MiniPLSymbol symbol) {
+      return this.tokenReader.hasNextToken() && this.firstAndFollow.followContains(symbol, this.tokenReader.getNextTokensType());
+    }
+
   }
 
 }
