@@ -37,19 +37,19 @@ namespace MiniPL.Tests {
     [Fact]
     public void checkSimpleSyntax() {
       this.parser = getParser("read word;");
-      Assert.True(this.parser.checkSyntax());
+      Assert.True(this.parser.processAndBuildAST());
     }
 
     [Fact]
     public void checkSimpleSyntaxForTwoLineProgram() {
       this.parser = getParser("read word;\nread word;");
-      Assert.True(this.parser.checkSyntax());
+      Assert.True(this.parser.processAndBuildAST());
     }
 
     [Fact]
     public void checkSimpleFailingSyntax() {
       this.parser = getParser("read read;");
-      Assert.False(this.parser.checkSyntax());
+      Assert.False(this.parser.processAndBuildAST());
     }
 
     [Theory]
@@ -60,13 +60,13 @@ namespace MiniPL.Tests {
     [InlineData("var .= 10;")]
     public void checkIllegalPrograms(string source) {
       this.parser = getParser(source);
-      Assert.False(this.parser.checkSyntax());
+      Assert.False(this.parser.processAndBuildAST());
     }
 
     [Fact]
     public void checkSimpleFailingSyntaxForTwoLineProgram() {
       this.parser = getParser("read word;\nread read;");
-      Assert.False(this.parser.checkSyntax());
+      Assert.False(this.parser.processAndBuildAST());
     }
 
     [Theory]
@@ -75,7 +75,7 @@ namespace MiniPL.Tests {
     [InlineData("100;")]
     public void testIllegalStartOfAStatement(string source) {
       this.parser = getParser(source);
-      Assert.False(this.parser.checkSyntax());
+      Assert.False(this.parser.processAndBuildAST());
     }
 
     [Theory]
@@ -106,7 +106,7 @@ namespace MiniPL.Tests {
     [InlineData("print (((2 < 3)));\nprint (!trueValue) = 3;")]
     public void testDifferentExpressions(string source) {
       this.parser = getParser(source);
-      Assert.True(this.parser.checkSyntax());
+      Assert.True(this.parser.processAndBuildAST());
     }
 
     [Theory]
@@ -123,7 +123,7 @@ namespace MiniPL.Tests {
     [InlineData("print (1 + 2));")]
     public void checkIllegalExpressionsWithPrintStatement(string source) {
       this.parser = getParser(source);
-      Assert.False(this.parser.checkSyntax());
+      Assert.False(this.parser.processAndBuildAST());
     }
 
     [Theory]
@@ -131,7 +131,7 @@ namespace MiniPL.Tests {
     [InlineData("read gorilla2;")]
     public void checkReadStatementAndIdentifiers(string source) {
       this.parser = getParser(source);
-      Assert.True(this.parser.checkSyntax());
+      Assert.True(this.parser.processAndBuildAST());
     }
     
     [Theory]
@@ -140,7 +140,7 @@ namespace MiniPL.Tests {
     [InlineData("read \"WORD!\";")]
     public void checkIllegalReadStatements(string source) {
       this.parser = getParser(source);
-      Assert.False(this.parser.checkSyntax());
+      Assert.False(this.parser.processAndBuildAST());
     }
 
     [Theory]
@@ -149,7 +149,7 @@ namespace MiniPL.Tests {
     [InlineData("assert (gorilla + \"BAD MONKEY!\");")]
     public void checkCorrectAssertStatements(string source) {
       this.parser = getParser(source);
-      Assert.True(this.parser.checkSyntax());
+      Assert.True(this.parser.processAndBuildAST());
     }
 
     [Theory]
@@ -158,7 +158,7 @@ namespace MiniPL.Tests {
     [InlineData("assert gorilla + \"BAD MONKEY!\");")]
     public void checkIllegalAssertStatements(string source) {
       this.parser = getParser(source);
-      Assert.False(this.parser.checkSyntax());
+      Assert.False(this.parser.processAndBuildAST());
     }
 
     [Theory]
@@ -170,7 +170,7 @@ namespace MiniPL.Tests {
     [InlineData("var trueValue : bool := pointsFromThisCourse < 1000;")]
     public void checkCorrectDeclarationAndAssignment(string source) {
       this.parser = getParser(source);
-      Assert.True(this.parser.checkSyntax());
+      Assert.True(this.parser.processAndBuildAST());
     }
 
     [Theory]
@@ -182,7 +182,7 @@ namespace MiniPL.Tests {
     [InlineData("var $DOLLARBOY := 10;")]
     public void checkIllegalVariableDeclarations(string source) {
       this.parser = getParser(source);
-      Assert.False(this.parser.checkSyntax());
+      Assert.False(this.parser.processAndBuildAST());
     }
 
     [Theory]
@@ -199,7 +199,7 @@ namespace MiniPL.Tests {
     [InlineData("variable:=10;")]
     public void checkCorrectVariableAssignment(string source) {
       this.parser = getParser(source);
-      Assert.True(this.parser.checkSyntax());
+      Assert.True(this.parser.processAndBuildAST());
     }
 
     [Theory]
@@ -211,7 +211,7 @@ namespace MiniPL.Tests {
     [InlineData("varx:=;")]
     public void checkIllegalVariableAssignment(string source) {
       this.parser = getParser(source);
-      Assert.False(this.parser.checkSyntax());
+      Assert.False(this.parser.processAndBuildAST());
     }
 
     [Theory]
@@ -227,7 +227,7 @@ namespace MiniPL.Tests {
     [InlineData("for i in 1..10 do for i in 1..10 do print \"Hello!\"; end for; end for; \nfor i in 1..10 do print \"Hello!\"; for i in 1..10 do for i in 1..10 do print \"Hello!\"; end for; end for; end for;")]
     public void checkCorrectForLoop(string source) {
       this.parser = getParser(source);
-      Assert.True(this.parser.checkSyntax());
+      Assert.True(this.parser.processAndBuildAST());
     }
 
     [Theory]
@@ -240,12 +240,12 @@ namespace MiniPL.Tests {
     [InlineData("for i in 1..10 do for i in 1..10 do print \"Hello!\"; end for; end for; \nfor i in 1..10 do print \"Hello!\"; for i in 1..10 do for i in 1..10 do print \"Hello!\"; end for; end for; print \"Missing end for!\";")]
     public void checkIllegalForLoop(string source) {
       this.parser = getParser(source);
-      Assert.False(this.parser.checkSyntax());
+      Assert.False(this.parser.processAndBuildAST());
     }
 
     [Fact]
     public void checkSyntaxOfASampleProgram() {
-      Assert.True(this.parser.checkSyntax());
+      Assert.True(this.parser.processAndBuildAST());
     }
 
   }

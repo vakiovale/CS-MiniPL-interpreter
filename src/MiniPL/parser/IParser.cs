@@ -5,7 +5,7 @@ namespace MiniPL.parser {
 
   public interface IParser {
 
-    bool checkSyntax();
+    bool processAndBuildAST();
     IAST getAST();
 
   }

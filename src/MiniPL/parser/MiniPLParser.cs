@@ -6,6 +6,7 @@ using MiniPL.exceptions;
 using MiniPL.syntax;
 using MiniPL.logger;
 using MiniPL.parser.AST;
+using MiniPL.semantics;
 
 namespace MiniPL.parser {
 
@@ -71,18 +72,34 @@ namespace MiniPL.parser {
       this.tokenMatcher.setToken(token);
     }
 
-    public bool checkSyntax() {
+    /**
+     * Recognizes the program and builds an AST.
+     * Returns true if syntax is ok, false otherwise. 
+     */
+    public bool processAndBuildAST() {
       readToken();
       ast.addProgramNode(doProgramProcedure());
       return syntaxOk;
     }
 
+    /**
+     * Returns a valid AST (valid by syntax).
+     * Returns null, if program has not been processed or if there
+     * are lexical or syntax errors.
+     */
     public IAST getAST() {
       if(this.syntaxOk) {
         return this.ast;
       } else {
         return null;
       }
+    }
+
+    /**
+     * Returns true if program's semantics are ok. 
+     */
+    public bool doSemanticAnalysis(ISemanticAnalyzer semanticAnalyzer) {
+      return semanticAnalyzer.analyze(this.ast);
     }
 
     private void exceptionRecovery(MiniPLException exception, MiniPLSymbol symbol, Func<INode> procedureMethod) {

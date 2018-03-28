@@ -11,40 +11,20 @@ namespace MiniPL.Tests {
 
   public class ParserASTTest {
 
-    private ITokenScanner<MiniPLTokenType> scanner;
-
-    private String sampleProgram = "var nTimes : int := 0;\n"
-                           + "print \"How many times?\";\n"
-                           + "read nTimes;\n"
-                           + "var x : int;\n"
-                           + "for x in 0..nTimes-1 do\n"
-                           + "\tprint x;\n"
-                           + "\tprint \" : Hello, World!\\n\";\n"
-                           + "end for;\n"
-                           + "assert (x = nTimes);\n"
-                           + "assert ((1 + (2 * 3)) = ((6 - 1) + 1));";
-
     private IParser parser;
 
-    private TestLogger logger;
-
     public ParserASTTest() {
-      this.logger = new TestLogger();
-      this.parser = getParser(sampleProgram);
-    }
-
-    private MiniPLParser getParser(string source) {
-      return new MiniPLParser(new TokenReader(ScannerFactory.createMiniPLScanner(source)), logger);
+      this.parser = TestHelpers.getParser(TestHelpers.sampleProgram);
     }
 
     [Fact]
     public void checkSampleProgramSyntax() {
-      Assert.True(this.parser.checkSyntax());
+      Assert.True(this.parser.processAndBuildAST());
     }
 
     [Fact]
     public void sampleProgramShouldHaveCorrectAST() {
-      this.parser.checkSyntax();
+      this.parser.processAndBuildAST();
       IAST ast = this.parser.getAST();
       INode statementList = ast.getProgram().getChildren()[0];
       INode firstVarDeclarationStatement = statementList.getChildren()[0];
@@ -66,22 +46,22 @@ namespace MiniPL.Tests {
 
     [Fact]
     public void checkASTexists() {
-      this.parser.checkSyntax();
+      this.parser.processAndBuildAST();
       IAST ast = this.parser.getAST();
       Assert.True(ast != null);
     }
 
     [Fact]
     public void checkASTDoesNotExistForIllegalProgram() {
-      this.parser = getParser("This program is NOT ok!; print \"Bye!\";");
-      this.parser.checkSyntax();
+      this.parser = TestHelpers.getParser("This program is NOT ok!; print \"Bye!\";");
+      this.parser.processAndBuildAST();
       Assert.True(this.parser.getAST() == null);
     }
 
     [Fact]
     public void checkASTForPrintStatement() {
-      this.parser = getParser("print \"Hello World!\";");
-      this.parser.checkSyntax();
+      this.parser = TestHelpers.getParser("print \"Hello World!\";");
+      this.parser.processAndBuildAST();
 
 
       IAST ast = this.parser.getAST();
@@ -98,8 +78,8 @@ namespace MiniPL.Tests {
 
     [Fact]
     public void shouldHaveTwoStringsAddedTogether() {
-      this.parser = getParser("print \"Hello \" + \"World!\";");
-      this.parser.checkSyntax();
+      this.parser = TestHelpers.getParser("print \"Hello \" + \"World!\";");
+      this.parser.processAndBuildAST();
 
       IAST ast = this.parser.getAST();
       INode program = ast.getProgram();
@@ -117,8 +97,8 @@ namespace MiniPL.Tests {
 
     [Fact]
     public void shouldHaveCorrectExpressionWithLogicalNot() {
-      this.parser = getParser("print !(1 = 2);");
-      this.parser.checkSyntax();
+      this.parser = TestHelpers.getParser("print !(1 = 2);");
+      this.parser.processAndBuildAST();
 
       IAST ast = this.parser.getAST();
       INode program = ast.getProgram();
@@ -138,8 +118,8 @@ namespace MiniPL.Tests {
 
     [Fact]
     public void shouldHaveValidASTWithAssertStatement() {
-      this.parser = getParser("assert (1 < 2);");
-      this.parser.checkSyntax();
+      this.parser = TestHelpers.getParser("assert (1 < 2);");
+      this.parser.processAndBuildAST();
 
       IAST ast = this.parser.getAST();
       INode program = ast.getProgram();
@@ -158,8 +138,8 @@ namespace MiniPL.Tests {
 
     [Fact]
     public void shouldHaveValidASTWithReadStatement() {
-      this.parser = getParser("read goodVariable;");
-      this.parser.checkSyntax();
+      this.parser = TestHelpers.getParser("read goodVariable;");
+      this.parser.processAndBuildAST();
 
       IAST ast = this.parser.getAST();
       INode program = ast.getProgram();
@@ -174,8 +154,8 @@ namespace MiniPL.Tests {
 
     [Fact]
     public void shouldHaveValidASTWithToStatements() {
-      this.parser = getParser("print 1 + 2; read goodVariable;");
-      this.parser.checkSyntax();
+      this.parser = TestHelpers.getParser("print 1 + 2; read goodVariable;");
+      this.parser.processAndBuildAST();
 
       IAST ast = this.parser.getAST();
       INode program = ast.getProgram();
@@ -193,8 +173,8 @@ namespace MiniPL.Tests {
 
     [Fact]
     public void shouldHaveValidASTWithVarAssignment() {
-      this.parser = getParser("car := formula1Car;");
-      this.parser.checkSyntax();
+      this.parser = TestHelpers.getParser("car := formula1Car;");
+      this.parser.processAndBuildAST();
 
       IAST ast = this.parser.getAST();
       INode program = ast.getProgram();
@@ -212,8 +192,8 @@ namespace MiniPL.Tests {
 
     [Fact]
     public void shouldHaveValidASTWithVarAssignmentHavingExpression() {
-      this.parser = getParser("theBoss := (\"Yes, \" + \"sir!\");");
-      this.parser.checkSyntax();
+      this.parser = TestHelpers.getParser("theBoss := (\"Yes, \" + \"sir!\");");
+      this.parser.processAndBuildAST();
 
       IAST ast = this.parser.getAST();
       INode program = ast.getProgram();
@@ -234,8 +214,8 @@ namespace MiniPL.Tests {
 
     [Fact]
     public void shouldHaveValidASTWithVarDeclaration() {
-      this.parser = getParser("var x : int := 1;");
-      this.parser.checkSyntax();
+      this.parser = TestHelpers.getParser("var x : int := 1;");
+      this.parser.processAndBuildAST();
 
       IAST ast = this.parser.getAST();
       INode program = ast.getProgram();
@@ -255,8 +235,8 @@ namespace MiniPL.Tests {
 
     [Fact]
     public void shouldHaveValidASTWithVarDeclarationAndMoreComplexExpression() {
-      this.parser = getParser("var x : string := (\"HELLO\" + (\"WORLD!\"));");
-      this.parser.checkSyntax();
+      this.parser = TestHelpers.getParser("var x : string := (\"HELLO\" + (\"WORLD!\"));");
+      this.parser.processAndBuildAST();
 
       IAST ast = this.parser.getAST();
       INode program = ast.getProgram();
@@ -280,8 +260,8 @@ namespace MiniPL.Tests {
 
     [Fact]
     public void shouldHaveValidASTWithVarDeclarationWithOnlyType() {
-      this.parser = getParser("var x : int;");
-      this.parser.checkSyntax();
+      this.parser = TestHelpers.getParser("var x : int;");
+      this.parser.processAndBuildAST();
 
       IAST ast = this.parser.getAST();
       INode program = ast.getProgram();
@@ -299,8 +279,8 @@ namespace MiniPL.Tests {
 
     [Fact]
     public void shouldHaveValidASTWithForLoop() {
-      this.parser = getParser("for x in 0..10 do print \"We are in!\"; end for;");
-      this.parser.checkSyntax();
+      this.parser = TestHelpers.getParser("for x in 0..10 do print \"We are in!\"; end for;");
+      this.parser.processAndBuildAST();
 
       IAST ast = this.parser.getAST();
       INode program = ast.getProgram();

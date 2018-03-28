@@ -9,19 +9,13 @@ namespace MiniPL.Tests {
 
   public class ParserExceptionTest {
 
-    private ITokenScanner<MiniPLTokenType> scanner;
-
     private IParser parser;
 
     private TestLogger logger;
 
     public ParserExceptionTest() {
+      this.parser = TestHelpers.getParser("");
       this.logger = new TestLogger();
-      this.parser = getParser("");
-    }
-
-    private MiniPLParser getParser(string source) {
-      return new MiniPLParser(new TokenReader(ScannerFactory.createMiniPLScanner(source)), logger);
     }
 
     private bool contains(string sentence) {
@@ -35,15 +29,15 @@ namespace MiniPL.Tests {
 
     [Fact]
     public void checkNoErrors() {
-      this.parser = getParser("read word;");
-      this.parser.checkSyntax();
+      this.parser = TestHelpers.getParser("read word;", logger);
+      this.parser.processAndBuildAST();
       Assert.Equal(0, this.logger.getLogs().Count);
     }
 
     [Fact]
     public void shouldGetTwoLexicalErrorsContainingInvalidLexemes() {
-      this.parser = getParser("read _kjsdflök; assert(^BAD)");
-      this.parser.checkSyntax();
+      this.parser = TestHelpers.getParser("read _kjsdflök; assert(^BAD)", logger);
+      this.parser.processAndBuildAST();
       Assert.Equal(2, this.logger.getLogs().Count);
       Assert.True(contains("_kjsdflök"));
       Assert.True(contains("^BAD"));
@@ -51,43 +45,40 @@ namespace MiniPL.Tests {
 
     [Fact]
     public void shouldGetOnlyOneSyntaxErrorAfterRecovery() {
-      this.parser = getParser("for x in 0..1 do print ) \"Hello!\"; end for;");
-      this.parser.checkSyntax();
+      this.parser = TestHelpers.getParser("for x in 0..1 do print ) \"Hello!\"; end for;", logger);
+      this.parser.processAndBuildAST();
       Assert.Equal(1, this.logger.getLogs().Count);
       Assert.True(contains("Illegal start of an expression"));
     }
 
     [Fact]
     public void shouldGetOnlyOneSyntaxErrorAndRecoverToHandleOtherStatements() {
-      this.parser = getParser("read 1; print \"OK!\"; var x : int := 10; for x in 0..1 do print \"Hello!\"; end for;");
-      this.parser.checkSyntax();
-      foreach(string err in this.logger.getLogs()) {
-        Console.WriteLine(err);
-      }
+      this.parser = TestHelpers.getParser("read 1; print \"OK!\"; var x : int := 10; for x in 0..1 do print \"Hello!\"; end for;", logger);
+      this.parser.processAndBuildAST();
       Assert.Equal(1, this.logger.getLogs().Count);
       Assert.True(contains("Expected an identifier"));
     }
 
     [Fact]
     public void shouldGetOneLexicalErrorInVarDeclaration() {
-      this.parser = getParser("var $dollars : string; print dollars;");
-      this.parser.checkSyntax();
+      this.parser = TestHelpers.getParser("var $dollars : string; print dollars;", logger);
+      this.parser.processAndBuildAST();
       Assert.Equal(1, this.logger.getLogs().Count);
       Assert.True(contains("$dollars"));
     }
 
     [Fact]
     public void shouldGetOneLexialErrorInStartOfAStatement() {
-      this.parser = getParser("print\"Time to make some money\"; $DOLLARBOY := 12; assert(DOLLARBOY = 12);");
-      this.parser.checkSyntax();
+      this.parser = TestHelpers.getParser("print\"Time to make some money\"; $DOLLARBOY := 12; assert(DOLLARBOY = 12);", logger);
+      this.parser.processAndBuildAST();
       Assert.Equal(1, this.logger.getLogs().Count);
       Assert.True(contains("$DOLLARBOY"));
     }
 
     [Fact]
     public void shouldTwoLexicalErrorsInStartOfAStatementAndInAssert() {
-      this.parser = getParser("var123 := ^abba ; assert ( var123 = $12 );print\"Time to make some money\";");
-      this.parser.checkSyntax();
+      this.parser = TestHelpers.getParser("var123 := ^abba ; assert ( var123 = $12 );print\"Time to make some money\";", logger);
+      this.parser.processAndBuildAST();
       Assert.Equal(2, this.logger.getLogs().Count);
       Assert.True(contains("^abba"));
       Assert.True(contains("$12"));
