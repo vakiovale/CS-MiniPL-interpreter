@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using MiniPL.exceptions;
 using MiniPL.syntax;
 using MiniPL.logger;
+using MiniPL.parser.AST;
 
 namespace MiniPL.parser {
 
@@ -22,6 +23,8 @@ namespace MiniPL.parser {
 
     private bool syntaxOk;
 
+    private IAST ast;
+
     public MiniPLParser(TokenReader tokenReader, ILogger logger) {
       initializeLogger(logger);
       initializeTokenMatcher();
@@ -29,6 +32,7 @@ namespace MiniPL.parser {
       intializeFirstAndFollow();
       initializeRecoveryHandler();
       initializeSyntaxFlag();
+      initializeAST();
     }
 
     private void initializeLogger(ILogger logger) {
@@ -55,6 +59,10 @@ namespace MiniPL.parser {
       this.recoveryHandler = new RecoveryHandler(this.tokenReader, readToken, this.firstAndFollow);
     }
 
+    private void initializeAST() {
+      this.ast = new MiniPLAST();
+    }
+
     private void readToken() {
       Token<MiniPLTokenType> token = tokenReader.readToken();
       if(token != null && token.getType() == MiniPLTokenType.INVALID_TOKEN) {
@@ -65,11 +73,19 @@ namespace MiniPL.parser {
 
     public bool checkSyntax() {
       readToken();
-      doProgramProcedure();
+      ast.addProgramNode(doProgramProcedure());
       return syntaxOk;
     }
 
-    private void exceptionRecovery(MiniPLException exception, MiniPLSymbol symbol, Action procedureMethod) {
+    public IAST getAST() {
+      if(this.syntaxOk) {
+        return this.ast;
+      } else {
+        return null;
+      }
+    }
+
+    private void exceptionRecovery(MiniPLException exception, MiniPLSymbol symbol, Func<INode> procedureMethod) {
       logError(exception);
       failSyntax();
       recover(symbol, procedureMethod);
@@ -83,44 +99,49 @@ namespace MiniPL.parser {
       syntaxOk = false;
     }
 
-    private void recover(MiniPLSymbol symbol, Action procedureMethod) {
+    private void recover(MiniPLSymbol symbol, Func<INode> procedureMethod) {
       recoveryHandler.tryToRecoverFromException(symbol, procedureMethod);
     }
 
-    private void doProgramProcedure() {
+    private INode doProgramProcedure() {
+      INode programNode = new BasicNode<MiniPLSymbol>(MiniPLSymbol.PROGRAM);
       try {
-        doStatementListProcedure();
+        programNode.addNode(doStatementListProcedure());
       } catch(MiniPLException exception) {
         exceptionRecovery(exception, MiniPLSymbol.PROGRAM, doProgramProcedure);
       }  
+      return programNode;
     }
 
-    private void doStatementListProcedure() {
+    private INode doStatementListProcedure() {
+      INode statementList = new BasicNode<MiniPLSymbol>(MiniPLSymbol.STATEMENT_LIST); 
       try {
-        doStatemenProcedure();
+        statementList.addNode(doStatemenProcedure());
         while(peekType(firstAndFollow.first(MiniPLSymbol.STATEMENT))) {
           readToken();
-          doStatemenProcedure();
+          statementList.addNode(doStatemenProcedure());
         }
       } catch(MiniPLException exception) {
         exceptionRecovery(exception, MiniPLSymbol.STATEMENT_LIST, doStatementListProcedure); 
       }
+      return statementList;
     }
 
-    private void doStatemenProcedure() {
+    private INode doStatemenProcedure() {
+      INode statement = new BasicNode<MiniPLSymbol>(MiniPLSymbol.STATEMENT);
       try {
         if(isTokenInFirst(MiniPLSymbol.VAR_DECLARATION)) {
-          doVarDeclarationProcedure();
+          statement.addNode(doVarDeclarationProcedure());
         } else if(isTokenInFirst(MiniPLSymbol.VAR_ASSIGNMENT)) {
-          doVarAssignmentProcedure();
+          statement.addNode(doVarAssignmentProcedure());
         } else if(isTokenInFirst(MiniPLSymbol.FOR_LOOP)) {
-          doForProcedure(); 
+          statement.addNode(doForProcedure()); 
         } else if(isTokenInFirst(MiniPLSymbol.READ_PROCEDURE)) {
-          doReadProcedure();
+          statement.addNode(doReadProcedure());
         } else if(isTokenInFirst(MiniPLSymbol.PRINT_PROCEDURE)) {
-          doPrintProcedure();        
+          statement.addNode(doPrintProcedure());        
         } else if(isTokenInFirst(MiniPLSymbol.ASSERT_PROCEDURE)) {
-          doAssertProcedure();
+          statement.addNode(doAssertProcedure());
         } else {
           syntaxError("Illegal start of a statement. " + (tokenReader.token() != null ? "A statement can't begin with '" + tokenReader.token().getLexeme() + "'." : ""));
         }
@@ -129,9 +150,10 @@ namespace MiniPL.parser {
       } catch(MiniPLException exception) {
         exceptionRecovery(exception, MiniPLSymbol.STATEMENT, doStatemenProcedure);
       }
+      return statement;
     }
 
-    private void doReadProcedure() {
+    private INode doReadProcedure() {
       try {
         tokenMatcher.matchRead();
         readToken();
@@ -139,19 +161,22 @@ namespace MiniPL.parser {
       } catch(MiniPLException exception) {
         exceptionRecovery(exception, MiniPLSymbol.READ_PROCEDURE, doReadProcedure);
       }
+      return null;
     }
 
-    private void doPrintProcedure() {
+    private INode doPrintProcedure() {
+      INode print = new BasicNode<MiniPLSymbol>(MiniPLSymbol.PRINT_PROCEDURE);
       try {
         tokenMatcher.matchPrint();
         readToken();
-        doExpressionProcedure();
+        print.addNode(doExpressionProcedure());
       } catch(MiniPLException exception) {
         exceptionRecovery(exception, MiniPLSymbol.PRINT_PROCEDURE, doPrintProcedure);
       }
+      return print;
     }
 
-    private void doAssertProcedure() {
+    private INode doAssertProcedure() {
       try {
         tokenMatcher.matchAssert();
         readToken();
@@ -163,9 +188,10 @@ namespace MiniPL.parser {
       } catch(MiniPLException exception) {
         exceptionRecovery(exception, MiniPLSymbol.ASSERT_PROCEDURE, doAssertProcedure);
       }
+      return null;
     }
 
-    private void doForProcedure() {
+    private INode doForProcedure() {
       try {
         tokenMatcher.matchFor();
         readToken();
@@ -189,9 +215,10 @@ namespace MiniPL.parser {
       } catch(MiniPLException exception) {
         exceptionRecovery(exception, MiniPLSymbol.FOR_LOOP, doForProcedure);
       }
+      return null;
     }
 
-    private void doVarAssignmentProcedure() {
+    private INode doVarAssignmentProcedure() {
       try {
         tokenMatcher.matchIdentifier();
         readToken();
@@ -201,9 +228,10 @@ namespace MiniPL.parser {
       } catch(MiniPLException exception) {
         exceptionRecovery(exception, MiniPLSymbol.VAR_ASSIGNMENT, doVarAssignmentProcedure);
       }
+      return null;
     }
 
-    private void doVarDeclarationProcedure() {
+    private INode doVarDeclarationProcedure() {
       try {
         tokenMatcher.matchVar();
         readToken();
@@ -221,70 +249,84 @@ namespace MiniPL.parser {
       } catch(MiniPLException exception) {
         exceptionRecovery(exception, MiniPLSymbol.VAR_DECLARATION, doVarDeclarationProcedure);
       }
+      return null;
     }
 
-    private void doTypeProcedure() {
+    private INode doTypeProcedure() {
       try {
         if(isTokenInFirst(MiniPLSymbol.TYPE)) {
-          return;
+          return null;
         }
         syntaxError("Expected a type (int, string, bool).");
       } catch(MiniPLException exception) {
         exceptionRecovery(exception, MiniPLSymbol.TYPE, doTypeProcedure);
       }
+      return null;
     }
 
-    private void doExpressionProcedure() {
+    private INode doExpressionProcedure() {
+      INode expression = new BasicNode<MiniPLSymbol>(MiniPLSymbol.EXPRESSION);
       try {
         if(tokenMatcher.isTokenType(MiniPLTokenType.LOGICAL_NOT)) {
           readToken();
-          doOperandProcedure();
-          return;
+          INode notNode = new BasicNode<MiniPLTokenType>(MiniPLTokenType.LOGICAL_NOT);
+          notNode.addNode(doOperandProcedure());
+          expression.addNode(notNode);
+          return expression;
         } 
-        doOperandProcedure();
+        INode leftHandSide = doOperandProcedure();
         if(peekType(first(MiniPLSymbol.OPERATION))) {
           readToken();
-          doOperationProcedure();
+          INode operation = doOperationProcedure();
           readToken();
-          doOperandProcedure();
-          return;
+          INode rightHandSide = doOperandProcedure();
+          operation.addNode(leftHandSide);
+          operation.addNode(rightHandSide);
+          expression.addNode(operation);
+          return expression;
+        } else {
+          expression.addNode(leftHandSide);
         }
-        return;
       } catch(MiniPLException exception) {
         exceptionRecovery(exception, MiniPLSymbol.EXPRESSION, doExpressionProcedure);
       }
+      return expression;
     }
 
-    private void doOperandProcedure() {
+    private INode doOperandProcedure() {
       try {
         if(isTokenInFirst(MiniPLSymbol.OPERAND)) {
-          if(tokenMatcher.isTokenType(MiniPLTokenType.INTEGER_LITERAL) || 
-            tokenMatcher.isTokenType(MiniPLTokenType.STRING_LITERAL) || 
-            tokenMatcher.isTokenType(MiniPLTokenType.IDENTIFIER)) {
-            return;
+          if(tokenMatcher.isTokenType(MiniPLTokenType.INTEGER_LITERAL)) {
+            return new BasicNode<int>(Int32.Parse(tokenReader.token().getLexeme()));
+          } else if(tokenMatcher.isTokenType(MiniPLTokenType.STRING_LITERAL)) {
+            return new BasicNode<string>(tokenReader.token().getLexeme());
+          } else if(tokenMatcher.isTokenType(MiniPLTokenType.IDENTIFIER)) {
+            return new BasicNode<string>(tokenReader.token().getLexeme());
           } 
           tokenMatcher.matchLeftParenthesis();
           readToken();
-          doExpressionProcedure();
+          INode expression = doExpressionProcedure();
           readToken();
           tokenMatcher.matchRightParenthesis();
-          return;
+          return expression;
         }
         syntaxError("Illegal start of an expression. Expected a valid operand.");
       } catch(MiniPLException exception) {
         exceptionRecovery(exception, MiniPLSymbol.OPERAND, doOperandProcedure);
       }
+      return null;
     }
 
-    private void doOperationProcedure() {
+    private INode doOperationProcedure() {
       try {
         if(isTokenInFirst(MiniPLSymbol.OPERATION)) {
-          return;
+          return new BasicNode<string>(tokenReader.token().getLexeme());
         }
         throw new SyntaxException("Expected an operation.", tokenReader.token());
       } catch(MiniPLException exception) {
         exceptionRecovery(exception, MiniPLSymbol.OPERATION, doOperationProcedure);
       }
+      return null;
     }
 
     private bool isTokenInFirst(MiniPLSymbol symbol) {

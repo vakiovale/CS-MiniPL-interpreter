@@ -1,4 +1,5 @@
 using System;
+using MiniPL.parser.AST;
 using MiniPL.syntax;
 using MiniPL.tokens;
 
@@ -18,7 +19,7 @@ namespace MiniPL.parser {
       this.firstAndFollow = firstAndFollow;
     }
 
-    public void tryToRecoverFromException(MiniPLSymbol symbol, Action procedureMethod) {
+    public void tryToRecoverFromException(MiniPLSymbol symbol, Func<INode> procedureMethod) {
       if(nextTokenShouldEndRecovery(symbol)) {
         return;
       }
