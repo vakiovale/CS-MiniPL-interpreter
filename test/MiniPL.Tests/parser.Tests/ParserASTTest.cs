@@ -196,5 +196,50 @@ namespace MiniPL.Tests {
       Assert.Equal("car", car.getValue());
       Assert.Equal("formula1Car", formula1Car.getValue());
     }
+
+    [Fact]
+    public void shouldHaveValidASTWithVarAssignmentHavingExpression() {
+      this.parser = getParser("theBoss := (\"Yes, \" + \"sir!\");");
+      this.parser.checkSyntax();
+
+      IAST ast = this.parser.getAST();
+      INode program = ast.getProgram();
+
+      INode statementList = program.getChildren()[0];
+      INode statement = statementList.getChildren()[0];
+      INode varAssignment = statement.getChildren()[0];
+      INode theBoss = varAssignment.getChildren()[0];
+      INode expression = varAssignment.getChildren()[1];
+      INode innerExpression = expression.getChildren()[0];
+      INode plusOperation = innerExpression.getChildren()[0];
+      INode yesString = plusOperation.getChildren()[0];
+      INode sirString = plusOperation.getChildren()[1];
+
+      Assert.Equal(MiniPLSymbol.VAR_ASSIGNMENT, varAssignment.getValue());
+      Assert.Equal("Yes, ", yesString.getValue());
+      Assert.Equal("sir!", sirString.getValue());
+    }
+
+    [Fact]
+    public void shouldHaveValidASTWithVarDeclaration() {
+      this.parser = getParser("var x : int := 1;");
+      this.parser.checkSyntax();
+
+      IAST ast = this.parser.getAST();
+      INode program = ast.getProgram();
+
+      INode statementList = program.getChildren()[0];
+      INode statement = statementList.getChildren()[0];
+      INode varDeclaration = statement.getChildren()[0];
+      INode x = varDeclaration.getChildren()[0];
+      INode type = varDeclaration.getChildren()[1];
+      INode typeSymbol = type.getChildren()[0];
+      INode expression = type.getChildren()[1];
+      INode value = expression.getChildren()[0];
+
+      Assert.Equal(MiniPLSymbol.VAR_DECLARATION, varDeclaration.getValue());
+      Assert.Equal(MiniPLTokenType.TYPE_IDENTIFIER_INTEGER, typeSymbol.getValue());
+      Assert.Equal(1, value.getValue());
+    }
   }
 }

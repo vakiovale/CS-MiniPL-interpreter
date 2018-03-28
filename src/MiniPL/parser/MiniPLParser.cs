@@ -239,36 +239,41 @@ namespace MiniPL.parser {
     }
 
     private INode doVarDeclarationProcedure() {
+      INode varDeclaration = new BasicNode<MiniPLSymbol>(MiniPLSymbol.VAR_DECLARATION);
       try {
         tokenMatcher.matchVar();
         readToken();
         tokenMatcher.matchIdentifier();
+        varDeclaration.addNode(new BasicNode<string>(this.tokenReader.token().getLexeme()));
         readToken();
         tokenMatcher.matchColon();
         readToken();
-        doTypeProcedure();
+        INode type = doTypeProcedure();
         if(tokenReader.isNextTokensType(MiniPLTokenType.ASSIGNMENT_OPERATOR)) {
           readToken();
           tokenMatcher.matchAssignment();
           readToken();
-          doExpressionProcedure();
+          type.addNode(doExpressionProcedure());
         }
+        varDeclaration.addNode(type);
       } catch(MiniPLException exception) {
         exceptionRecovery(exception, MiniPLSymbol.VAR_DECLARATION, doVarDeclarationProcedure);
       }
-      return null;
+      return varDeclaration;
     }
 
     private INode doTypeProcedure() {
+      INode type = new BasicNode<MiniPLSymbol>(MiniPLSymbol.TYPE);
       try {
         if(isTokenInFirst(MiniPLSymbol.TYPE)) {
-          return null;
+          type.addNode(new BasicNode<MiniPLTokenType>(this.tokenReader.getCurrentType()));
+          return type;
         }
         syntaxError("Expected a type (int, string, bool).");
       } catch(MiniPLException exception) {
         exceptionRecovery(exception, MiniPLSymbol.TYPE, doTypeProcedure);
       }
-      return null;
+      return type;
     }
 
     private INode doExpressionProcedure() {
