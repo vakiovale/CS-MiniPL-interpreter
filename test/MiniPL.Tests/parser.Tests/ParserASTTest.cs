@@ -175,7 +175,26 @@ namespace MiniPL.Tests {
       Assert.Equal(1, plusOperator.getChildren()[0].getValue());
       Assert.Equal(2, plusOperator.getChildren()[1].getValue());
       Assert.Equal("goodVariable", read.getChildren()[0].getValue());
+    }
 
+    [Fact]
+    public void shouldHaveValidASTWithVarAssignment() {
+      this.parser = getParser("car := formula1Car;");
+      this.parser.checkSyntax();
+
+      IAST ast = this.parser.getAST();
+      INode program = ast.getProgram();
+
+      INode statementList = program.getChildren()[0];
+      INode statement = statementList.getChildren()[0];
+      INode varAssignment = statement.getChildren()[0];
+      INode car = varAssignment.getChildren()[0];
+      INode formula1CarExpression = varAssignment.getChildren()[1];
+      INode formula1Car = formula1CarExpression.getChildren()[0];
+
+      Assert.Equal(MiniPLSymbol.VAR_ASSIGNMENT, varAssignment.getValue());
+      Assert.Equal("car", car.getValue());
+      Assert.Equal("formula1Car", formula1Car.getValue());
     }
   }
 }

@@ -222,16 +222,20 @@ namespace MiniPL.parser {
     }
 
     private INode doVarAssignmentProcedure() {
+      INode varAssignment = new BasicNode<MiniPLSymbol>(MiniPLSymbol.VAR_ASSIGNMENT);
       try {
         tokenMatcher.matchIdentifier();
+        INode leftHandSide = new BasicNode<string>(this.tokenReader.token().getLexeme());
         readToken();
         tokenMatcher.matchAssignment();
         readToken();
-        doExpressionProcedure();
+        INode rightHandSide = doExpressionProcedure();
+        varAssignment.addNode(leftHandSide);
+        varAssignment.addNode(rightHandSide);
       } catch(MiniPLException exception) {
         exceptionRecovery(exception, MiniPLSymbol.VAR_ASSIGNMENT, doVarAssignmentProcedure);
       }
-      return null;
+      return varAssignment;
     }
 
     private INode doVarDeclarationProcedure() {
