@@ -241,5 +241,51 @@ namespace MiniPL.Tests {
       Assert.Equal(MiniPLTokenType.TYPE_IDENTIFIER_INTEGER, typeSymbol.getValue());
       Assert.Equal(1, value.getValue());
     }
+
+    [Fact]
+    public void shouldHaveValidASTWithVarDeclarationAndMoreComplexExpression() {
+      this.parser = getParser("var x : string := (\"HELLO\" + (\"WORLD!\"));");
+      this.parser.checkSyntax();
+
+      IAST ast = this.parser.getAST();
+      INode program = ast.getProgram();
+
+      INode statementList = program.getChildren()[0];
+      INode statement = statementList.getChildren()[0];
+      INode varDeclaration = statement.getChildren()[0];
+      INode x = varDeclaration.getChildren()[0];
+      INode type = varDeclaration.getChildren()[1];
+      INode typeSymbol = type.getChildren()[0];
+      INode expression = type.getChildren()[1];
+      INode plusOperation = expression.getChildren()[0].getChildren()[0];
+      INode leftString = plusOperation.getChildren()[0];
+      INode innerExpression = plusOperation.getChildren()[1];
+      INode rightString = innerExpression.getChildren()[0];
+
+      Assert.Equal(MiniPLSymbol.VAR_DECLARATION, varDeclaration.getValue());
+      Assert.Equal(MiniPLTokenType.TYPE_IDENTIFIER_STRING, typeSymbol.getValue());
+      Assert.Equal("HELLO", leftString.getValue());
+      Assert.Equal("WORLD!", rightString.getValue());
+    }
+
+    [Fact]
+    public void shouldHaveValidASTWithVarDeclarationWithOnlyType() {
+      this.parser = getParser("var x : int;");
+      this.parser.checkSyntax();
+
+      IAST ast = this.parser.getAST();
+      INode program = ast.getProgram();
+
+      INode statementList = program.getChildren()[0];
+      INode statement = statementList.getChildren()[0];
+      INode varDeclaration = statement.getChildren()[0];
+      INode x = varDeclaration.getChildren()[0];
+      INode type = varDeclaration.getChildren()[1];
+      INode typeSymbol = type.getChildren()[0];
+
+      Assert.Equal(MiniPLSymbol.VAR_DECLARATION, varDeclaration.getValue());
+      Assert.Equal(MiniPLTokenType.TYPE_IDENTIFIER_INTEGER, typeSymbol.getValue());
+      Assert.True(type.getChildren().Count == 1);
+    }
   }
 }
