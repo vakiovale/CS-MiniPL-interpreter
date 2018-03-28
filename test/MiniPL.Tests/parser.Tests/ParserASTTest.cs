@@ -3,6 +3,7 @@ using MiniPL.logger;
 using MiniPL.parser;
 using MiniPL.parser.AST;
 using MiniPL.scanner;
+using MiniPL.syntax;
 using MiniPL.tokens;
 using Xunit;
 
@@ -114,6 +115,44 @@ namespace MiniPL.Tests {
 
       Assert.Equal(1, leftHandSide.getValue());
       Assert.Equal(2, rightHandSide.getValue());
+    }
+
+    [Fact]
+    public void shouldHaveValidASTWithAssertStatement() {
+      this.parser = getParser("assert (1 < 2);");
+      this.parser.checkSyntax();
+
+      IAST ast = this.parser.getAST();
+      INode program = ast.getProgram();
+
+      INode statementList = program.getChildren()[0];
+      INode statement = statementList.getChildren()[0];
+      INode assert = statement.getChildren()[0];
+      INode expression = assert.getChildren()[0];
+      INode lessThanEquality = expression.getChildren()[0];
+      INode leftHandSide = lessThanEquality.getChildren()[0];
+      INode rightHandSide = lessThanEquality.getChildren()[1];
+
+      Assert.Equal(1, leftHandSide.getValue());
+      Assert.Equal(2, rightHandSide.getValue());
+      Assert.Equal("<", lessThanEquality.getValue());
+    }
+
+    [Fact]
+    public void shouldHaveValidASTWithReadStatement() {
+      this.parser = getParser("read goodVariable;");
+      this.parser.checkSyntax();
+
+      IAST ast = this.parser.getAST();
+      INode program = ast.getProgram();
+
+      INode statementList = program.getChildren()[0];
+      INode statement = statementList.getChildren()[0];
+      INode read = statement.getChildren()[0];
+      INode identifier = read.getChildren()[0];
+
+      Assert.Equal(MiniPLSymbol.READ_PROCEDURE, read.getValue());
+      Assert.Equal("goodVariable", identifier.getValue());
     }
   }
 }

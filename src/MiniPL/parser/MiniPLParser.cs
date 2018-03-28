@@ -154,14 +154,16 @@ namespace MiniPL.parser {
     }
 
     private INode doReadProcedure() {
+      INode read = new BasicNode<MiniPLSymbol>(MiniPLSymbol.READ_PROCEDURE);
       try {
         tokenMatcher.matchRead();
         readToken();
         tokenMatcher.matchIdentifier();
+        read.addNode(new BasicNode<string>(this.tokenReader.token().getLexeme()));
       } catch(MiniPLException exception) {
         exceptionRecovery(exception, MiniPLSymbol.READ_PROCEDURE, doReadProcedure);
       }
-      return null;
+      return read;
     }
 
     private INode doPrintProcedure() {
@@ -177,18 +179,19 @@ namespace MiniPL.parser {
     }
 
     private INode doAssertProcedure() {
+      INode assert = new BasicNode<MiniPLSymbol>(MiniPLSymbol.ASSERT_PROCEDURE);
       try {
         tokenMatcher.matchAssert();
         readToken();
         tokenMatcher.matchLeftParenthesis();
         readToken();
-        doExpressionProcedure();
+        assert.addNode(doExpressionProcedure());
         readToken();
         tokenMatcher.matchRightParenthesis();
       } catch(MiniPLException exception) {
         exceptionRecovery(exception, MiniPLSymbol.ASSERT_PROCEDURE, doAssertProcedure);
       }
-      return null;
+      return assert;
     }
 
     private INode doForProcedure() {
