@@ -195,30 +195,35 @@ namespace MiniPL.parser {
     }
 
     private INode doForProcedure() {
+      INode forLoop = new BasicNode<MiniPLSymbol>(MiniPLSymbol.FOR_LOOP);
       try {
         tokenMatcher.matchFor();
         readToken();
         tokenMatcher.matchIdentifier();
+        string identifier = this.tokenReader.token().getLexeme();
         readToken();
         tokenMatcher.matchIn();
         readToken();
-        doExpressionProcedure();
+        INode range = new BasicNode<MiniPLTokenType>(MiniPLTokenType.RANGE_OPERATOR);
+        range.addNode(doExpressionProcedure());
         readToken();
         tokenMatcher.matchRange();
         readToken();
-        doExpressionProcedure();
+        range.addNode(doExpressionProcedure());
         readToken();
         tokenMatcher.matchDo();
         readToken();
-        doStatementListProcedure();
+        INode statementList = doStatementListProcedure();
         readToken();
         tokenMatcher.matchEnd();
         readToken();
         tokenMatcher.matchFor();
+        forLoop.addNode(range);
+        forLoop.addNode(statementList);
       } catch(MiniPLException exception) {
         exceptionRecovery(exception, MiniPLSymbol.FOR_LOOP, doForProcedure);
       }
-      return null;
+      return forLoop;
     }
 
     private INode doVarAssignmentProcedure() {

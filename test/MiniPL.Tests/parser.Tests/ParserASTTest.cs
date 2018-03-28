@@ -287,5 +287,29 @@ namespace MiniPL.Tests {
       Assert.Equal(MiniPLTokenType.TYPE_IDENTIFIER_INTEGER, typeSymbol.getValue());
       Assert.True(type.getChildren().Count == 1);
     }
+
+    [Fact]
+    public void shouldHaveValidASTWithForLoop() {
+      this.parser = getParser("for x in 0..10 do print \"We are in!\"; end for;");
+      this.parser.checkSyntax();
+
+      IAST ast = this.parser.getAST();
+      INode program = ast.getProgram();
+
+      INode statementList = program.getChildren()[0];
+      INode statement = statementList.getChildren()[0];
+      INode forLoop = statement.getChildren()[0];
+      INode range =  forLoop.getChildren()[0];
+      INode startExpression = range.getChildren()[0];
+      INode endExpression = range.getChildren()[1];
+      INode forStatement = forLoop.getChildren()[1].getChildren()[0];
+      INode printText = forStatement.getChildren()[0].getChildren()[0].getChildren()[0];
+
+      Assert.Equal(MiniPLSymbol.FOR_LOOP, forLoop.getValue());
+      Assert.Equal(MiniPLTokenType.RANGE_OPERATOR, range.getValue());
+      Assert.Equal(0, startExpression.getChildren()[0].getValue());
+      Assert.Equal(10, endExpression.getChildren()[0].getValue());
+      Assert.Equal("We are in!", printText.getValue());
+    }
   }
 }
