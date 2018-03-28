@@ -116,10 +116,10 @@ namespace MiniPL.parser {
     private INode doStatementListProcedure() {
       INode statementList = new BasicNode<MiniPLSymbol>(MiniPLSymbol.STATEMENT_LIST); 
       try {
-        statementList.addNode(doStatemenProcedure());
+        statementList.addNode(doStatementProcedure());
         while(peekType(firstAndFollow.first(MiniPLSymbol.STATEMENT))) {
           readToken();
-          statementList.addNode(doStatemenProcedure());
+          statementList.addNode(doStatementProcedure());
         }
       } catch(MiniPLException exception) {
         exceptionRecovery(exception, MiniPLSymbol.STATEMENT_LIST, doStatementListProcedure); 
@@ -127,28 +127,28 @@ namespace MiniPL.parser {
       return statementList;
     }
 
-    private INode doStatemenProcedure() {
+    private INode doStatementProcedure() {
       INode statement = new BasicNode<MiniPLSymbol>(MiniPLSymbol.STATEMENT);
       try {
         if(isTokenInFirst(MiniPLSymbol.VAR_DECLARATION)) {
-          statement.addNode(doVarDeclarationProcedure());
+          statement = doVarDeclarationProcedure();
         } else if(isTokenInFirst(MiniPLSymbol.VAR_ASSIGNMENT)) {
-          statement.addNode(doVarAssignmentProcedure());
+          statement = doVarAssignmentProcedure();
         } else if(isTokenInFirst(MiniPLSymbol.FOR_LOOP)) {
-          statement.addNode(doForProcedure()); 
+          statement = doForProcedure(); 
         } else if(isTokenInFirst(MiniPLSymbol.READ_PROCEDURE)) {
-          statement.addNode(doReadProcedure());
+          statement = doReadProcedure();
         } else if(isTokenInFirst(MiniPLSymbol.PRINT_PROCEDURE)) {
-          statement.addNode(doPrintProcedure());        
+          statement = doPrintProcedure();        
         } else if(isTokenInFirst(MiniPLSymbol.ASSERT_PROCEDURE)) {
-          statement.addNode(doAssertProcedure());
+          statement = doAssertProcedure();
         } else {
           syntaxError("Illegal start of a statement. " + (tokenReader.token() != null ? "A statement can't begin with '" + tokenReader.token().getLexeme() + "'." : ""));
         }
         readToken();
         tokenMatcher.matchSemicolon();
       } catch(MiniPLException exception) {
-        exceptionRecovery(exception, MiniPLSymbol.STATEMENT, doStatemenProcedure);
+        exceptionRecovery(exception, MiniPLSymbol.STATEMENT, doStatementProcedure);
       }
       return statement;
     }

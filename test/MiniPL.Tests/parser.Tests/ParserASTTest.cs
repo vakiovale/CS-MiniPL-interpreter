@@ -43,6 +43,28 @@ namespace MiniPL.Tests {
     }
 
     [Fact]
+    public void sampleProgramShouldHaveCorrectAST() {
+      this.parser.checkSyntax();
+      IAST ast = this.parser.getAST();
+      INode statementList = ast.getProgram().getChildren()[0];
+      INode firstVarDeclarationStatement = statementList.getChildren()[0];
+      INode printStatement = statementList.getChildren()[1];
+      INode readStatement = statementList.getChildren()[2];
+      INode secondVarDeclarationStatement = statementList.getChildren()[3];
+      INode forLoopStatement = statementList.getChildren()[4];
+      INode firstAssertStatement = statementList.getChildren()[5];
+      INode secondAssertStatement = statementList.getChildren()[6];
+      Assert.Equal(MiniPLSymbol.STATEMENT_LIST, statementList.getValue());
+      Assert.Equal(MiniPLSymbol.VAR_DECLARATION, firstVarDeclarationStatement.getValue());
+      Assert.Equal(MiniPLSymbol.PRINT_PROCEDURE, printStatement.getValue());
+      Assert.Equal(MiniPLSymbol.READ_PROCEDURE, readStatement.getValue());
+      Assert.Equal(MiniPLSymbol.VAR_DECLARATION, secondVarDeclarationStatement.getValue());
+      Assert.Equal(MiniPLSymbol.FOR_LOOP, forLoopStatement.getValue());
+      Assert.Equal(MiniPLSymbol.ASSERT_PROCEDURE, firstAssertStatement.getValue());
+      Assert.Equal(MiniPLSymbol.ASSERT_PROCEDURE, secondAssertStatement.getValue());
+    }
+
+    [Fact]
     public void checkASTexists() {
       this.parser.checkSyntax();
       IAST ast = this.parser.getAST();
@@ -67,8 +89,7 @@ namespace MiniPL.Tests {
 
       INode current = program;
       INode statementList = program.getChildren()[0];
-      INode statement = statementList.getChildren()[0];
-      INode print = statement.getChildren()[0];
+      INode print = statementList.getChildren()[0];
       INode expression = print.getChildren()[0];
       INode stringLiteral = expression.getChildren()[0];
 
@@ -84,8 +105,7 @@ namespace MiniPL.Tests {
       INode program = ast.getProgram();
 
       INode statementList = program.getChildren()[0];
-      INode statement = statementList.getChildren()[0];
-      INode print = statement.getChildren()[0];
+      INode print = statementList.getChildren()[0];
       INode expression = print.getChildren()[0];
       INode plusOperation = expression.getChildren()[0];
       INode leftString = plusOperation.getChildren()[0];
@@ -104,8 +124,7 @@ namespace MiniPL.Tests {
       INode program = ast.getProgram();
 
       INode statementList = program.getChildren()[0];
-      INode statement = statementList.getChildren()[0];
-      INode print = statement.getChildren()[0];
+      INode print = statementList.getChildren()[0];
       INode expression = print.getChildren()[0];
       INode logicalNot = expression.getChildren()[0];
       INode innerExpression = logicalNot.getChildren()[0];
@@ -126,8 +145,7 @@ namespace MiniPL.Tests {
       INode program = ast.getProgram();
 
       INode statementList = program.getChildren()[0];
-      INode statement = statementList.getChildren()[0];
-      INode assert = statement.getChildren()[0];
+      INode assert = statementList.getChildren()[0];
       INode expression = assert.getChildren()[0];
       INode lessThanEquality = expression.getChildren()[0];
       INode leftHandSide = lessThanEquality.getChildren()[0];
@@ -147,8 +165,7 @@ namespace MiniPL.Tests {
       INode program = ast.getProgram();
 
       INode statementList = program.getChildren()[0];
-      INode statement = statementList.getChildren()[0];
-      INode read = statement.getChildren()[0];
+      INode read = statementList.getChildren()[0];
       INode identifier = read.getChildren()[0];
 
       Assert.Equal(MiniPLSymbol.READ_PROCEDURE, read.getValue());
@@ -164,13 +181,10 @@ namespace MiniPL.Tests {
       INode program = ast.getProgram();
 
       INode statementList = program.getChildren()[0];
-      INode firstStatement = statementList.getChildren()[0];
-      INode secondStatement = statementList.getChildren()[1];
-      INode print = firstStatement.getChildren()[0];
+      INode print = statementList.getChildren()[0];
+      INode read = statementList.getChildren()[1];
       INode expression = print.getChildren()[0];
       INode plusOperator = expression.getChildren()[0];
-      
-      INode read = secondStatement.getChildren()[0];
 
       Assert.Equal(1, plusOperator.getChildren()[0].getValue());
       Assert.Equal(2, plusOperator.getChildren()[1].getValue());
@@ -186,8 +200,7 @@ namespace MiniPL.Tests {
       INode program = ast.getProgram();
 
       INode statementList = program.getChildren()[0];
-      INode statement = statementList.getChildren()[0];
-      INode varAssignment = statement.getChildren()[0];
+      INode varAssignment = statementList.getChildren()[0];
       INode car = varAssignment.getChildren()[0];
       INode formula1CarExpression = varAssignment.getChildren()[1];
       INode formula1Car = formula1CarExpression.getChildren()[0];
@@ -206,8 +219,7 @@ namespace MiniPL.Tests {
       INode program = ast.getProgram();
 
       INode statementList = program.getChildren()[0];
-      INode statement = statementList.getChildren()[0];
-      INode varAssignment = statement.getChildren()[0];
+      INode varAssignment = statementList.getChildren()[0];
       INode theBoss = varAssignment.getChildren()[0];
       INode expression = varAssignment.getChildren()[1];
       INode innerExpression = expression.getChildren()[0];
@@ -229,8 +241,7 @@ namespace MiniPL.Tests {
       INode program = ast.getProgram();
 
       INode statementList = program.getChildren()[0];
-      INode statement = statementList.getChildren()[0];
-      INode varDeclaration = statement.getChildren()[0];
+      INode varDeclaration = statementList.getChildren()[0];
       INode x = varDeclaration.getChildren()[0];
       INode type = varDeclaration.getChildren()[1];
       INode typeSymbol = type.getChildren()[0];
@@ -251,8 +262,7 @@ namespace MiniPL.Tests {
       INode program = ast.getProgram();
 
       INode statementList = program.getChildren()[0];
-      INode statement = statementList.getChildren()[0];
-      INode varDeclaration = statement.getChildren()[0];
+      INode varDeclaration = statementList.getChildren()[0];
       INode x = varDeclaration.getChildren()[0];
       INode type = varDeclaration.getChildren()[1];
       INode typeSymbol = type.getChildren()[0];
@@ -277,8 +287,7 @@ namespace MiniPL.Tests {
       INode program = ast.getProgram();
 
       INode statementList = program.getChildren()[0];
-      INode statement = statementList.getChildren()[0];
-      INode varDeclaration = statement.getChildren()[0];
+      INode varDeclaration = statementList.getChildren()[0];
       INode x = varDeclaration.getChildren()[0];
       INode type = varDeclaration.getChildren()[1];
       INode typeSymbol = type.getChildren()[0];
@@ -297,13 +306,12 @@ namespace MiniPL.Tests {
       INode program = ast.getProgram();
 
       INode statementList = program.getChildren()[0];
-      INode statement = statementList.getChildren()[0];
-      INode forLoop = statement.getChildren()[0];
+      INode forLoop = statementList.getChildren()[0];
       INode range =  forLoop.getChildren()[0];
       INode startExpression = range.getChildren()[0];
       INode endExpression = range.getChildren()[1];
       INode forStatement = forLoop.getChildren()[1].getChildren()[0];
-      INode printText = forStatement.getChildren()[0].getChildren()[0].getChildren()[0];
+      INode printText = forStatement.getChildren()[0].getChildren()[0];
 
       Assert.Equal(MiniPLSymbol.FOR_LOOP, forLoop.getValue());
       Assert.Equal(MiniPLTokenType.RANGE_OPERATOR, range.getValue());
