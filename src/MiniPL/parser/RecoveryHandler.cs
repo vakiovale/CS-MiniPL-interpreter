@@ -26,11 +26,11 @@ namespace MiniPL.parser {
         readToken();
         Token<MiniPLTokenType> goodToken = this.tokenReader.token();
         if(goodToken != null) {
-          if(this.firstAndFollow.firstContains(symbol, goodToken.getType())) {
+          if(symbolInFirst(symbol, goodToken.getType())) {
             procedureMethod(); 
             return;
           }
-          if(this.firstAndFollow.followContains(symbol, goodToken.getType())) {
+          if(symbolInFollow(symbol, goodToken.getType())) {
             return;
           }
           if(nextTokenShouldEndRecovery(symbol)) {
@@ -38,6 +38,14 @@ namespace MiniPL.parser {
           }
         }
       } while(this.tokenReader.hasNextToken());
+    }
+
+    private bool symbolInFollow(MiniPLSymbol symbol, MiniPLTokenType miniPLTokenType) {
+      return this.firstAndFollow.followContains(symbol, miniPLTokenType);
+    }
+
+    private bool symbolInFirst(MiniPLSymbol symbol, MiniPLTokenType miniPLTokenType) {
+      return this.firstAndFollow.firstContains(symbol, miniPLTokenType);
     }
 
     private bool nextTokenShouldEndRecovery(MiniPLSymbol symbol) {
