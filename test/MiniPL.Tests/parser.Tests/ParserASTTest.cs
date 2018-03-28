@@ -154,5 +154,28 @@ namespace MiniPL.Tests {
       Assert.Equal(MiniPLSymbol.READ_PROCEDURE, read.getValue());
       Assert.Equal("goodVariable", identifier.getValue());
     }
+
+    [Fact]
+    public void shouldHaveValidASTWithToStatements() {
+      this.parser = getParser("print 1 + 2; read goodVariable;");
+      this.parser.checkSyntax();
+
+      IAST ast = this.parser.getAST();
+      INode program = ast.getProgram();
+
+      INode statementList = program.getChildren()[0];
+      INode firstStatement = statementList.getChildren()[0];
+      INode secondStatement = statementList.getChildren()[1];
+      INode print = firstStatement.getChildren()[0];
+      INode expression = print.getChildren()[0];
+      INode plusOperator = expression.getChildren()[0];
+      
+      INode read = secondStatement.getChildren()[0];
+
+      Assert.Equal(1, plusOperator.getChildren()[0].getValue());
+      Assert.Equal(2, plusOperator.getChildren()[1].getValue());
+      Assert.Equal("goodVariable", read.getChildren()[0].getValue());
+
+    }
   }
 }
