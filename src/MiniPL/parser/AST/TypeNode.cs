@@ -30,6 +30,14 @@ namespace MiniPL.parser.AST {
         return "";
       }
     }
+
+    public bool getBoolValue() {
+      if(this.children.Count > 0) {
+        return ((ExpressionNode)this.children[0]).getBoolValue();
+      } else {
+        return false;
+      }
+    }
   }
 
 }

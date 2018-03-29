@@ -10,6 +10,7 @@ namespace MiniPL.semantics {
     int getInt(string variable);
     string getString(string variable);
     bool variableExists(string variable);
+    bool getBool(string v);
   }
 
 }

@@ -41,6 +41,16 @@ namespace MiniPL.Tests.semantics.Tests {
     }
 
     [Fact]
+    public void checkBoolIsDeclaredWithDefaultValue() {
+      this.parser = TestHelpers.getParser("var trueValue : bool;");
+      Assert.True(this.parser.processAndBuildAST());
+      IAST ast = this.parser.getAST();
+      this.analyzer.analyze(ast);
+      Assert.True(this.analyzer.variableExists("trueValue"));
+      Assert.False(this.analyzer.getBool("trueValue"));
+    }
+
+    [Fact]
     public void checkVariableIsDeclared() {
       this.parser = TestHelpers.getParser("var x : int;");
       Assert.True(this.parser.processAndBuildAST());

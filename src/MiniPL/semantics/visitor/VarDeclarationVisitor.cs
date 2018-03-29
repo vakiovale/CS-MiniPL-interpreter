@@ -12,9 +12,12 @@ namespace MiniPL.semantics.visitor {
 
     private IDictionary<string, string> stringVariables;
 
-    public VarDeclarationVisitor(IDictionary<string, int> integerVariables, IDictionary<string, string> stringVariables) {
+    private IDictionary<string, bool> boolVariables;
+
+    public VarDeclarationVisitor(IDictionary<string, int> integerVariables, IDictionary<string, string> stringVariables, IDictionary<string, bool> boolVariables) {
       this.integerVariables = integerVariables; 
       this.stringVariables = stringVariables;
+      this.boolVariables = boolVariables;
     }
 
     public void visitVarDeclaration(VarDeclarationNode node) {
@@ -31,12 +34,16 @@ namespace MiniPL.semantics.visitor {
       } else if(type == MiniPLTokenType.TYPE_IDENTIFIER_STRING) {
         string value = typeNode.getStringValue();
         this.stringVariables.Add(variableName, value);
+      } else if(type == MiniPLTokenType.TYPE_IDENTIFIER_BOOL) {
+        bool value = typeNode.getBoolValue();
+        this.boolVariables.Add(variableName, value);
+      } else {
+        throw new Exception("Unknown type usage in semantic analyzer.");
       }
-      
     }
 
     private bool variableAlreadyDeclared(string variableName) {
-      return integerVariables.ContainsKey(variableName) || stringVariables.ContainsKey(variableName); 
+      return integerVariables.ContainsKey(variableName) || stringVariables.ContainsKey(variableName) || boolVariables.ContainsKey(variableName); 
     }
   }
 
