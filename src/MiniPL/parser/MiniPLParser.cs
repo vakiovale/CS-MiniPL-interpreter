@@ -22,9 +22,11 @@ namespace MiniPL.parser {
 
     private RecoveryHandler recoveryHandler;
 
-    private bool syntaxOk;
+    private NodeCreator nodeCreator;
 
     private IAST ast;
+
+    private bool syntaxOk;
 
     public MiniPLParser(TokenReader tokenReader, ILogger logger) {
       initializeLogger(logger);
@@ -33,6 +35,7 @@ namespace MiniPL.parser {
       intializeFirstAndFollow();
       initializeRecoveryHandler();
       initializeSyntaxFlag();
+      initializeNodeCreator();
       initializeAST();
     }
 
@@ -58,6 +61,10 @@ namespace MiniPL.parser {
 
     private void initializeRecoveryHandler() {
       this.recoveryHandler = new RecoveryHandler(this.tokenReader, readToken, this.firstAndFollow);
+    }
+
+    private void initializeNodeCreator() {
+      this.nodeCreator = new NodeCreator();
     }
 
     private void initializeAST() {
@@ -121,7 +128,7 @@ namespace MiniPL.parser {
     }
 
     private INode doProgramProcedure() {
-      INode programNode = new Node<MiniPLSymbol>(MiniPLSymbol.PROGRAM);
+      INode programNode = makeNode(MiniPLSymbol.PROGRAM);
       try {
         programNode.addNode(doStatementListProcedure());
       } catch(MiniPLException exception) {
@@ -131,7 +138,7 @@ namespace MiniPL.parser {
     }
 
     private INode doStatementListProcedure() {
-      INode statementList = new Node<MiniPLSymbol>(MiniPLSymbol.STATEMENT_LIST); 
+      INode statementList = makeNode(MiniPLSymbol.STATEMENT_LIST); 
       try {
         statementList.addNode(doStatementProcedure());
         while(peekType(firstAndFollow.first(MiniPLSymbol.STATEMENT))) {
@@ -145,7 +152,7 @@ namespace MiniPL.parser {
     }
 
     private INode doStatementProcedure() {
-      INode statement = new Node<MiniPLSymbol>(MiniPLSymbol.STATEMENT);
+      INode statement = null;
       try {
         if(isTokenInFirst(MiniPLSymbol.VAR_DECLARATION)) {
           statement = doVarDeclarationProcedure();
@@ -171,12 +178,12 @@ namespace MiniPL.parser {
     }
 
     private INode doReadProcedure() {
-      INode read = new Node<MiniPLSymbol>(MiniPLSymbol.READ_PROCEDURE);
+      INode read = makeNode(MiniPLSymbol.READ_PROCEDURE);
       try {
         tokenMatcher.matchRead();
         readToken();
         tokenMatcher.matchIdentifier();
-        read.addNode(new Node<string>(this.tokenReader.token().getLexeme()));
+        read.addNode(makeNode(this.tokenReader.token()));
       } catch(MiniPLException exception) {
         exceptionRecovery(exception, MiniPLSymbol.READ_PROCEDURE, doReadProcedure);
       }
@@ -184,7 +191,7 @@ namespace MiniPL.parser {
     }
 
     private INode doPrintProcedure() {
-      INode print = new Node<MiniPLSymbol>(MiniPLSymbol.PRINT_PROCEDURE);
+      INode print = makeNode(MiniPLSymbol.PRINT_PROCEDURE);
       try {
         tokenMatcher.matchPrint();
         readToken();
@@ -196,7 +203,7 @@ namespace MiniPL.parser {
     }
 
     private INode doAssertProcedure() {
-      INode assert = new Node<MiniPLSymbol>(MiniPLSymbol.ASSERT_PROCEDURE);
+      INode assert = makeNode(MiniPLSymbol.ASSERT_PROCEDURE);
       try {
         tokenMatcher.matchAssert();
         readToken();
@@ -235,19 +242,13 @@ namespace MiniPL.parser {
         tokenMatcher.matchEnd();
         readToken();
         tokenMatcher.matchFor();
-        addToRange(range, leftHandSide, rightHandSide);
+        addToNode(range, leftHandSide, rightHandSide);
         forLoop.addNode(range);
         forLoop.addNode(statementList);
       } catch(MiniPLException exception) {
         exceptionRecovery(exception, MiniPLSymbol.FOR_LOOP, doForProcedure);
       }
       return forLoop;
-    }
-
-    private INode addToRange(INode range, INode leftHandSide, INode rightHandSide) {
-      range.addNode(leftHandSide);
-      range.addNode(rightHandSide);
-      return range;
     }
 
     private INode doVarAssignmentProcedure() {
@@ -259,16 +260,10 @@ namespace MiniPL.parser {
         tokenMatcher.matchAssignment();
         readToken();
         INode rightHandSide = doExpressionProcedure();
-        addToAssignment(varAssignment, leftHandSide, rightHandSide);
+        addToNode(varAssignment, leftHandSide, rightHandSide);
       } catch(MiniPLException exception) {
         exceptionRecovery(exception, MiniPLSymbol.VAR_ASSIGNMENT, doVarAssignmentProcedure);
       }
-      return varAssignment;
-    }
-
-    private INode addToAssignment(INode varAssignment, INode leftHandSide, INode rightHandSide) {
-      varAssignment.addNode(leftHandSide);
-      varAssignment.addNode(rightHandSide);
       return varAssignment;
     }
 
@@ -324,7 +319,7 @@ namespace MiniPL.parser {
           INode operation = doOperationProcedure();
           readToken();
           INode rightHandSide = doOperandProcedure();
-          addToOperation(operation, leftHandSide, rightHandSide);
+          addToNode(operation, leftHandSide, rightHandSide);
           expression.addNode(operation);
           return expression;
         } else {
@@ -334,12 +329,6 @@ namespace MiniPL.parser {
         exceptionRecovery(exception, MiniPLSymbol.EXPRESSION, doExpressionProcedure);
       }
       return expression;
-    }
-
-    private INode addToOperation(INode operation, INode leftHandSide, INode rightHandSide) {
-      operation.addNode(leftHandSide);
-      operation.addNode(rightHandSide);
-      return operation;
     }
 
     private INode doOperandProcedure() {
@@ -376,61 +365,6 @@ namespace MiniPL.parser {
       return null;
     }
 
-    private INode makeNode(MiniPLSymbol symbol) {
-      switch(symbol) {
-        case MiniPLSymbol.EXPRESSION:
-          return new ExpressionNode();
-        case MiniPLSymbol.VAR_DECLARATION:
-          return new VarDeclarationNode();
-        case MiniPLSymbol.VAR_ASSIGNMENT:
-          return new VarAssignmentNode();
-        case MiniPLSymbol.FOR_LOOP:
-          return new ForLoopNode();
-        default:
-          return new Node<MiniPLSymbol>(symbol);
-      }
-      throw new NotImplementedException();
-    }
-
-    private INode makeNode(MiniPLTokenType type) {
-      switch(type) {
-        case MiniPLTokenType.PLUS:
-          return new PlusOperationNode();
-        case MiniPLTokenType.MINUS:
-          return new MinusOperationNode();
-        case MiniPLTokenType.ASTERISK:
-          return new MultiplicationOperationNode();
-        case MiniPLTokenType.SLASH:
-          return new DivisionOperationNode();
-        case MiniPLTokenType.LOGICAL_NOT:
-          return new LogicalNotOperationNode();
-        case MiniPLTokenType.LOGICAL_AND:
-          return new LogicalAndOperationNode();
-        case MiniPLTokenType.EQUALITY_COMPARISON:
-          return new EqualityOperationNode();
-        case MiniPLTokenType.LESS_THAN_COMPARISON:
-          return new LessThanOperationNode();
-        case MiniPLTokenType.INTEGER_LITERAL:
-          return new IntegerLiteralNode(tokenReader.token());
-        case MiniPLTokenType.STRING_LITERAL:
-          return new StringLiteralNode(tokenReader.token());
-        case MiniPLTokenType.IDENTIFIER:
-          return new IdentifierNode(tokenReader.token());
-        case MiniPLTokenType.TYPE_IDENTIFIER_INTEGER:
-        case MiniPLTokenType.TYPE_IDENTIFIER_STRING:
-        case MiniPLTokenType.TYPE_IDENTIFIER_BOOL:
-          return new TypeNode(type);
-        case MiniPLTokenType.RANGE_OPERATOR:
-          return new RangeOperatorNode();
-        default:
-          return new Node<string>(tokenReader.token().getLexeme());
-      }
-    }
-    
-    private INode makeNode(Token<MiniPLTokenType> token) {
-      return makeNode(token.getType());
-    }
-
     private bool isTokenInFirst(MiniPLSymbol symbol) {
       if(tokenReader.token() != null) {
         return firstAndFollow.firstContains(symbol, tokenReader.token().getType()); 
@@ -449,6 +383,20 @@ namespace MiniPL.parser {
         }
       }
       return false;
+    }
+
+    private INode addToNode(INode root, INode leftHandSide, INode rightHandSide) {
+      root.addNode(leftHandSide);
+      root.addNode(rightHandSide);
+      return root;
+    }
+
+    private INode makeNode(MiniPLSymbol symbol) {
+      return this.nodeCreator.makeNode(symbol);
+    }
+
+    private INode makeNode(Token<MiniPLTokenType> token) {
+      return this.nodeCreator.makeNode(token);
     }
 
     private void syntaxError(string message) {
