@@ -107,6 +107,15 @@ namespace MiniPL.Tests.semantics.Tests {
       Assert.Equal(10, this.analyzer.getInt("x"));
     }
 
+    [Fact]
+    public void stringShouldHaveValueHelloWorld() {
+      this.parser = TestHelpers.getParser("var x : string := \"Hello World\";");
+      Assert.True(this.parser.processAndBuildAST());
+      IAST ast = this.parser.getAST();
+      this.analyzer.analyze(ast);
+      Assert.Equal("Hello World", this.analyzer.getString("x"));
+    }
+
     [Theory]
     [InlineData("var x : int := 10;", 10)]
     [InlineData("var x : int := 1 + 3;", 4)]
@@ -124,6 +133,31 @@ namespace MiniPL.Tests.semantics.Tests {
       this.analyzer.analyze(ast);
       Assert.Equal(value, this.analyzer.getInt("x"));
     }
+
+    [Theory]
+    [InlineData("var x : string := \"Hello \" + \"World\";", "Hello World")]
+    [InlineData("var x : string := (\"Hello \") + \"World\";", "Hello World")]
+    [InlineData("var x : string := (\"Hello \") + (\"World\" + \"!\");", "Hello World!")]
+    public void stringShouldHaveValueThatIsCalculatedFromExpression(string source, string value) {
+      this.parser = TestHelpers.getParser(source);
+      Assert.True(this.parser.processAndBuildAST());
+      IAST ast = this.parser.getAST();
+      this.analyzer.analyze(ast);
+      Assert.Equal(value, this.analyzer.getString("x"));
+    }
         
+    [Theory]
+    [InlineData("var x : int := 10;", 10)]
+    [InlineData("var x : int := 1 + 3;", 4)]
+    [InlineData("var x : int := 2 * 3;", 6)]
+    [InlineData("var x : int := 3 / 2;", 1)]
+    [InlineData("var x : int := ((2 + 1) * ((4 / 2) + 1)) - 1;", 8)]
+    public void integerShouldHaveValueThatIsCalculatedFromDifferentExpressions(string source, int value) {
+      this.parser = TestHelpers.getParser(source);
+      Assert.True(this.parser.processAndBuildAST());
+      IAST ast = this.parser.getAST();
+      this.analyzer.analyze(ast);
+      Assert.Equal(value, this.analyzer.getInt("x"));
+    }
   }
 }
