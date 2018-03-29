@@ -13,7 +13,6 @@ namespace MiniPL.parser.AST {
     void accept(INodeVisitor visitor); 
 
     object getValue();
-
   }
 
 }

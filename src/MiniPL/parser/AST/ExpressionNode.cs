@@ -14,6 +14,14 @@ namespace MiniPL.parser.AST {
     }
 
     public int getIntegerValue() {
+      INode node = this.children[0];
+      if(node.GetType() == typeof(IntegerLiteralNode)) {
+        return ((IntegerLiteralNode)node).getInt();
+      } else if(node.GetType() == typeof(PlusOperationNode)) {
+        return ((PlusOperationNode)node).getSum();
+      } else if(node.GetType() == typeof(MinusOperationNode)) {
+        return ((MinusOperationNode)node).getSubtraction();
+      }
       throw new NotImplementedException();
     }
 

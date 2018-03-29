@@ -7,14 +7,22 @@ namespace MiniPL.parser.AST {
 
   public class IntegerLiteralNode : Node<int> {
 
-    public IntegerLiteralNode(Token<MiniPLTokenType> token) : base(getLexemeAsInteger(token)) {}
+    private int intValue;
+
+    public IntegerLiteralNode(Token<MiniPLTokenType> token) : base(getLexemeAsInteger(token)) {
+      this.intValue = getLexemeAsInteger(token);
+    }
+
+    public override void accept(INodeVisitor visitor) {
+      throw new NotImplementedException();
+    }
 
     public static int getLexemeAsInteger(Token<MiniPLTokenType> token) {
       return Int32.Parse(token.getLexeme());
     }
 
-    public override void accept(INodeVisitor visitor) {
-      throw new NotImplementedException();
+    public int getInt() {
+      return intValue;
     }
   }
 

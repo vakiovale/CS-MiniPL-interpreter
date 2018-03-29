@@ -86,6 +86,44 @@ namespace MiniPL.Tests.semantics.Tests {
       IAST ast = this.parser.getAST();
       Assert.Throws<SemanticException>(() => this.analyzer.analyze(ast));
     }
+
+    [Fact]
+    public void shouldHaveThreeDifferentTypesDeclared() {
+      this.parser = TestHelpers.getParser("var x : bool; var y : int; var z : string;");
+      Assert.True(this.parser.processAndBuildAST());
+      IAST ast = this.parser.getAST();
+      this.analyzer.analyze(ast);
+      Assert.Equal(false, this.analyzer.getBool("x"));
+      Assert.Equal(0, this.analyzer.getInt("y"));
+      Assert.Equal("", this.analyzer.getString("z"));
+    }
+
+    [Fact]
+    public void integerShouldHaveValue10() {
+      this.parser = TestHelpers.getParser("var x : int := 10;");
+      Assert.True(this.parser.processAndBuildAST());
+      IAST ast = this.parser.getAST();
+      this.analyzer.analyze(ast);
+      Assert.Equal(10, this.analyzer.getInt("x"));
+    }
+
+    [Theory]
+    [InlineData("var x : int := 10;", 10)]
+    [InlineData("var x : int := 1 + 3;", 4)]
+    [InlineData("var x : int := 4 + 3;", 7)]
+    [InlineData("var x : int := (4 + 3) + (10);", 17)]
+    [InlineData("var x : int := (4 + 3) + (10 + 4);", 21)]
+    [InlineData("var x : int := ((4 + 3) + 12) + (10 + 4);", 33)]
+    [InlineData("var x : int := 1 - 3;", -2)]
+    [InlineData("var x : int := (4 + 3) - (10);", -3)]
+    [InlineData("var x : int := (4 + 3) + (10 - 4);", 13)]
+    public void integerShouldHaveValueThatIsCalculatedFromExpression(string source, int value) {
+      this.parser = TestHelpers.getParser(source);
+      Assert.True(this.parser.processAndBuildAST());
+      IAST ast = this.parser.getAST();
+      this.analyzer.analyze(ast);
+      Assert.Equal(value, this.analyzer.getInt("x"));
+    }
         
   }
 }
