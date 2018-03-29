@@ -16,6 +16,14 @@ namespace MiniPL.parser.AST {
     public int getIntegerValue() {
       throw new NotImplementedException();
     }
+
+    public string getStringValue() {
+      throw new NotImplementedException();
+    }
+
+    public bool getBoolValue() {
+      throw new NotImplementedException();
+    }
   }
 
 }

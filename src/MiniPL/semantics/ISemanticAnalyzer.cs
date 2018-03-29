@@ -9,6 +9,7 @@ namespace MiniPL.semantics {
     bool analyze(IAST ast);
     int getInt(string variable);
     string getString(string variable);
+    bool variableExists(string variable);
   }
 
 }

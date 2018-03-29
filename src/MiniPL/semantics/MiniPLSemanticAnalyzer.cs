@@ -11,20 +11,23 @@ namespace MiniPL.semantics {
 
     private IDictionary<string, int> integerVariables;
 
+    private IDictionary<string, string> stringVariables;
+
     public MiniPLSemanticAnalyzer() {
       this.ast = null;
       this.integerVariables = new Dictionary<string, int>();
+      this.stringVariables = new Dictionary<string, string>();
     }
 
     public bool analyze(IAST ast) {
       this.ast = ast;
-      return checkVariablesDeclaredExactlyOnceBeforeUsage();
+      return checkVariableDeclarations();
       //return checkTypes(ast);
     }
 
-    private bool checkVariablesDeclaredExactlyOnceBeforeUsage() {
+    private bool checkVariableDeclarations() {
       ProgramNode program = (ProgramNode)this.ast.getProgram();
-      INodeVisitor varDeclarationVisitor = new VarDeclarationVisitor(integerVariables);
+      INodeVisitor varDeclarationVisitor = new VarDeclarationVisitor(integerVariables, stringVariables);
       program.accept(varDeclarationVisitor);
       return false;
     }
@@ -41,7 +44,11 @@ namespace MiniPL.semantics {
     }
 
     public string getString(string variable) {
-      throw new NotImplementedException();
+      return this.stringVariables[variable];
+    }
+
+    public bool variableExists(string variable) {
+      return this.integerVariables.ContainsKey(variable);
     }
   }
 
