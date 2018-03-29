@@ -1,17 +1,22 @@
 using System;
 using System.Collections.Generic;
+using MiniPL.semantics.visitor;
 
 namespace MiniPL.parser.AST {
 
-  public class BasicNode<T> : INode {
+  public class Node<T> : INode {
 
     private IList<INode> children;
 
     private T value;
 
-    public BasicNode(T value) {
+    public Node(T value) {
       this.children = new List<INode>();
       this.value = value;
+    }
+
+    public bool accept(INodeVisitor visitor) {
+      throw new NotImplementedException();
     }
 
     public void addNode(INode node) {

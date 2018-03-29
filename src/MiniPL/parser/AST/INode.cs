@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using MiniPL.semantics.visitor;
 
 namespace MiniPL.parser.AST {
 
@@ -8,6 +9,8 @@ namespace MiniPL.parser.AST {
     IList<INode> getChildren();
 
     void addNode(INode node);
+
+    bool accept(INodeVisitor visitor); 
 
     object getValue();
 

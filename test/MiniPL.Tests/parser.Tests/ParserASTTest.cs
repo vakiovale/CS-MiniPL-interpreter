@@ -133,7 +133,7 @@ namespace MiniPL.Tests {
 
       Assert.Equal(1, leftHandSide.getValue());
       Assert.Equal(2, rightHandSide.getValue());
-      Assert.Equal("<", lessThanEquality.getValue());
+      Assert.Equal(MiniPLTokenType.LESS_THAN_COMPARISON, lessThanEquality.getValue());
     }
 
     [Fact]
@@ -224,12 +224,11 @@ namespace MiniPL.Tests {
       INode varDeclaration = statementList.getChildren()[0];
       INode x = varDeclaration.getChildren()[0];
       INode type = varDeclaration.getChildren()[1];
-      INode typeSymbol = type.getChildren()[0];
-      INode expression = type.getChildren()[1];
+      INode expression = type.getChildren()[0];
       INode value = expression.getChildren()[0];
 
       Assert.Equal(MiniPLSymbol.VAR_DECLARATION, varDeclaration.getValue());
-      Assert.Equal(MiniPLTokenType.TYPE_IDENTIFIER_INTEGER, typeSymbol.getValue());
+      Assert.Equal(MiniPLTokenType.TYPE_IDENTIFIER_INTEGER, type.getValue());
       Assert.Equal(1, value.getValue());
     }
 
@@ -245,15 +244,14 @@ namespace MiniPL.Tests {
       INode varDeclaration = statementList.getChildren()[0];
       INode x = varDeclaration.getChildren()[0];
       INode type = varDeclaration.getChildren()[1];
-      INode typeSymbol = type.getChildren()[0];
-      INode expression = type.getChildren()[1];
+      INode expression = type.getChildren()[0];
       INode plusOperation = expression.getChildren()[0].getChildren()[0];
       INode leftString = plusOperation.getChildren()[0];
       INode innerExpression = plusOperation.getChildren()[1];
       INode rightString = innerExpression.getChildren()[0];
 
       Assert.Equal(MiniPLSymbol.VAR_DECLARATION, varDeclaration.getValue());
-      Assert.Equal(MiniPLTokenType.TYPE_IDENTIFIER_STRING, typeSymbol.getValue());
+      Assert.Equal(MiniPLTokenType.TYPE_IDENTIFIER_STRING, type.getValue());
       Assert.Equal("HELLO", leftString.getValue());
       Assert.Equal("WORLD!", rightString.getValue());
     }
@@ -270,11 +268,10 @@ namespace MiniPL.Tests {
       INode varDeclaration = statementList.getChildren()[0];
       INode x = varDeclaration.getChildren()[0];
       INode type = varDeclaration.getChildren()[1];
-      INode typeSymbol = type.getChildren()[0];
 
       Assert.Equal(MiniPLSymbol.VAR_DECLARATION, varDeclaration.getValue());
-      Assert.Equal(MiniPLTokenType.TYPE_IDENTIFIER_INTEGER, typeSymbol.getValue());
-      Assert.True(type.getChildren().Count == 1);
+      Assert.Equal(MiniPLTokenType.TYPE_IDENTIFIER_INTEGER, type.getValue());
+      Assert.True(type.getChildren().Count == 0);
     }
 
     [Fact]

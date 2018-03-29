@@ -1,5 +1,6 @@
 using System;
 using MiniPL.parser.AST;
+using MiniPL.semantics;
 
 namespace MiniPL.parser {
 
@@ -7,6 +8,7 @@ namespace MiniPL.parser {
 
     bool processAndBuildAST();
     IAST getAST();
+    bool doSemanticAnalysis(ISemanticAnalyzer semanticAnalyzer); 
 
   }
 }
