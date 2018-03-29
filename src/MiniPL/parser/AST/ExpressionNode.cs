@@ -9,7 +9,11 @@ namespace MiniPL.parser.AST {
 
     public ExpressionNode() : base(MiniPLSymbol.EXPRESSION) {}
 
-    public bool accept(INodeVisitor visitor) {
+    public override void accept(INodeVisitor visitor) {
+      throw new NotImplementedException();
+    }
+
+    public int getIntegerValue() {
       throw new NotImplementedException();
     }
   }

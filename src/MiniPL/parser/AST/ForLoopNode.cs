@@ -9,10 +9,9 @@ namespace MiniPL.parser.AST {
 
     public ForLoopNode() : base(MiniPLSymbol.FOR_LOOP) {}
 
-    public bool accept(INodeVisitor visitor) {
+    public override void accept(INodeVisitor visitor) {
       throw new NotImplementedException();
     }
-
   }
 
 }

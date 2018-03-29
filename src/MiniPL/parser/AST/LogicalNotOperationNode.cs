@@ -9,7 +9,7 @@ namespace MiniPL.parser.AST {
 
     public LogicalNotOperationNode() : base(MiniPLTokenType.LOGICAL_NOT) {}
 
-    public bool accept(INodeVisitor visitor) {
+    public override void accept(INodeVisitor visitor) {
       throw new NotImplementedException();
     }
   }

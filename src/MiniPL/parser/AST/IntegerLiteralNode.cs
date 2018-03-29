@@ -9,12 +9,12 @@ namespace MiniPL.parser.AST {
 
     public IntegerLiteralNode(Token<MiniPLTokenType> token) : base(getLexemeAsInteger(token)) {}
 
-    public bool accept(INodeVisitor visitor) {
-      throw new NotImplementedException();
-    }
-
     public static int getLexemeAsInteger(Token<MiniPLTokenType> token) {
       return Int32.Parse(token.getLexeme());
+    }
+
+    public override void accept(INodeVisitor visitor) {
+      throw new NotImplementedException();
     }
   }
 

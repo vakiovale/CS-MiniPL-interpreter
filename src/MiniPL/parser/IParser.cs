@@ -8,7 +8,6 @@ namespace MiniPL.parser {
 
     bool processAndBuildAST();
     IAST getAST();
-    bool doSemanticAnalysis(ISemanticAnalyzer semanticAnalyzer); 
 
   }
 }

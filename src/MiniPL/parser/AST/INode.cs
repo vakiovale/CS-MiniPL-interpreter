@@ -10,7 +10,7 @@ namespace MiniPL.parser.AST {
 
     void addNode(INode node);
 
-    bool accept(INodeVisitor visitor); 
+    void accept(INodeVisitor visitor); 
 
     object getValue();
 

@@ -9,7 +9,7 @@ namespace MiniPL.parser.AST {
 
     public RangeOperatorNode() : base(MiniPLTokenType.RANGE_OPERATOR) {}
 
-    public bool accept(INodeVisitor visitor) {
+    public override void accept(INodeVisitor visitor) {
       throw new NotImplementedException();
     }
   }

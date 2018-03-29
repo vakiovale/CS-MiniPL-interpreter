@@ -10,10 +10,18 @@ namespace MiniPL.parser.AST {
 
     public TypeNode(MiniPLTokenType type) : base(type) {}
 
-    public bool accept(INodeVisitor visitor) {
+    public override void accept(INodeVisitor visitor)
+    {
       throw new NotImplementedException();
     }
 
+    internal int getIntegerValue() {
+      if(this.children.Count > 0) {
+        return ((ExpressionNode)this.children[0]).getIntegerValue();
+      } else {
+        return 0;
+      }
+    }
   }
 
 }

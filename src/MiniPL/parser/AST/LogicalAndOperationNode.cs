@@ -9,7 +9,7 @@ namespace MiniPL.parser.AST {
 
     public LogicalAndOperationNode() : base(MiniPLTokenType.LOGICAL_AND) {}
 
-    public bool accept(INodeVisitor visitor) {
+    public override void accept(INodeVisitor visitor) {
       throw new NotImplementedException();
     }
   }

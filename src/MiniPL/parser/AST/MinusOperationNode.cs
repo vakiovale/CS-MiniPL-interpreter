@@ -9,7 +9,7 @@ namespace MiniPL.parser.AST {
 
     public MinusOperationNode() : base(MiniPLTokenType.MINUS) {}
 
-    public bool accept(INodeVisitor visitor) {
+    public override void accept(INodeVisitor visitor) {
       throw new NotImplementedException();
     }
   }

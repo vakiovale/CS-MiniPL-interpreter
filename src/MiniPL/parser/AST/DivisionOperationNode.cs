@@ -9,7 +9,7 @@ namespace MiniPL.parser.AST {
 
     public DivisionOperationNode() : base(MiniPLTokenType.SLASH) {}
 
-    public bool accept(INodeVisitor visitor) {
+    public override void accept(INodeVisitor visitor) {
       throw new NotImplementedException();
     }
   }

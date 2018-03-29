@@ -9,10 +9,9 @@ namespace MiniPL.parser.AST {
 
     public PrintNode() : base(MiniPLSymbol.PRINT_PROCEDURE) {}
 
-    public bool accept(INodeVisitor visitor) {
+    public override void accept(INodeVisitor visitor) {
       throw new NotImplementedException();
     }
-
   }
 
 }

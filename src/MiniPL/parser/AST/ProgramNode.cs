@@ -9,10 +9,15 @@ namespace MiniPL.parser.AST {
 
     public ProgramNode() : base(MiniPLSymbol.PROGRAM) {}
 
-    public bool accept(INodeVisitor visitor) {
-      throw new NotImplementedException();
+    public override void accept(INodeVisitor visitor) {
+      foreach(INode node in this.children) {
+        node.accept(visitor);
+      }
     }
 
+    public StatementListNode getStatements() {
+      return (StatementListNode)this.children[0];
+    }
   }
 
 }

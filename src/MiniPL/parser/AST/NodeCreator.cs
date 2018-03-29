@@ -27,7 +27,7 @@ namespace MiniPL.parser.AST {
         case MiniPLSymbol.STATEMENT_LIST:
           return new StatementListNode();
         default:
-          return new Node<MiniPLSymbol>(symbol);
+          return new DummyNode<MiniPLSymbol>(symbol);
       }
     }
 
@@ -56,7 +56,7 @@ namespace MiniPL.parser.AST {
         case MiniPLTokenType.RANGE_OPERATOR:
           return new RangeOperatorNode();
         default:
-          return new Node<MiniPLTokenType>(type);
+          return new DummyNode<MiniPLTokenType>(type);
       }
     }
     

@@ -5,9 +5,9 @@ using MiniPL.tokens;
 
 namespace MiniPL.parser.AST {
 
-  public class StringLiteralNode : Node<string> {
+  public class DummyNode<T> : Node<T> {
 
-    public StringLiteralNode(Token<MiniPLTokenType> token) : base(token.getLexeme()) {}
+    public DummyNode(T t) : base(t) {}
 
     public override void accept(INodeVisitor visitor) {
       throw new NotImplementedException();

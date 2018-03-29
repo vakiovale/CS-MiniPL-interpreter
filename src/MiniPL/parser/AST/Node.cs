@@ -4,20 +4,18 @@ using MiniPL.semantics.visitor;
 
 namespace MiniPL.parser.AST {
 
-  public class Node<T> : INode {
+  public abstract class Node<T> : INode {
 
-    private IList<INode> children;
+    protected IList<INode> children;
 
-    private T value;
+    protected T value;
 
     public Node(T value) {
       this.children = new List<INode>();
       this.value = value;
     }
 
-    public bool accept(INodeVisitor visitor) {
-      throw new NotImplementedException();
-    }
+    public abstract void accept(INodeVisitor visitor);
 
     public void addNode(INode node) {
       children.Add(node);

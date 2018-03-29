@@ -9,7 +9,7 @@ namespace MiniPL.parser.AST {
 
     public VarAssignmentNode() : base(MiniPLSymbol.VAR_ASSIGNMENT) {}
 
-    public bool accept(INodeVisitor visitor) {
+    public override void accept(INodeVisitor visitor) {
       throw new NotImplementedException();
     }
 

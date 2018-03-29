@@ -9,7 +9,7 @@ namespace MiniPL.parser.AST {
 
     public EqualityOperationNode() : base(MiniPLTokenType.EQUALITY_COMPARISON) {}
 
-    public bool accept(INodeVisitor visitor) {
+    public override void accept(INodeVisitor visitor) {
       throw new NotImplementedException();
     }
   }

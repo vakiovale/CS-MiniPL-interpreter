@@ -9,7 +9,7 @@ namespace MiniPL.parser.AST {
 
     public MultiplicationOperationNode() : base(MiniPLTokenType.ASTERISK) {}
 
-    public bool accept(INodeVisitor visitor) {
+    public override void accept(INodeVisitor visitor) {
       throw new NotImplementedException();
     }
   }

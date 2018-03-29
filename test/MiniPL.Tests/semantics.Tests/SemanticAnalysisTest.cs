@@ -22,9 +22,12 @@ namespace MiniPL.Tests.semantics.Tests {
     }
 
     [Fact]
-    public void sampleProgramShouldHaveValidSemantics() {
+    public void checkIntegerIsDeclaredWithDefaultValue() {
+      this.parser = TestHelpers.getParser("var x : int;");
       Assert.True(this.parser.processAndBuildAST());
-      //Assert.True(this.parser.doSemanticAnalysis(analyzer));
+      IAST ast = this.parser.getAST();
+      this.analyzer.analyze(ast);
+      Assert.Equal(0, this.analyzer.getInt("x"));
     }
         
   }

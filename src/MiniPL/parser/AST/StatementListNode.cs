@@ -9,8 +9,10 @@ namespace MiniPL.parser.AST {
 
     public StatementListNode() : base(MiniPLSymbol.STATEMENT_LIST) {}
 
-    public bool accept(INodeVisitor visitor) {
-      throw new NotImplementedException();
+    public override void accept(INodeVisitor visitor) {
+      foreach(INode node in this.children) {
+        node.accept(visitor);
+      }
     }
 
   }

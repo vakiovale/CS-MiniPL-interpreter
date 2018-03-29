@@ -102,13 +102,6 @@ namespace MiniPL.parser {
       }
     }
 
-    /**
-     * Returns true if program's semantics are ok. 
-     */
-    public bool doSemanticAnalysis(ISemanticAnalyzer semanticAnalyzer) {
-      return semanticAnalyzer.analyze(this.ast);
-    }
-
     private void exceptionRecovery(MiniPLException exception, MiniPLSymbol symbol, Func<INode> procedureMethod) {
       logError(exception);
       failSyntax();
