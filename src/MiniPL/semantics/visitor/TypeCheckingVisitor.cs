@@ -9,6 +9,11 @@ namespace MiniPL.semantics.visitor {
       throw new NotImplementedException();
     }
 
+    public void visitEqualityOperator(EqualityOperationNode node)
+    {
+      throw new NotImplementedException();
+    }
+
     public void visitExpression(ExpressionNode node) {
       throw new NotImplementedException();
     }
@@ -18,6 +23,11 @@ namespace MiniPL.semantics.visitor {
     }
 
     public void visitIntegerLiteral(IntegerLiteralNode node) {
+      throw new NotImplementedException();
+    }
+
+    public void visitLessThanOperator(LessThanOperationNode node)
+    {
       throw new NotImplementedException();
     }
 

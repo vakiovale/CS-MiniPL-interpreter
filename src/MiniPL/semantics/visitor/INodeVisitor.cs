@@ -15,6 +15,10 @@ namespace MiniPL.semantics.visitor {
 
     void visitStringLiteral(StringLiteralNode node);
 
+    void visitLessThanOperator(LessThanOperationNode node);
+
+    void visitEqualityOperator(EqualityOperationNode node);
+
     void visitPlus(PlusOperationNode node);
 
     void visitMinus(MinusOperationNode node);

@@ -25,8 +25,7 @@ namespace MiniPL.semantics.visitor {
 
     private Stack<string> strStack;
 
-
-    private bool boolValue = false;
+    private Stack<bool> boolStack;
 
     public VarDeclarationVisitor(IDictionary<string, int> integerVariables, IDictionary<string, string> stringVariables, IDictionary<string, bool> boolVariables) {
       this.integerVariables = integerVariables; 
@@ -34,6 +33,7 @@ namespace MiniPL.semantics.visitor {
       this.boolVariables = boolVariables;
       this.intStack = new Stack<int>();
       this.strStack = new Stack<string>();
+      this.boolStack = new Stack<bool>();
     }
 
     public void visitExpression(ExpressionNode node) {
@@ -45,10 +45,12 @@ namespace MiniPL.semantics.visitor {
     }
 
     public void visitIntegerLiteral(IntegerLiteralNode node) {
+      this.intType = true;
       this.intStack.Push(node.getInt());
     }
 
     public void visitStringLiteral(StringLiteralNode node) {
+      this.strType = true;
       this.strStack.Push(node.getString());
     }
 
@@ -88,12 +90,35 @@ namespace MiniPL.semantics.visitor {
       this.intStack.Push(value);
     }
 
+    public void visitLessThanOperator(LessThanOperationNode node) {
+      readValues(node);
+      if(intType) {
+        bool value = this.intStack.Pop() < this.intStack.Pop();
+        this.boolStack.Push(value);
+        this.intType = false;
+      } else if(strType) {
+        bool value = String.Compare(this.strStack.Pop(), this.strStack.Pop()) < 0;
+        this.boolStack.Push(value);
+        this.strType = false;
+      } else if(boolType) {
+        bool lhs = this.boolStack.Pop();
+        bool rhs = this.boolStack.Pop();
+        bool value = (!lhs && rhs) ? true : false; 
+        this.boolStack.Push(value);
+      }
+    }
+
+    public void visitEqualityOperator(EqualityOperationNode node) {
+      throw new NotImplementedException();
+    }
+
     public void visitVarDeclaration(VarDeclarationNode node) {
       this.intStack.Clear();
       this.intStack.Push(0);
       this.strStack.Clear();
       this.strStack.Push("");
-      this.boolValue = false;
+      this.boolStack.Clear();
+      this.boolStack.Push(false);
       this.intType = false;
       this.strType = false;
       this.boolType = false;
@@ -106,13 +131,11 @@ namespace MiniPL.semantics.visitor {
       
       MiniPLTokenType type = (MiniPLTokenType)typeNode.getValue();
       if(type == MiniPLTokenType.TYPE_IDENTIFIER_INTEGER) {
-        this.intType = true;
         foreach(INode innerNode in typeNode.getChildren()) {
           innerNode.accept(this);
         }
         this.integerVariables.Add(variableName, this.intStack.Pop());
       } else if(type == MiniPLTokenType.TYPE_IDENTIFIER_STRING) {
-        this.strType = true;
         foreach(INode innerNode in typeNode.getChildren()) {
           innerNode.accept(this);
         }
@@ -122,7 +145,7 @@ namespace MiniPL.semantics.visitor {
         foreach(INode innerNode in typeNode.getChildren()) {
           innerNode.accept(this);
         }
-        this.boolVariables.Add(variableName, this.boolValue);
+        this.boolVariables.Add(variableName, this.boolStack.Pop());
       } else {
         throw new Exception("Unknown type usage in semantic analyzer.");
       }

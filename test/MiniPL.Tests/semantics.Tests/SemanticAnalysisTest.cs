@@ -169,5 +169,27 @@ namespace MiniPL.Tests.semantics.Tests {
       this.analyzer.analyze(ast);
       Assert.Equal(value, this.analyzer.getInt("x"));
     }
+
+    [Theory]
+    [InlineData("var x : bool := 1 < 2;", true)]
+    [InlineData("var x : bool := 1 < 0;", false)]
+    [InlineData("var x : bool := 1 < 1;", false)]
+    [InlineData("var x : bool := \"abba\" < \"dagga\";", true)]
+    [InlineData("var x : bool := \"gagga\" < \"dagga\";", false)]
+    [InlineData("var x : bool := \"abba\" < \"abba\";", false)]
+    [InlineData("var x : bool := \"abba\" < \"abba\";", false)]
+    [InlineData("var x : bool := (2 < 1) < (1 < 2);", true)]
+    [InlineData("var x : bool := (1 < 2) < (1 < 2);", false)]
+    [InlineData("var x : bool := (1 < 2) < (2 < 1);", false)]
+    [InlineData("var x : bool := (2 < 1) < (2 < 1);", false)]
+    [InlineData("var x : bool := (\"abba\" < \"abba\") < (1 < 2);", true)]
+    [InlineData("var x : bool := (2 < 1) < (\"abba\" < \"abba\");", false)]
+    public void checkBoolExpressions(string source, bool value) {
+      this.parser = TestHelpers.getParser(source);
+      Assert.True(this.parser.processAndBuildAST());
+      IAST ast = this.parser.getAST();
+      this.analyzer.analyze(ast);
+      Assert.Equal(value, this.analyzer.getBool("x"));
+    }
   }
 }

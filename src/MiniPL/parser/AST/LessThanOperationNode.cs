@@ -10,7 +10,7 @@ namespace MiniPL.parser.AST {
     public LessThanOperationNode() : base(MiniPLTokenType.LESS_THAN_COMPARISON) {}
 
     public override void accept(INodeVisitor visitor) {
-      throw new NotImplementedException();
+      visitor.visitLessThanOperator(this);
     }
   }
 
