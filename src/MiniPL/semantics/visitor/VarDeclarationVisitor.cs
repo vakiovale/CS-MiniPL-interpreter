@@ -41,7 +41,14 @@ namespace MiniPL.semantics.visitor {
     }
 
     public void visitIdentifier(IdentifierNode node) {
-      throw new NotImplementedException();
+      string variableName = node.getVariableName();
+      if(integerVariables.ContainsKey(variableName)) {
+        this.intStack.Push(integerVariables[variableName]);
+      } else if(stringVariables.ContainsKey(variableName)) {
+        this.strStack.Push(stringVariables[variableName]);
+      } else if(boolVariables.ContainsKey(variableName)) {
+        this.boolStack.Push(boolVariables[variableName]);
+      }
     }
 
     public void visitIntegerLiteral(IntegerLiteralNode node) {

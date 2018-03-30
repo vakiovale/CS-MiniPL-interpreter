@@ -198,5 +198,25 @@ namespace MiniPL.Tests.semantics.Tests {
       this.analyzer.analyze(ast);
       Assert.Equal(value, this.analyzer.getBool("x"));
     }
+
+    [Fact]
+    public void shouldHaveIntValue100WhenReadFromVariable() {
+      this.parser = TestHelpers.getParser("var x : int := 30;\nvar z : int := x + 70;");
+      Assert.True(this.parser.processAndBuildAST());
+      IAST ast = this.parser.getAST();
+      this.analyzer.analyze(ast);
+      Assert.Equal(100, this.analyzer.getInt("z"));
+    }
+
+    [Theory]
+    [InlineData("var x : string := \"Hello\"; var y : string := \"World\"; var z : string := (x + \" \") + y;", "Hello World")]
+    [InlineData("var x : string := \"Hello\"; var y : string := \"World\"; var z : string := (x + \" \") + (y + \"!\");", "Hello World!")]
+    public void shouldHaveCorrectValueFromStringVariable(string source, string value) {
+      this.parser = TestHelpers.getParser(source);
+      Assert.True(this.parser.processAndBuildAST());
+      IAST ast = this.parser.getAST();
+      this.analyzer.analyze(ast);
+      Assert.Equal(value, this.analyzer.getString("z"));
+    }
   }
 }

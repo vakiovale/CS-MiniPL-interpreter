@@ -10,7 +10,7 @@ namespace MiniPL.parser.AST {
     public IdentifierNode(Token<MiniPLTokenType> token) : base(token.getLexeme()) {}
 
     public override void accept(INodeVisitor visitor) {
-      throw new NotImplementedException();
+      visitor.visitIdentifier(this);
     }
 
     public string getVariableName() {
