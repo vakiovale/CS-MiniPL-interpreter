@@ -14,7 +14,7 @@ namespace MiniPL.parser.AST {
     }
 
     public override void accept(INodeVisitor visitor) {
-      throw new NotImplementedException();
+      visitor.visitIntegerLiteral(this);
     }
 
     public static int getLexemeAsInteger(Token<MiniPLTokenType> token) {

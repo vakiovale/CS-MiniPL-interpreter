@@ -108,6 +108,15 @@ namespace MiniPL.Tests.semantics.Tests {
     }
 
     [Fact]
+    public void integerShouldHaveValue3() {
+      this.parser = TestHelpers.getParser("var x : int := 1 + 2;");
+      Assert.True(this.parser.processAndBuildAST());
+      IAST ast = this.parser.getAST();
+      this.analyzer.analyze(ast);
+      Assert.Equal(3, this.analyzer.getInt("x"));
+    }
+
+    [Fact]
     public void stringShouldHaveValueHelloWorld() {
       this.parser = TestHelpers.getParser("var x : string := \"Hello World\";");
       Assert.True(this.parser.processAndBuildAST());
@@ -152,6 +161,7 @@ namespace MiniPL.Tests.semantics.Tests {
     [InlineData("var x : int := 2 * 3;", 6)]
     [InlineData("var x : int := 3 / 2;", 1)]
     [InlineData("var x : int := ((2 + 1) * ((4 / 2) + 1)) - 1;", 8)]
+    [InlineData("var x : int := ((2 * 3) + (16 / 4));", 10)]
     public void integerShouldHaveValueThatIsCalculatedFromDifferentExpressions(string source, int value) {
       this.parser = TestHelpers.getParser(source);
       Assert.True(this.parser.processAndBuildAST());

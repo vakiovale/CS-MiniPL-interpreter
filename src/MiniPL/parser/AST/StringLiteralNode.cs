@@ -14,7 +14,7 @@ namespace MiniPL.parser.AST {
     }
 
     public override void accept(INodeVisitor visitor) {
-      throw new NotImplementedException();
+      visitor.visitStringLiteral(this);
     }
 
     public string getString() {
