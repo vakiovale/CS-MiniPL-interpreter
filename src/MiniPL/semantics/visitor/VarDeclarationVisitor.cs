@@ -109,7 +109,21 @@ namespace MiniPL.semantics.visitor {
     }
 
     public void visitEqualityOperator(EqualityOperationNode node) {
-      throw new NotImplementedException();
+      readValues(node);
+      if(intType) {
+        bool value = this.intStack.Pop() == this.intStack.Pop();
+        this.boolStack.Push(value);
+        this.intType = false;
+      } else if(strType) {
+        bool value = String.Equals(this.strStack.Pop(), this.strStack.Pop());
+        this.boolStack.Push(value);
+        this.strType = false;
+      } else if(boolType) {
+        bool lhs = this.boolStack.Pop();
+        bool rhs = this.boolStack.Pop();
+        bool value = lhs == rhs; 
+        this.boolStack.Push(value);
+      }
     }
 
     public void visitVarDeclaration(VarDeclarationNode node) {

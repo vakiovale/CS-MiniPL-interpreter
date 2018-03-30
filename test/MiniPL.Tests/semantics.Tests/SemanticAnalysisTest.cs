@@ -171,9 +171,16 @@ namespace MiniPL.Tests.semantics.Tests {
     }
 
     [Theory]
+    [InlineData("var x : bool := 1 = 2;", false)]
+    [InlineData("var x : bool := 2 = 2;", true)]
+    [InlineData("var x : bool := (1 + 2) = (4 - 1);", true)]
+    [InlineData("var x : bool := (1 + 2) = (4 * 1);", false)]
     [InlineData("var x : bool := 1 < 2;", true)]
     [InlineData("var x : bool := 1 < 0;", false)]
     [InlineData("var x : bool := 1 < 1;", false)]
+    [InlineData("var x : bool := \"abba\" = \"dagga\";", false)]
+    [InlineData("var x : bool := \"abba\" = \"abba\";", true)]
+    [InlineData("var x : bool := (\"abba\" = \"abba\") = (2 < 100);", true)]
     [InlineData("var x : bool := \"abba\" < \"dagga\";", true)]
     [InlineData("var x : bool := \"gagga\" < \"dagga\";", false)]
     [InlineData("var x : bool := \"abba\" < \"abba\";", false)]
