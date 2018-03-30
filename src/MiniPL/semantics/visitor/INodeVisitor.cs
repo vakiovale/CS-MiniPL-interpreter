@@ -7,6 +7,8 @@ namespace MiniPL.semantics.visitor {
 
     void visitVarDeclaration(VarDeclarationNode node);
 
+    void visitVarAssignment(VarAssignmentNode node);
+
     void visitExpression(ExpressionNode node);
 
     void visitIdentifier(IdentifierNode node);

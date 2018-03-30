@@ -50,6 +50,10 @@ namespace MiniPL.semantics.visitor {
       throw new NotImplementedException();
     }
 
+    public void visitVarAssignment(VarAssignmentNode node) {
+      throw new NotImplementedException();
+    }
+
     public void visitVarDeclaration(VarDeclarationNode node) {
       throw new NotImplementedException();
     }

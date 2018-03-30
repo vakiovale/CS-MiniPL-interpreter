@@ -28,6 +28,15 @@ namespace MiniPL.semantics.visitor {
       this.intStack = new Stack<int>();
       this.strStack = new Stack<string>();
       this.boolStack = new Stack<bool>();
+      this.intStack.Clear();
+      this.intStack.Push(0);
+      this.strStack.Clear();
+      this.strStack.Push("");
+      this.boolStack.Clear();
+      this.boolStack.Push(false);
+      this.intType = false;
+      this.strType = false;
+      this.boolType = false;
     }
 
     public void visitExpression(ExpressionNode node) {
@@ -152,23 +161,14 @@ namespace MiniPL.semantics.visitor {
         innerNode.accept(this);
       }
     }
- 
-    public void initializeExpressionVariables() {
-      this.intStack.Clear();
-      this.intStack.Push(0);
-      this.strStack.Clear();
-      this.strStack.Push("");
-      this.boolStack.Clear();
-      this.boolStack.Push(false);
-      this.intType = false;
-      this.strType = false;
-      this.boolType = false;
-    }
 
     private bool variableAlreadyDeclared(string variableName) {
       return this.symbolTable.hasVariable(variableName);
     }
 
+    public void visitVarAssignment(VarAssignmentNode node) {
+      throw new NotImplementedException();
+    }
   }
 
 }

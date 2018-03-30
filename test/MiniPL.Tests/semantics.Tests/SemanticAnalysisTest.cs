@@ -98,6 +98,8 @@ namespace MiniPL.Tests.semantics.Tests {
       Assert.Equal("", this.analyzer.getString("z"));
     }
 
+    /* 
+
     [Fact]
     public void integerShouldHaveValue10() {
       this.parser = TestHelpers.getParser("var x : int := 10;");
@@ -184,7 +186,6 @@ namespace MiniPL.Tests.semantics.Tests {
     [InlineData("var x : bool := \"abba\" < \"dagga\";", true)]
     [InlineData("var x : bool := \"gagga\" < \"dagga\";", false)]
     [InlineData("var x : bool := \"abba\" < \"abba\";", false)]
-    [InlineData("var x : bool := \"abba\" < \"abba\";", false)]
     [InlineData("var x : bool := (2 < 1) < (1 < 2);", true)]
     [InlineData("var x : bool := (1 < 2) < (1 < 2);", false)]
     [InlineData("var x : bool := (1 < 2) < (2 < 1);", false)]
@@ -218,5 +219,6 @@ namespace MiniPL.Tests.semantics.Tests {
       this.analyzer.analyze(ast);
       Assert.Equal(value, this.analyzer.getString("z"));
     }
+    */
   }
 }
