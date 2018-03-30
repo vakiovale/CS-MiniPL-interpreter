@@ -9,17 +9,11 @@ namespace MiniPL.semantics {
 
     private IAST ast; 
 
-    private IDictionary<string, int> integerVariables;
-
-    private IDictionary<string, string> stringVariables;
-
-    private IDictionary<string, bool> boolVariables;
+    private ISymbolTable symbolTable;
 
     public MiniPLSemanticAnalyzer() {
       this.ast = null;
-      this.integerVariables = new Dictionary<string, int>();
-      this.stringVariables = new Dictionary<string, string>();
-      this.boolVariables = new Dictionary<string, bool>();
+      this.symbolTable = new SymbolTable();
     }
 
     public bool analyze(IAST ast) {
@@ -30,7 +24,7 @@ namespace MiniPL.semantics {
 
     private bool checkVariableDeclarations() {
       ProgramNode program = (ProgramNode)this.ast.getProgram();
-      INodeVisitor varDeclarationVisitor = new VarDeclarationVisitor(integerVariables, stringVariables, boolVariables);
+      INodeVisitor varDeclarationVisitor = new VarDeclarationVisitor(symbolTable);
       program.accept(varDeclarationVisitor);
       return false;
     }
@@ -43,19 +37,19 @@ namespace MiniPL.semantics {
     }
 
     public int getInt(string variable) {
-      return this.integerVariables[variable];
+      return this.symbolTable.getInt(variable);
     }
 
     public string getString(string variable) {
-      return this.stringVariables[variable];
+      return this.symbolTable.getString(variable);
     }
 
     public bool getBool(string variable) {
-      return this.boolVariables[variable];
+      return this.symbolTable.getBool(variable);
     }
 
     public bool variableExists(string variable) {
-      return this.integerVariables.ContainsKey(variable) || this.stringVariables.ContainsKey(variable) || this.boolVariables.ContainsKey(variable);
+      return this.symbolTable.hasVariable(variable);
     }
 
   }
