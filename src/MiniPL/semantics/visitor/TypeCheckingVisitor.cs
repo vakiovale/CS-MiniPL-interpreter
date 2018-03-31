@@ -14,6 +14,7 @@ namespace MiniPL.semantics.visitor {
 
     public TypeCheckingVisitor(ISymbolTable symbolTable) {
       this.symbolTable = symbolTable;
+      this.typeStack = new Stack<MiniPLTokenType>();
     }
 
     public void visitDivision(DivisionOperationNode node) {
@@ -44,6 +45,14 @@ namespace MiniPL.semantics.visitor {
         throw new SemanticException("Less than operator has different types on both sides.");
       }
       this.typeStack.Push(MiniPLTokenType.TYPE_IDENTIFIER_BOOL);
+    }
+
+    public void visitLogicalNotOperator(LogicalNotOperationNode logicalNotOperationNode) {
+      throw new NotImplementedException();
+    }
+
+    public void visitLogicalAndOperator(LogicalAndOperationNode logicalAndOperationNode) {
+      throw new NotImplementedException();
     }
 
     public void visitExpression(ExpressionNode node) {
@@ -115,7 +124,6 @@ namespace MiniPL.semantics.visitor {
       IdentifierNode identifier = (IdentifierNode)node.getChildren()[0];
       string variableName = identifier.getVariableName();
       INode expression = node.getChildren()[1];
-      this.typeStack = new Stack<MiniPLTokenType>();
       MiniPLTokenType type;
       if(this.symbolTable.hasInteger(variableName)) {
         type = MiniPLTokenType.TYPE_IDENTIFIER_INTEGER;
@@ -134,7 +142,6 @@ namespace MiniPL.semantics.visitor {
       string variableName = identifier.getVariableName();
       TypeNode typeNode = (TypeNode)node.getChildren()[1];
       MiniPLTokenType type = (MiniPLTokenType)typeNode.getValue();
-      this.typeStack = new Stack<MiniPLTokenType>();
       typeCheck(typeNode, type);
     }
 
@@ -185,7 +192,31 @@ namespace MiniPL.semantics.visitor {
     }
 
     public void visitPrint(PrintNode printNode) {
-      //throw new NotImplementedException();
+      this.typeStack.Clear();
+      printNode.getChildren()[0].accept(this);
+      MiniPLTokenType type = this.typeStack.Pop();
+      this.typeStack.Clear();
+      if(type != MiniPLTokenType.TYPE_IDENTIFIER_INTEGER && type != MiniPLTokenType.TYPE_IDENTIFIER_STRING) {
+        throw new SemanticException("Print statement can print only integers and strings.");
+      }
+    }
+
+    public void visitAssert(AssertNode assertNode) {
+      this.typeStack.Clear();
+      assertNode.getChildren()[0].accept(this);
+      MiniPLTokenType type = this.typeStack.Pop();
+      this.typeStack.Clear();
+      if(type != MiniPLTokenType.TYPE_IDENTIFIER_BOOL) {
+        throw new SemanticException("Assert statement can only take bool as an argument.");
+      }
+    }
+
+    public void visitRead(ReadNode readNode) {
+      IdentifierNode identifier = (IdentifierNode)readNode.getChildren()[0];
+      string variableName = identifier.getVariableName();
+      if(!this.symbolTable.hasInteger(variableName) && !this.symbolTable.hasString(variableName)) {
+        throw new SemanticException("Wrong type in read statement. Trying to read input to variable " + variableName + ". Read statement can read only integers and strings.");
+      }
     }
   }
 

@@ -10,7 +10,7 @@ namespace MiniPL.parser.AST {
     public ReadNode() : base(MiniPLSymbol.READ_PROCEDURE) {}
 
     public override void accept(INodeVisitor visitor) {
-      throw new NotImplementedException();
+      visitor.visitRead(this);
     }
   }
 

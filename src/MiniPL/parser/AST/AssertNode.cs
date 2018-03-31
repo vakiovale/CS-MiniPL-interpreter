@@ -10,7 +10,7 @@ namespace MiniPL.parser.AST {
     public AssertNode() : base(MiniPLSymbol.ASSERT_PROCEDURE) {}
 
     public override void accept(INodeVisitor visitor) {
-      throw new NotImplementedException();
+      visitor.visitAssert(this);
     }
   }
 

@@ -110,6 +110,10 @@ namespace MiniPL.Tests.semantics.Tests {
     [InlineData("var y : bool := 2 < 3; var x : bool := (1 < 2) = y;")] 
     [InlineData("var x : bool := (((1 / 2) = 30) < (\"abba\" = \"gorilla\")) = (5 < (7 + 9));")]
     [InlineData("var y : string := \"apina\"; var x : string := \"13\" + y;")] 
+    [InlineData("var x : int; read x;")]
+    [InlineData("var x : string; read x;")]
+    [InlineData("var x : int; print x;")]
+    [InlineData("var x : string; print x;")]
     public void analyzeShouldFinishWithDifferentLegalTypes(string source) {
       this.parser = TestHelpers.getParser(source);
       Assert.True(this.parser.processAndBuildAST());
@@ -128,6 +132,8 @@ namespace MiniPL.Tests.semantics.Tests {
     [InlineData("var x : bool := (1 / 2) = (\"abba\" < \"gorilla\");")]
     [InlineData("var x : bool := (1 + 2) = (\"abba\" < \"gorilla\");")]
     [InlineData("var y : string := \"apina\"; var x : int := 13 + y;")] 
+    [InlineData("var x : bool; read x;")]
+    [InlineData("var x : bool; print x;")]
     public void analyzeShouldThrowSemanticExceptionWithUsageOfWrongTypes(string source) {
       this.parser = TestHelpers.getParser(source);
       Assert.True(this.parser.processAndBuildAST());
@@ -199,6 +205,60 @@ namespace MiniPL.Tests.semantics.Tests {
     [InlineData("var z : int; var x : int; for x in 0..10 do print x; for z in 0..10 do print x; x := 5; end for; end for;")]
     [InlineData("var x : int; var y : int; for x in 0..10 do print x; for y in 0..10 do print y*x; var z : bool; end for; end for;")]
     public void assigningValuesForControlVariablesShouldBeIllegalInsideForLoops(string source) {
+      this.parser = TestHelpers.getParser(source);
+      Assert.True(this.parser.processAndBuildAST());
+      IAST ast = this.parser.getAST();
+      Assert.Throws<SemanticException>(() => this.analyzer.analyze(ast));
+    }
+
+    [Theory]
+    [InlineData("var x : int; read x;")]
+    public void semanticsShouldBeOkInReadStatementForIntegerVariables(string source) {
+      this.parser = TestHelpers.getParser(source);
+      Assert.True(this.parser.processAndBuildAST());
+      IAST ast = this.parser.getAST();
+      Assert.True(this.analyzer.analyze(ast));
+    }
+
+    [Theory]
+    [InlineData("read x;")]
+    public void readingUndeclaredVariableShouldThrowException(string source) {
+      this.parser = TestHelpers.getParser(source);
+      Assert.True(this.parser.processAndBuildAST());
+      IAST ast = this.parser.getAST();
+      Assert.Throws<SemanticException>(() => this.analyzer.analyze(ast));
+    }
+
+    [Theory]
+    [InlineData("var x : int; print x;")]
+    public void semanticsShouldBeOkInPrintStatementForIntegerVariables(string source) {
+      this.parser = TestHelpers.getParser(source);
+      Assert.True(this.parser.processAndBuildAST());
+      IAST ast = this.parser.getAST();
+      Assert.True(this.analyzer.analyze(ast));
+    }
+
+    [Theory]
+    [InlineData("print x;")]
+    public void printingUndeclaredVariableShouldThrowException(string source) {
+      this.parser = TestHelpers.getParser(source);
+      Assert.True(this.parser.processAndBuildAST());
+      IAST ast = this.parser.getAST();
+      Assert.Throws<SemanticException>(() => this.analyzer.analyze(ast));
+    }
+
+    [Theory]
+    [InlineData("var x : bool; assert(x);")]
+    public void semanticsShouldBeOkInAssertStatementForBoolVariables(string source) {
+      this.parser = TestHelpers.getParser(source);
+      Assert.True(this.parser.processAndBuildAST());
+      IAST ast = this.parser.getAST();
+      Assert.True(this.analyzer.analyze(ast));
+    }
+
+    [Theory]
+    [InlineData("assert(x);")]
+    public void assertingUndeclaredVariableShouldThrowException(string source) {
       this.parser = TestHelpers.getParser(source);
       Assert.True(this.parser.processAndBuildAST());
       IAST ast = this.parser.getAST();

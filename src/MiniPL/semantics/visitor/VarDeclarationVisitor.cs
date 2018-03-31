@@ -24,39 +24,40 @@ namespace MiniPL.semantics.visitor {
     }
 
     public void visitIdentifier(IdentifierNode node) {
-      throw new NotImplementedException();
+      string variableName = node.getVariableName();
+      if(!this.symbolTable.hasVariable(variableName)) {
+        throw new SemanticException("Variable '" + variableName + "' has not been declared.");
+      }
     }
 
     public void visitIntegerLiteral(IntegerLiteralNode node) {
-      throw new NotImplementedException();
     }
 
     public void visitStringLiteral(StringLiteralNode node) {
-      throw new NotImplementedException();
     }
 
     public void visitPlus(PlusOperationNode node) {
-      throw new NotImplementedException();
     }
 
     public void visitMinus(MinusOperationNode node) {
-      throw new NotImplementedException();
     }
 
     public void visitDivision(DivisionOperationNode node) {
-      throw new NotImplementedException();
     }
 
     public void visitMultiplication(MultiplicationOperationNode node) {
-      throw new NotImplementedException();
     }
 
     public void visitLessThanOperator(LessThanOperationNode node) {
-      throw new NotImplementedException();
     }
 
     public void visitEqualityOperator(EqualityOperationNode node) {
-      throw new NotImplementedException();
+    }
+
+    public void visitLogicalNotOperator(LogicalNotOperationNode logicalNotOperationNode) {
+    }
+
+    public void visitLogicalAndOperator(LogicalAndOperationNode logicalAndOperationNode) {
     }
 
     public void visitVarAssignment(VarAssignmentNode node) {
@@ -109,8 +110,22 @@ namespace MiniPL.semantics.visitor {
       return symbolTable.hasVariable(variableName); 
     }
 
-    public void visitPrint(PrintNode printNode) {
-      //throw new NotImplementedException();
+    public void visitPrint(PrintNode node) {
+      foreach(INode child in node.getChildren()) {
+        child.accept(this);
+      }
+    }
+
+    public void visitAssert(AssertNode node) {
+      foreach(INode child in node.getChildren()) {
+        child.accept(this);
+      }
+    }
+
+    public void visitRead(ReadNode node) {
+      foreach(INode child in node.getChildren()) {
+        child.accept(this);
+      }
     }
   }
 

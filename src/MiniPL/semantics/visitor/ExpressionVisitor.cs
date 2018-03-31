@@ -179,6 +179,26 @@ namespace MiniPL.semantics.visitor {
     {
       throw new NotImplementedException();
     }
+
+    public void visitAssert(AssertNode assertNode)
+    {
+      throw new NotImplementedException();
+    }
+
+    public void visitRead(ReadNode readNode)
+    {
+      throw new NotImplementedException();
+    }
+
+    public void visitLogicalNotOperator(LogicalNotOperationNode logicalNotOperationNode)
+    {
+      throw new NotImplementedException();
+    }
+
+    public void visitLogicalAndOperator(LogicalAndOperationNode logicalAndOperationNode)
+    {
+      throw new NotImplementedException();
+    }
   }
 
 }
