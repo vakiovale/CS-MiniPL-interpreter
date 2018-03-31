@@ -135,6 +135,27 @@ namespace MiniPL.Tests.semantics.Tests {
       Assert.Throws<SemanticException>(() => this.analyzer.analyze(ast));
     }
 
+    [Theory]
+    [InlineData("var x : int; x := 10;")]
+    [InlineData("var x : bool; x := 1 < 3;")]
+    [InlineData("var x : string; x := \"Hello\" + x;")]
+    public void variableAssignmentShouldBeOkWithCorrectTypes(string source) {
+      this.parser = TestHelpers.getParser(source);
+      Assert.True(this.parser.processAndBuildAST());
+      IAST ast = this.parser.getAST();
+      Assert.True(this.analyzer.analyze(ast));
+    }
+
+    [Theory]
+    [InlineData("var x : string; x := 10;")]
+    [InlineData("var x : int; x := 1 < 3;")]
+    [InlineData("var x : string; x := 3 + x;")]
+    public void variableAssignmentShouldThrowAnExceptionWithWrongTypes(string source) {
+      this.parser = TestHelpers.getParser(source);
+      Assert.True(this.parser.processAndBuildAST());
+      IAST ast = this.parser.getAST();
+      Assert.Throws<SemanticException>(() => this.analyzer.analyze(ast));
+    }
     /* 
 
     [Fact]

@@ -12,8 +12,6 @@ namespace MiniPL.semantics.visitor {
 
     private Stack<MiniPLTokenType> typeStack;
 
-    private MiniPLTokenType typeToCheck;
-
     public TypeCheckingVisitor(ISymbolTable symbolTable) {
       this.symbolTable = symbolTable;
     }
@@ -114,7 +112,21 @@ namespace MiniPL.semantics.visitor {
     }
 
     public void visitVarAssignment(VarAssignmentNode node) {
-      accessChildren(node);
+      IdentifierNode identifier = (IdentifierNode)node.getChildren()[0];
+      string variableName = identifier.getVariableName();
+      INode expression = node.getChildren()[1];
+      this.typeStack = new Stack<MiniPLTokenType>();
+      MiniPLTokenType type;
+      if(this.symbolTable.hasInteger(variableName)) {
+        type = MiniPLTokenType.TYPE_IDENTIFIER_INTEGER;
+        typeCheck(expression, type);
+      } else if(this.symbolTable.hasString(variableName)) {
+        type = MiniPLTokenType.TYPE_IDENTIFIER_STRING;
+        typeCheck(expression, type);
+      } else if(this.symbolTable.hasBool(variableName)) {
+        type = MiniPLTokenType.TYPE_IDENTIFIER_BOOL;
+        typeCheck(expression, type);
+      }
     }
 
     public void visitVarDeclaration(VarDeclarationNode node) {
@@ -123,25 +135,25 @@ namespace MiniPL.semantics.visitor {
       TypeNode typeNode = (TypeNode)node.getChildren()[1];
       MiniPLTokenType type = (MiniPLTokenType)typeNode.getValue();
       this.typeStack = new Stack<MiniPLTokenType>();
+      typeCheck(typeNode, type);
+    }
 
+    private void typeCheck(INode node, MiniPLTokenType type) {
       if(type == MiniPLTokenType.TYPE_IDENTIFIER_INTEGER) {
-        this.typeToCheck = type;
         this.typeStack.Push(MiniPLTokenType.TYPE_IDENTIFIER_INTEGER);
-        accessChildren(typeNode);
+        accessChildren(node);
         if(this.typeStack.Pop() != MiniPLTokenType.TYPE_IDENTIFIER_INTEGER) {
           throw new SemanticException("Wrong type. Expected an integer.");
         }
       } else if(type == MiniPLTokenType.TYPE_IDENTIFIER_STRING) {
-        this.typeToCheck = type;
         this.typeStack.Push(MiniPLTokenType.TYPE_IDENTIFIER_STRING);
-        accessChildren(typeNode);
+        accessChildren(node);
         if(this.typeStack.Pop() != MiniPLTokenType.TYPE_IDENTIFIER_STRING) {
           throw new SemanticException("Wrong type. Expected a string.");
         }
       } else if(type == MiniPLTokenType.TYPE_IDENTIFIER_BOOL) {
-        this.typeToCheck = type;
         this.typeStack.Push(MiniPLTokenType.TYPE_IDENTIFIER_BOOL);
-        accessChildren(typeNode);
+        accessChildren(node);
         if(this.typeStack.Pop() != MiniPLTokenType.TYPE_IDENTIFIER_BOOL) {
           throw new SemanticException("Wrong type. Expected a bool.");
         }
