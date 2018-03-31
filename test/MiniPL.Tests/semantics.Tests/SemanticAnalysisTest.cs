@@ -114,6 +114,10 @@ namespace MiniPL.Tests.semantics.Tests {
     [InlineData("var x : string; read x;")]
     [InlineData("var x : int; print x;")]
     [InlineData("var x : string; print x;")]
+    [InlineData("print \"Hello\" + \"World\";")]
+    [InlineData("print 12 * 30;")]
+    [InlineData("var x : bool := 2 < 3; assert(x);")]
+    [InlineData("var x : int := 2; assert(x < 3);")]
     public void analyzeShouldFinishWithDifferentLegalTypes(string source) {
       this.parser = TestHelpers.getParser(source);
       Assert.True(this.parser.processAndBuildAST());
@@ -134,6 +138,7 @@ namespace MiniPL.Tests.semantics.Tests {
     [InlineData("var y : string := \"apina\"; var x : int := 13 + y;")] 
     [InlineData("var x : bool; read x;")]
     [InlineData("var x : bool; print x;")]
+    [InlineData("var x : int; print (10 < 20);")]
     public void analyzeShouldThrowSemanticExceptionWithUsageOfWrongTypes(string source) {
       this.parser = TestHelpers.getParser(source);
       Assert.True(this.parser.processAndBuildAST());
