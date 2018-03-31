@@ -13,6 +13,8 @@ namespace MiniPL.semantics.visitor {
 
     void visitIdentifier(IdentifierNode node);
 
+    void visitForLoop(ForLoopNode forLoopNode);
+
     void visitIntegerLiteral(IntegerLiteralNode node);
 
     void visitStringLiteral(StringLiteralNode node);

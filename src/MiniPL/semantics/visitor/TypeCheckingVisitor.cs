@@ -138,6 +138,18 @@ namespace MiniPL.semantics.visitor {
       typeCheck(typeNode, type);
     }
 
+    public void visitForLoop(ForLoopNode node) {
+      RangeOperatorNode rangeOperatorNode = (RangeOperatorNode)node.getChildren()[1];
+      this.typeStack = new Stack<MiniPLTokenType>();
+      INode leftExpression = rangeOperatorNode.getChildren()[0];
+      this.typeStack.Push(MiniPLTokenType.TYPE_IDENTIFIER_INTEGER);
+      accessChildren(leftExpression);
+      INode rightExpression = rangeOperatorNode.getChildren()[1];
+      this.typeStack.Clear();
+      this.typeStack.Push(MiniPLTokenType.TYPE_IDENTIFIER_INTEGER);
+      accessChildren(rightExpression);
+    }
+
     private void typeCheck(INode node, MiniPLTokenType type) {
       if(type == MiniPLTokenType.TYPE_IDENTIFIER_INTEGER) {
         this.typeStack.Push(MiniPLTokenType.TYPE_IDENTIFIER_INTEGER);

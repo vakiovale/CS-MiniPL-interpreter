@@ -284,14 +284,16 @@ namespace MiniPL.Tests {
 
       INode statementList = program.getChildren()[0];
       INode forLoop = statementList.getChildren()[0];
-      INode range =  forLoop.getChildren()[0];
+      INode identifier = forLoop.getChildren()[0]; 
+      INode range = forLoop.getChildren()[1];
       INode startExpression = range.getChildren()[0];
       INode endExpression = range.getChildren()[1];
-      INode forStatement = forLoop.getChildren()[1].getChildren()[0];
+      INode forStatement = forLoop.getChildren()[2].getChildren()[0];
       INode printText = forStatement.getChildren()[0].getChildren()[0];
 
       Assert.Equal(MiniPLSymbol.FOR_LOOP, forLoop.getValue());
       Assert.Equal(MiniPLTokenType.RANGE_OPERATOR, range.getValue());
+      Assert.Equal("x", identifier.getValue());
       Assert.Equal(0, startExpression.getChildren()[0].getValue());
       Assert.Equal(10, endExpression.getChildren()[0].getValue());
       Assert.Equal("We are in!", printText.getValue());

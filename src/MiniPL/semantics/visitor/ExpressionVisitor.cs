@@ -169,6 +169,11 @@ namespace MiniPL.semantics.visitor {
     public void visitVarAssignment(VarAssignmentNode node) {
       throw new NotImplementedException();
     }
+
+    public void visitForLoop(ForLoopNode forLoopNode)
+    {
+      throw new NotImplementedException();
+    }
   }
 
 }

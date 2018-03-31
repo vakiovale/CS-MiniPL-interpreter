@@ -217,7 +217,7 @@ namespace MiniPL.parser {
         tokenMatcher.matchFor();
         readToken();
         tokenMatcher.matchIdentifier();
-        string identifier = this.tokenReader.token().getLexeme();
+        INode identifier = makeNode(this.tokenReader.token());
         readToken();
         tokenMatcher.matchIn();
         readToken();
@@ -236,6 +236,7 @@ namespace MiniPL.parser {
         readToken();
         tokenMatcher.matchFor();
         addToNode(range, leftHandSide, rightHandSide);
+        forLoop.addNode(identifier);
         forLoop.addNode(range);
         forLoop.addNode(statementList);
       } catch(MiniPLException exception) {

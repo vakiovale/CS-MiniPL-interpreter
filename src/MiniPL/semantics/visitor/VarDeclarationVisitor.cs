@@ -64,6 +64,14 @@ namespace MiniPL.semantics.visitor {
       }
     }
 
+    public void visitForLoop(ForLoopNode node) {
+      IdentifierNode identifier = (IdentifierNode)node.getChildren()[0];
+      string variableName = identifier.getVariableName();
+      if(!variableAlreadyDeclared(variableName)) {
+        throw new SemanticException("The control variable '" + variableName + "' in for loop has not been declared.");
+      }
+    }
+
     public void visitVarDeclaration(VarDeclarationNode node) {
       IdentifierNode identifier = (IdentifierNode)node.getChildren()[0];
       string variableName = identifier.getVariableName();
