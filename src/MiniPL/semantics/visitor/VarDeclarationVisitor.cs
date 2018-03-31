@@ -55,6 +55,7 @@ namespace MiniPL.semantics.visitor {
     }
 
     public void visitLogicalNotOperator(LogicalNotOperationNode logicalNotOperationNode) {
+      logicalNotOperationNode.getChildren()[0].accept(this);
     }
 
     public void visitLogicalAndOperator(LogicalAndOperationNode logicalAndOperationNode) {

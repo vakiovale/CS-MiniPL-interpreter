@@ -149,6 +149,17 @@ namespace MiniPL.Tests.semantics.Tests {
     [Theory]
     [InlineData("var x : int; x := 10;")]
     [InlineData("var x : bool; x := 1 < 3;")]
+    [InlineData("var x : bool := 3 < 5; x := x;")]
+    [InlineData("var x : bool := 3 < 5; x := !x;")]
+    [InlineData("var x : bool := 3 < 5; x := (!x);")]
+    [InlineData("var x : bool := 3 < 5; x := !(x);")]
+    [InlineData("var x : bool := 3 < 5; x := (!(x));")]
+    [InlineData("var x : bool := ((((3 < 5)))); x := !x;")]
+    [InlineData("var x : bool := !(3 < 5);")]
+    [InlineData("var x : bool := (!((3 < 5))) = (2 < 4);")]
+    [InlineData("var z : bool; var x : int := 10; z := !(2 < x);")]
+    [InlineData("var z : bool; var x : int := 10; z := (2 < x);")]
+    [InlineData("var z : bool; var x : int := 10; z := (2 < x) & (3 < 5);")]
     [InlineData("var x : string; x := \"Hello\" + x;")]
     public void variableAssignmentShouldBeOkWithCorrectTypes(string source) {
       this.parser = TestHelpers.getParser(source);

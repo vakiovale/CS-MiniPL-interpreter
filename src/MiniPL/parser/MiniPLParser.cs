@@ -301,8 +301,9 @@ namespace MiniPL.parser {
       INode expression = makeNode(MiniPLSymbol.EXPRESSION);
       try {
         if(tokenMatcher.isTokenType(MiniPLTokenType.LOGICAL_NOT)) {
-          readToken();
+          tokenMatcher.matchNot();
           INode notNode = makeNode(this.tokenReader.token());
+          readToken();
           notNode.addNode(doOperandProcedure());
           expression.addNode(notNode);
           return expression;

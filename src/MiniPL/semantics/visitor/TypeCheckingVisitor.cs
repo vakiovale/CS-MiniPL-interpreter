@@ -47,12 +47,23 @@ namespace MiniPL.semantics.visitor {
       this.typeStack.Push(MiniPLTokenType.TYPE_IDENTIFIER_BOOL);
     }
 
-    public void visitLogicalNotOperator(LogicalNotOperationNode logicalNotOperationNode) {
-      throw new NotImplementedException();
+    public void visitLogicalNotOperator(LogicalNotOperationNode node) {
+      this.typeStack.Push(MiniPLTokenType.TYPE_IDENTIFIER_BOOL);
+      accessChildren(node);
+      if(this.typeStack.Pop() != MiniPLTokenType.TYPE_IDENTIFIER_BOOL) {
+        throw new SemanticException("Logical not operator works only with bool values.");
+      }
+      this.typeStack.Push(MiniPLTokenType.TYPE_IDENTIFIER_BOOL);
     }
 
-    public void visitLogicalAndOperator(LogicalAndOperationNode logicalAndOperationNode) {
-      throw new NotImplementedException();
+    public void visitLogicalAndOperator(LogicalAndOperationNode node) {
+      accessChildren(node);
+      MiniPLTokenType left = this.typeStack.Pop();
+      MiniPLTokenType right = this.typeStack.Pop();
+      if(left != right) {
+        throw new SemanticException("Logical not operator has different types on both sides. Expected bool values,");
+      }
+      this.typeStack.Push(MiniPLTokenType.TYPE_IDENTIFIER_BOOL);
     }
 
     public void visitExpression(ExpressionNode node) {
