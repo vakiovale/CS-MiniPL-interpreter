@@ -174,6 +174,11 @@ namespace MiniPL.semantics.visitor {
     {
       throw new NotImplementedException();
     }
+
+    public void visitPrint(PrintNode printNode)
+    {
+      throw new NotImplementedException();
+    }
   }
 
 }

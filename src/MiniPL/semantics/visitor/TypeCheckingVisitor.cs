@@ -183,6 +183,10 @@ namespace MiniPL.semantics.visitor {
         innerNode.accept(this);
       }
     }
+
+    public void visitPrint(PrintNode printNode) {
+      //throw new NotImplementedException();
+    }
   }
 
 }

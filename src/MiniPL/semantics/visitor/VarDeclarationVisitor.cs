@@ -12,8 +12,11 @@ namespace MiniPL.semantics.visitor {
 
     private ISymbolTable symbolTable;
 
+    private Stack<string> forLoopControlVariables;
+
     public VarDeclarationVisitor(ISymbolTable symbolTable) {
       this.symbolTable = symbolTable;
+      this.forLoopControlVariables = new Stack<string>();
     }
 
     public void visitExpression(ExpressionNode node) {
@@ -62,6 +65,9 @@ namespace MiniPL.semantics.visitor {
       if(!variableAlreadyDeclared(variableName)) {
         throw new SemanticException("Variable '" + variableName + "' has not been declared.");
       }
+      if(this.forLoopControlVariables.Contains(variableName)) {
+        throw new SemanticException("Control variable '" + variableName + "' cannot be assigned a new value inside for loop.");
+      }
     }
 
     public void visitForLoop(ForLoopNode node) {
@@ -70,11 +76,17 @@ namespace MiniPL.semantics.visitor {
       if(!variableAlreadyDeclared(variableName)) {
         throw new SemanticException("The control variable '" + variableName + "' in for loop has not been declared.");
       }
+      this.forLoopControlVariables.Push(variableName);
+      node.getChildren()[2].accept(this);
+      this.forLoopControlVariables.Pop();
     }
 
     public void visitVarDeclaration(VarDeclarationNode node) {
       IdentifierNode identifier = (IdentifierNode)node.getChildren()[0];
       string variableName = identifier.getVariableName();
+      if(this.forLoopControlVariables.Count > 0) {
+        throw new SemanticException("Declaring variables inside for loop is not allowed.");
+      }
       if(variableAlreadyDeclared(variableName)) {
         throw new SemanticException("Variable '" + variableName + "' already declared.");
       }
@@ -93,16 +105,12 @@ namespace MiniPL.semantics.visitor {
       }
     }
 
-/* 
-    private void accessInnerNodes(TypeNode node, ExpressionVisitor expressionVisitor) {
-      foreach(INode innerNode in node.getChildren()) {
-        innerNode.accept(expressionVisitor);
-      }
-    }
-    */
-
     private bool variableAlreadyDeclared(string variableName) {
       return symbolTable.hasVariable(variableName); 
+    }
+
+    public void visitPrint(PrintNode printNode) {
+      //throw new NotImplementedException();
     }
   }
 

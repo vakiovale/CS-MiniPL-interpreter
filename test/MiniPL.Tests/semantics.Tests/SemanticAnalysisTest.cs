@@ -161,6 +161,8 @@ namespace MiniPL.Tests.semantics.Tests {
     [InlineData("var x : int; for x in 0..10 do print x; end for;")]
     [InlineData("var endIndex : int := 10; var x : int; for x in 0..endIndex do print x; end for;")]
     [InlineData("var endIndex : int := 10; var x : int; for x in (0 + 1)..((endIndex * 2) + 3) do print x; end for;")]
+    [InlineData("var x : int; var y : int; for x in 0..10 do print x; for y in 0..10 do print y*x; end for; end for;")]
+    [InlineData("var z : int; var x : int; for x in 0..10 do print x; z := 5; end for;")]
     public void checkCorrectTypeInForLoopsRangeOperator(string source) {
       this.parser = TestHelpers.getParser(source);
       Assert.True(this.parser.processAndBuildAST());
@@ -176,6 +178,27 @@ namespace MiniPL.Tests.semantics.Tests {
     [InlineData("var GO : int; var x : int; for x in dummy..GO do print x; end for;")]
     [InlineData("var x : int; for x in GO..10 do print x; end for;")]
     public void forLoopShouldThrowAnExceptionWithWrongTypesOrMissingDeclarations(string source) {
+      this.parser = TestHelpers.getParser(source);
+      Assert.True(this.parser.processAndBuildAST());
+      IAST ast = this.parser.getAST();
+      Assert.Throws<SemanticException>(() => this.analyzer.analyze(ast));
+    }
+
+    [Theory]
+    [InlineData("var x : int; for x in 0..10 do print x; var z : int; end for;")]
+    [InlineData("var x : int; var y : int; for x in 0..10 do print x; for y in 0..10 do print y*x; var z : bool; end for; end for;")]
+    public void declaringVariablesInsideForLoopShouldBeIllegal(string source) {
+      this.parser = TestHelpers.getParser(source);
+      Assert.True(this.parser.processAndBuildAST());
+      IAST ast = this.parser.getAST();
+      Assert.Throws<SemanticException>(() => this.analyzer.analyze(ast));
+    }
+
+    [Theory]
+    [InlineData("var x : int; for x in 0..10 do print x; x := 5; end for;")]
+    [InlineData("var z : int; var x : int; for x in 0..10 do print x; for z in 0..10 do print x; x := 5; end for; end for;")]
+    [InlineData("var x : int; var y : int; for x in 0..10 do print x; for y in 0..10 do print y*x; var z : bool; end for; end for;")]
+    public void assigningValuesForControlVariablesShouldBeIllegalInsideForLoops(string source) {
       this.parser = TestHelpers.getParser(source);
       Assert.True(this.parser.processAndBuildAST());
       IAST ast = this.parser.getAST();
