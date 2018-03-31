@@ -56,18 +56,14 @@ namespace MiniPL.semantics.visitor {
       if(!this.symbolTable.hasVariable(node.getVariableName())) {
         throw new SemanticException("Variable has not been declared.");
       } else {
-        if(this.typeToCheck == MiniPLTokenType.TYPE_IDENTIFIER_INTEGER) {
-          if(!this.symbolTable.hasInteger(node.getVariableName())) {
-            throw new SemanticException("Expected an integer. Variable " + node.getVariableName() + " has wrong type.");
-          }
-        } else if(this.typeToCheck == MiniPLTokenType.TYPE_IDENTIFIER_STRING) {
-          if(!this.symbolTable.hasString(node.getVariableName())) {
-            throw new SemanticException("Expected a string. Variable " + node.getVariableName() + " has wrong type.");
-          }
-        } else if(this.typeToCheck == MiniPLTokenType.TYPE_IDENTIFIER_BOOL) {
-          if(!this.symbolTable.hasBool(node.getVariableName())) {
-            throw new SemanticException("Expected a bool. Variable " + node.getVariableName() + " has wrong type.");
-          }
+        if(this.symbolTable.hasInteger(node.getVariableName())) {
+          this.typeStack.Push(MiniPLTokenType.TYPE_IDENTIFIER_INTEGER);
+        }
+        if(this.symbolTable.hasString(node.getVariableName())) {
+          this.typeStack.Push(MiniPLTokenType.TYPE_IDENTIFIER_STRING);
+        }
+        if(this.symbolTable.hasBool(node.getVariableName())) {
+          this.typeStack.Push(MiniPLTokenType.TYPE_IDENTIFIER_BOOL);
         }
       }
     }

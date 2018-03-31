@@ -105,7 +105,11 @@ namespace MiniPL.Tests.semantics.Tests {
     [InlineData("var x : bool := (1 < 2) = (\"abba\" < \"gorilla\");")]
     [InlineData("var x : bool := 1 < 2;")]
     [InlineData("var x : bool := 1 = 2;")] 
+    [InlineData("var y : int := 2; var x : bool := 1 = y;")] 
+    [InlineData("var y : string := \"apina\"; var x : bool := \"gorilla\" = y;")] 
+    [InlineData("var y : bool := 2 < 3; var x : bool := (1 < 2) = y;")] 
     [InlineData("var x : bool := (((1 / 2) = 30) < (\"abba\" = \"gorilla\")) = (5 < (7 + 9));")]
+    [InlineData("var y : string := \"apina\"; var x : string := \"13\" + y;")] 
     public void analyzeShouldFinishWithDifferentLegalTypes(string source) {
       this.parser = TestHelpers.getParser(source);
       Assert.True(this.parser.processAndBuildAST());
@@ -114,6 +118,7 @@ namespace MiniPL.Tests.semantics.Tests {
     }
 
     [Theory]
+    [InlineData("var x : bool := 1 = gorilla;")] 
     [InlineData("var x : bool := 1 + 2; var y : int; var z : string;")]
     [InlineData("var x : bool; var y : int := \"abba\"; var z : string;")]
     [InlineData("var x : bool; var y : int; var z : string := \"Hello\" + 10;")]
@@ -122,6 +127,7 @@ namespace MiniPL.Tests.semantics.Tests {
     [InlineData("var x : bool := (1 * 2) = (\"abba\" < \"gorilla\");")]
     [InlineData("var x : bool := (1 / 2) = (\"abba\" < \"gorilla\");")]
     [InlineData("var x : bool := (1 + 2) = (\"abba\" < \"gorilla\");")]
+    [InlineData("var y : string := \"apina\"; var x : int := 13 + y;")] 
     public void analyzeShouldThrowSemanticExceptionWithUsageOfWrongTypes(string source) {
       this.parser = TestHelpers.getParser(source);
       Assert.True(this.parser.processAndBuildAST());
