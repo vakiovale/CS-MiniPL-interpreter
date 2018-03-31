@@ -144,10 +144,16 @@ namespace MiniPL.semantics.visitor {
       INode leftExpression = rangeOperatorNode.getChildren()[0];
       this.typeStack.Push(MiniPLTokenType.TYPE_IDENTIFIER_INTEGER);
       accessChildren(leftExpression);
+      if(this.typeStack.Pop() != MiniPLTokenType.TYPE_IDENTIFIER_INTEGER) {
+        throw new SemanticException("Expected an integer. Wrong type in the left hand side of range operator.");
+      }
       INode rightExpression = rangeOperatorNode.getChildren()[1];
       this.typeStack.Clear();
       this.typeStack.Push(MiniPLTokenType.TYPE_IDENTIFIER_INTEGER);
       accessChildren(rightExpression);
+      if(this.typeStack.Pop() != MiniPLTokenType.TYPE_IDENTIFIER_INTEGER) {
+        throw new SemanticException("Expected an integer. Wrong type in the right hand side of range operator.");
+      }
     }
 
     private void typeCheck(INode node, MiniPLTokenType type) {

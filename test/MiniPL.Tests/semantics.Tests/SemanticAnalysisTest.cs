@@ -170,8 +170,11 @@ namespace MiniPL.Tests.semantics.Tests {
 
     [Theory]
     [InlineData("for x in 0..10 do print x; end for;")]
-    //[InlineData("var endIndex : int := 10; var x : int; for x in 0..endIndex do print x; end for;")]
-    //[InlineData("var endIndex : int := 10; var x : int; for x in (0 + 1)..((endIndex * 2) + 3) do print x; end for;")]
+    [InlineData("var endIndex : bool; var x : int; for x in 0..endIndex do print x; end for;")]
+    [InlineData("var endIndex : string := \"HA!\"; var x : int; for x in (0 + 1)..((endIndex * 2) + 3) do print x; end for;")]
+    [InlineData("var x : int; for x in 0..GO do print x; end for;")]
+    [InlineData("var GO : int; var x : int; for x in dummy..GO do print x; end for;")]
+    [InlineData("var x : int; for x in GO..10 do print x; end for;")]
     public void forLoopShouldThrowAnExceptionWithWrongTypesOrMissingDeclarations(string source) {
       this.parser = TestHelpers.getParser(source);
       Assert.True(this.parser.processAndBuildAST());
