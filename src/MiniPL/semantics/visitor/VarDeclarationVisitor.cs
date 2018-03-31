@@ -74,23 +74,11 @@ namespace MiniPL.semantics.visitor {
       
       MiniPLTokenType type = (MiniPLTokenType)typeNode.getValue();
 
-      //ExpressionVisitor expressionVisitor = new ExpressionVisitor(symbolTable);
-
       if(type == MiniPLTokenType.TYPE_IDENTIFIER_INTEGER) {
-        //accessInnerNodes(typeNode, expressionVisitor);
-        //int value = expressionVisitor.getInt();
-        //this.symbolTable.addVariable(variableName, value);
         this.symbolTable.addVariable(variableName, 0);
       } else if(type == MiniPLTokenType.TYPE_IDENTIFIER_STRING) {
-        //accessInnerNodes(typeNode, expressionVisitor);
-        //string value = expressionVisitor.getString();
-        //this.symbolTable.addVariable(variableName, value);
         this.symbolTable.addVariable(variableName, "");
       } else if(type == MiniPLTokenType.TYPE_IDENTIFIER_BOOL) {
-        //expressionVisitor.setBoolFlag();
-        //accessInnerNodes(typeNode, expressionVisitor);
-        //bool value = expressionVisitor.getBool();
-        //this.symbolTable.addVariable(variableName, value);
         this.symbolTable.addVariable(variableName, false);
       } else {
         throw new Exception("Unknown type usage in semantic analyzer.");

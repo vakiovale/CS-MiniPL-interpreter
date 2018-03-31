@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using MiniPL.exceptions;
 using MiniPL.parser.AST;
 using MiniPL.semantics.visitor;
 
@@ -18,22 +19,20 @@ namespace MiniPL.semantics {
 
     public bool analyze(IAST ast) {
       this.ast = ast;
-      return checkVariableDeclarations();
-      //return checkTypes(ast);
+      return analyzeSemantics();
     }
 
-    private bool checkVariableDeclarations() {
-      ProgramNode program = (ProgramNode)this.ast.getProgram();
-      INodeVisitor varDeclarationVisitor = new VarDeclarationVisitor(symbolTable);
-      program.accept(varDeclarationVisitor);
-      return false;
-    }
-
-    private bool checkTypes(IAST ast) {
-      INode program = this.ast.getProgram();
-      INodeVisitor typeChecker = new TypeCheckingVisitor();
-      program.accept(typeChecker);
-      return false;
+    private bool analyzeSemantics() {
+      try {
+        ProgramNode program = (ProgramNode)this.ast.getProgram();
+        INodeVisitor varDeclarationVisitor = new VarDeclarationVisitor(symbolTable);
+        INodeVisitor typeCheckingVisitor = new TypeCheckingVisitor(symbolTable);
+        program.accept(varDeclarationVisitor);
+        program.accept(typeCheckingVisitor);
+        return true;
+      } catch(SemanticException exception) {
+        throw exception;
+      }
     }
 
     public int getInt(string variable) {
