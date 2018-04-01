@@ -132,6 +132,12 @@ namespace MiniPL.Tests.semantics.Tests {
     [InlineData("var x : bool := 2 = 2;", true)]
     [InlineData("var x : bool := (1 + 2) = (4 - 1);", true)]
     [InlineData("var x : bool := (1 + 2) = (4 * 1);", false)]
+    [InlineData("var x : bool := (1 < 2) & (4 = 1);", false)]
+    [InlineData("var x : bool := (1 < 2) & (4 = 4);", true)]
+    [InlineData("var x : bool := !(1 < 2);", false)]
+    [InlineData("var x : bool := !(1 = 2);", true)]
+    [InlineData("var z : bool := 1 = 1; var x : bool := !z;", false)]
+    [InlineData("var z : bool := 1 = 2; var x : bool := !z;", true)]
     [InlineData("var x : bool := 1 < 2;", true)]
     [InlineData("var x : bool := 1 < 0;", false)]
     [InlineData("var x : bool := 1 < 1;", false)]
@@ -213,6 +219,14 @@ namespace MiniPL.Tests.semantics.Tests {
       this.interpreter = getInterpreter(source);
       this.interpreter.interpret();
       Assert.True(contains(printValue));
+    }
+
+    [Theory]
+    [InlineData("var x : int; read x;")]
+    public void readingValuesToVariablesShouldUpdateTheValue(string source) {
+      this.interpreter = getInterpreter(source);
+      this.interpreter.interpret();
+      Assert.Equal(10, this.symbolTable.getInt("x"));
     }
   }
 }

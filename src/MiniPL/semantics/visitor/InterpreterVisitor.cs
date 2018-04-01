@@ -103,6 +103,21 @@ namespace MiniPL.semantics.visitor {
       this.intStack.Push(value);
     }
 
+    public void visitLogicalNotOperator(LogicalNotOperationNode node) {
+      INode rhs = node.getChildren()[0];
+      rhs.accept(this);
+      bool value = !this.boolStack.Pop();
+      this.boolStack.Push(value);
+    }
+
+    public void visitLogicalAndOperator(LogicalAndOperationNode node) {
+      readValues(node);
+      bool lhs = this.boolStack.Pop();
+      bool rhs = this.boolStack.Pop();
+      bool value = lhs && rhs;
+      this.boolStack.Push(value);
+    }
+
     public void visitLessThanOperator(LessThanOperationNode node) {
       readValues(node);
       if(intType) {
@@ -228,14 +243,6 @@ namespace MiniPL.semantics.visitor {
     }
 
     public void visitRead(ReadNode readNode) {
-      throw new NotImplementedException();
-    }
-
-    public void visitLogicalNotOperator(LogicalNotOperationNode logicalNotOperationNode) {
-      throw new NotImplementedException();
-    }
-
-    public void visitLogicalAndOperator(LogicalAndOperationNode logicalAndOperationNode) {
       throw new NotImplementedException();
     }
 
