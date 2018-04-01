@@ -10,11 +10,11 @@ namespace MiniPL.io {
     }
 
     public void output(string value) {
-      Console.WriteLine(value);
+      Console.Write(value);
     }
 
     public void output(int value) {
-      Console.WriteLine(value);
+      Console.Write(value);
     }
   }
 

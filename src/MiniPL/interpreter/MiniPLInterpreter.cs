@@ -28,16 +28,8 @@ namespace MiniPL.interpreter
     }
 
     public void interpret() {
-      buildProgram();
-    }
-
-    private void buildProgram() {
-      IParser parser = new MiniPLParser(new TokenReader(ScannerFactory.createMiniPLScanner(this.sampleProgram)), this.io);
       try {
-        parser.processAndBuildAST();
-        this.ast = parser.getAST();
-        ISemanticAnalyzer analyzer = new MiniPLSemanticAnalyzer();
-        if(analyzer.analyze(this.ast, this.symbolTable)) {
+        if(buildProgram()) {
           ProgramNode program = (ProgramNode)this.ast.getProgram();
           INodeVisitor interpreterVisitor = new InterpreterVisitor(this.symbolTable, this.io);
           program.accept(interpreterVisitor);
@@ -46,6 +38,21 @@ namespace MiniPL.interpreter
         this.io.output(exception.getMessage());
       } catch(SemanticException exception) {
         this.io.output(exception.ToString());
+      }
+    }
+
+    private bool buildProgram() {
+      IParser parser = new MiniPLParser(new TokenReader(ScannerFactory.createMiniPLScanner(this.sampleProgram)), this.io);
+      if(parser.processAndBuildAST()) {
+        this.ast = parser.getAST();
+        ISemanticAnalyzer analyzer = new MiniPLSemanticAnalyzer();
+        if(analyzer.analyze(this.ast, this.symbolTable)) {
+          return true;
+        } else {
+          return false;
+        }
+      } else {
+        return false;
       }
     }
   }

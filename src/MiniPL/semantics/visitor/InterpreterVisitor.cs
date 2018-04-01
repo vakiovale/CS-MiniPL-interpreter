@@ -185,8 +185,10 @@ namespace MiniPL.semantics.visitor {
       }
       if(this.symbolTable.hasInteger(variableName)) {
         this.symbolTable.updateVariable(variableName, popInt());
+        this.intType = false;
       } else if(this.symbolTable.hasString(variableName)) {
         this.symbolTable.updateVariable(variableName, popString());
+        this.strType = false;
       } else if(this.symbolTable.hasBool(variableName)) {
         this.symbolTable.updateVariable(variableName, popBool());
       }
