@@ -95,7 +95,7 @@ namespace MiniPL.Tests.semantics.Tests {
       Assert.True(this.parser.processAndBuildAST());
       IAST ast = this.parser.getAST();
       this.analyzer.analyze(ast, this.symbolTable);
-      Assert.Equal(false, this.analyzer.getBool("x"));
+      Assert.False(this.analyzer.getBool("x"));
       Assert.Equal(0, this.analyzer.getInt("y"));
       Assert.Equal("", this.analyzer.getString("z"));
     }

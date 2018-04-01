@@ -9,8 +9,6 @@ namespace MiniPL.Tests {
 
   public class ParserTest {
 
-    private ITokenScanner<MiniPLTokenType> scanner;
-
     private String sampleProgram = "var nTimes : int := 0;\n"
                            + "print \"How many times?\";\n"
                            + "read nTimes;\n"
