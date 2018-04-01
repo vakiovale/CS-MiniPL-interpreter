@@ -4,15 +4,15 @@ using MiniPL.tokens;
 using System.Collections.Generic;
 using MiniPL.exceptions;
 using MiniPL.syntax;
-using MiniPL.logger;
 using MiniPL.parser.AST;
 using MiniPL.semantics;
+using MiniPL.io;
 
 namespace MiniPL.parser {
 
   public class MiniPLParser : IParser {
 
-    private ILogger logger;
+    private IInputOutput io;
 
     private TokenReader tokenReader;
 
@@ -28,8 +28,8 @@ namespace MiniPL.parser {
 
     private bool syntaxOk;
 
-    public MiniPLParser(TokenReader tokenReader, ILogger logger) {
-      initializeLogger(logger);
+    public MiniPLParser(TokenReader tokenReader, IInputOutput io) {
+      initializeIO(io);
       initializeTokenMatcher();
       initializeTokenReader(tokenReader);
       intializeFirstAndFollow();
@@ -39,8 +39,8 @@ namespace MiniPL.parser {
       initializeAST();
     }
 
-    private void initializeLogger(ILogger logger) {
-      this.logger = logger;
+    private void initializeIO(IInputOutput io) {
+      this.io = io;
     }
 
     private void initializeSyntaxFlag() {
@@ -109,7 +109,7 @@ namespace MiniPL.parser {
     }
 
     private void logError(MiniPLException exception) {
-      logger.log(exception.getMessage());
+      io.output(exception.getMessage());
     }
 
     private void failSyntax() {

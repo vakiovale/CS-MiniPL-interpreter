@@ -1,6 +1,7 @@
 using System;
+using System.Collections.Generic;
 using MiniPL.interpreter;
-using MiniPL.logger;
+using MiniPL.io;
 using MiniPL.parser;
 using MiniPL.parser.AST;
 using MiniPL.semantics;
@@ -14,20 +15,20 @@ namespace MiniPL.Tests.semantics.Tests {
 
     private ISymbolTable symbolTable;
 
-    private TestLogger logger;
+    private TestIO io;
 
     public InterpreterTest() {
       this.symbolTable = new SymbolTable();
-      this.logger = new TestLogger();
+      this.io = new TestIO();
       this.interpreter = getInterpreter(TestHelpers.sampleProgram);
     }
 
     private IInterpreter getInterpreter(string source) {
-      return new MiniPLInterpreter(source, this.symbolTable, this.logger);
+      return new MiniPLInterpreter(source, this.symbolTable, this.io);
     }
 
     private bool contains(string sentence) {
-      foreach(string errorLog in this.logger.getLogs()) {
+      foreach(string errorLog in this.io.getOutput()) {
         if(errorLog.Contains(sentence)) {
           return true;
         }
@@ -222,11 +223,22 @@ namespace MiniPL.Tests.semantics.Tests {
     }
 
     [Theory]
-    [InlineData("var x : int; read x;")]
-    public void readingValuesToVariablesShouldUpdateTheValue(string source) {
+    [InlineData("var x : int; read x;", 10)]
+    public void readingIntValuesToVariablesShouldUpdateTheValue(string source, int readValue) {
+      this.io = new TestIO(new List<string>{"10"});
       this.interpreter = getInterpreter(source);
       this.interpreter.interpret();
-      Assert.Equal(10, this.symbolTable.getInt("x"));
+      Assert.Equal(readValue, this.symbolTable.getInt("x"));
+    }
+
+    [Theory]
+    [InlineData("var x : string; read x;", "Hello")]
+    [InlineData("var x : string; read x; var y : string; read y; x := x + y;", "HelloWorld")]
+    public void readingStrValuesToVariablesShouldUpdateTheValue(string source, string readValue) {
+      this.io = new TestIO(new List<string>{"Hello", "World"});
+      this.interpreter = getInterpreter(source);
+      this.interpreter.interpret();
+      Assert.Equal(readValue, this.symbolTable.getString("x"));
     }
   }
 }

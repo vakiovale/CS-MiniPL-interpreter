@@ -1,6 +1,6 @@
 using System;
 using MiniPL.exceptions;
-using MiniPL.logger;
+using MiniPL.io;
 using MiniPL.parser;
 using MiniPL.parser.AST;
 using MiniPL.scanner;
@@ -14,15 +14,15 @@ namespace MiniPL.interpreter
 
     private string sampleProgram;
 
-    private ILogger logger;
+    private IInputOutput io;
     
     private IAST ast;
 
     private ISymbolTable symbolTable;
 
-    public MiniPLInterpreter(string sampleProgram, ISymbolTable symbolTable, ILogger logger) {
+    public MiniPLInterpreter(string sampleProgram, ISymbolTable symbolTable, IInputOutput io) {
       this.sampleProgram = sampleProgram;
-      this.logger = logger;
+      this.io = io;
       this.ast = null;
       this.symbolTable = symbolTable;
     }
@@ -32,20 +32,20 @@ namespace MiniPL.interpreter
     }
 
     private void buildProgram() {
-      IParser parser = new MiniPLParser(new TokenReader(ScannerFactory.createMiniPLScanner(this.sampleProgram)), this.logger);
+      IParser parser = new MiniPLParser(new TokenReader(ScannerFactory.createMiniPLScanner(this.sampleProgram)), this.io);
       try {
         parser.processAndBuildAST();
         this.ast = parser.getAST();
         ISemanticAnalyzer analyzer = new MiniPLSemanticAnalyzer();
         if(analyzer.analyze(this.ast, this.symbolTable)) {
           ProgramNode program = (ProgramNode)this.ast.getProgram();
-          INodeVisitor interpreterVisitor = new InterpreterVisitor(this.symbolTable, this.logger);
+          INodeVisitor interpreterVisitor = new InterpreterVisitor(this.symbolTable, this.io);
           program.accept(interpreterVisitor);
         }
       } catch(MiniPLException exception) {
-        this.logger.log(exception.getMessage());
+        this.io.output(exception.getMessage());
       } catch(SemanticException exception) {
-        this.logger.log(exception.ToString());
+        this.io.output(exception.ToString());
       }
     }
   }

@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using MiniPL.logger;
+using MiniPL.io;
 using MiniPL.parser.AST;
 using MiniPL.tokens;
 
@@ -10,7 +10,7 @@ namespace MiniPL.semantics.visitor {
   {
     private ISymbolTable symbolTable;
 
-    private ILogger logger;
+    IInputOutput inputOutput;
 
     private bool strType = false;
 
@@ -22,9 +22,9 @@ namespace MiniPL.semantics.visitor {
 
     private Stack<bool> boolStack;
 
-    public InterpreterVisitor(ISymbolTable symbolTable, ILogger logger) {
+    public InterpreterVisitor(ISymbolTable symbolTable, IInputOutput inputOutput) {
       this.symbolTable = symbolTable;
-      this.logger = logger;
+      this.inputOutput = inputOutput;
       initializeStacks();
       this.intType = false;
       this.strType = false;
@@ -39,6 +39,14 @@ namespace MiniPL.semantics.visitor {
       reviveBoolStackIfNeeded();
     }
 
+    private string readString() {
+      return this.inputOutput.input();
+    }
+
+    private int readInteger() {
+      return Int32.Parse(this.inputOutput.input());
+    }
+
     public void visitExpression(ExpressionNode node) {
       foreach(INode child in node.getChildren()) {
         child.accept(this);
@@ -48,8 +56,10 @@ namespace MiniPL.semantics.visitor {
     public void visitIdentifier(IdentifierNode node) {
       string variableName = node.getVariableName();
       if(this.symbolTable.hasInteger(variableName)) {
+        this.intType = true;
         this.intStack.Push(this.symbolTable.getInt(variableName));
       } else if(this.symbolTable.hasString(variableName)) {
+        this.strType = true;
         this.strStack.Push(this.symbolTable.getString(variableName));
       } else if(this.symbolTable.hasBool(variableName)) {
         this.boolStack.Push(this.symbolTable.getBool(variableName));
@@ -230,22 +240,27 @@ namespace MiniPL.semantics.visitor {
       INode expression = printNode.getChildren()[0];
       expression.accept(this);
       if(this.intType) {
-        this.logger.log(this.intStack.Pop().ToString());
+        this.inputOutput.output(this.intStack.Pop());
         this.intType = false;
       } else if(this.strType) {
-        this.logger.log(this.strStack.Pop());
+        this.inputOutput.output(this.strStack.Pop());
         this.strType = false;
       }
     }
 
-    public void visitAssert(AssertNode assertNode) {
+    public void visitAssert(AssertNode node) {
       throw new NotImplementedException();
     }
 
-    public void visitRead(ReadNode readNode) {
-      throw new NotImplementedException();
+    public void visitRead(ReadNode node) {
+      IdentifierNode identifier = (IdentifierNode)node.getChildren()[0];
+      string variableName = identifier.getVariableName();
+      if(this.symbolTable.hasInteger(variableName)) {
+        this.symbolTable.updateVariable(variableName, readInteger());
+      } else if(this.symbolTable.hasString(variableName)) {
+        this.symbolTable.updateVariable(variableName, readString());
+      }
     }
-
   }
 
 }

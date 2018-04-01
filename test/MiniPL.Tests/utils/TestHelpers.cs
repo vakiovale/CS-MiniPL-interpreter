@@ -1,5 +1,5 @@
 using System;
-using MiniPL.logger;
+using MiniPL.io;
 using MiniPL.parser;
 using MiniPL.scanner;
 
@@ -19,11 +19,11 @@ namespace MiniPL.Tests {
                            + "assert ((1 + (2 * 3)) = ((6 - 1) + 1));";
 
     public static MiniPLParser getParser(string source) {
-      return new MiniPLParser(new TokenReader(ScannerFactory.createMiniPLScanner(source)), new TestLogger());
+      return new MiniPLParser(new TokenReader(ScannerFactory.createMiniPLScanner(source)), new TestIO());
     }
 
-    public static MiniPLParser getParser(string source, ILogger logger) {
-      return new MiniPLParser(new TokenReader(ScannerFactory.createMiniPLScanner(source)), logger);
+    public static MiniPLParser getParser(string source, IInputOutput io) {
+      return new MiniPLParser(new TokenReader(ScannerFactory.createMiniPLScanner(source)), io);
     }
   }
 

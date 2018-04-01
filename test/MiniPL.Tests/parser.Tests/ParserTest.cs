@@ -1,5 +1,5 @@
 using System;
-using MiniPL.logger;
+using MiniPL.io;
 using MiniPL.parser;
 using MiniPL.scanner;
 using MiniPL.tokens;
@@ -23,15 +23,15 @@ namespace MiniPL.Tests {
 
     private IParser parser;
 
-    private TestLogger logger;
+    private TestIO io;
 
     public ParserTest() {
-      this.logger = new TestLogger();
+      this.io = new TestIO();
       this.parser = getParser(sampleProgram);
     }
 
     private MiniPLParser getParser(string source) {
-      return new MiniPLParser(new TokenReader(ScannerFactory.createMiniPLScanner(source)), logger);
+      return new MiniPLParser(new TokenReader(ScannerFactory.createMiniPLScanner(source)), io);
     }
 
     [Fact]

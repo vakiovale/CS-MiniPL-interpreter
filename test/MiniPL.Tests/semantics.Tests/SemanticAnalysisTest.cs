@@ -1,6 +1,5 @@
 using System;
 using MiniPL.exceptions;
-using MiniPL.logger;
 using MiniPL.parser;
 using MiniPL.parser.AST;
 using MiniPL.scanner;
