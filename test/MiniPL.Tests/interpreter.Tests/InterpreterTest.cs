@@ -19,7 +19,7 @@ namespace MiniPL.Tests.semantics.Tests {
 
     public InterpreterTest() {
       this.symbolTable = new SymbolTable();
-      this.io = new TestIO();
+      this.io = new TestIO(new List<string>{"3"});
       this.interpreter = getInterpreter(TestHelpers.sampleProgram);
     }
 
@@ -38,7 +38,7 @@ namespace MiniPL.Tests.semantics.Tests {
 
     [Fact]
     public void interpretSimpleProgram() {
-      //this.interpreter.interpret();
+      this.interpreter.interpret();
     }
 
     [Fact]

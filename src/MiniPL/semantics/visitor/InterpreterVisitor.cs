@@ -34,9 +34,6 @@ namespace MiniPL.semantics.visitor {
       this.intStack = new Stack<int>();
       this.strStack = new Stack<string>();
       this.boolStack = new Stack<bool>();
-      reviveIntegerStackIfNeeded();
-      reviveStringStackIfNeeded();
-      reviveBoolStackIfNeeded();
     }
 
     private string readString() {
@@ -79,10 +76,10 @@ namespace MiniPL.semantics.visitor {
     public void visitPlus(PlusOperationNode node) {
       readValues(node);
       if(intType) {
-        int value = this.intStack.Pop() + this.intStack.Pop();
+        int value = popInt() + popInt();
         this.intStack.Push(value);
       } else if(strType) {
-        string value = this.strStack.Pop() + this.strStack.Pop();
+        string value = popString() + popString();
         this.strStack.Push(value);
       }
     }
@@ -97,33 +94,33 @@ namespace MiniPL.semantics.visitor {
 
     public void visitMinus(MinusOperationNode node) {
       readValues(node);
-      int value = this.intStack.Pop() - this.intStack.Pop();
+      int value = popInt() - popInt();
       this.intStack.Push(value);
     }
 
     public void visitDivision(DivisionOperationNode node) {
       readValues(node);
-      int value = this.intStack.Pop() / this.intStack.Pop();
+      int value = popInt() / popInt();
       this.intStack.Push(value);
     }
 
     public void visitMultiplication(MultiplicationOperationNode node) {
       readValues(node);
-      int value = this.intStack.Pop() * this.intStack.Pop();
+      int value = popInt() * popInt();
       this.intStack.Push(value);
     }
 
     public void visitLogicalNotOperator(LogicalNotOperationNode node) {
       INode rhs = node.getChildren()[0];
       rhs.accept(this);
-      bool value = !this.boolStack.Pop();
+      bool value = !popBool();
       this.boolStack.Push(value);
     }
 
     public void visitLogicalAndOperator(LogicalAndOperationNode node) {
       readValues(node);
-      bool lhs = this.boolStack.Pop();
-      bool rhs = this.boolStack.Pop();
+      bool lhs = popBool();
+      bool rhs = popBool();
       bool value = lhs && rhs;
       this.boolStack.Push(value);
     }
@@ -131,16 +128,16 @@ namespace MiniPL.semantics.visitor {
     public void visitLessThanOperator(LessThanOperationNode node) {
       readValues(node);
       if(intType) {
-        bool value = this.intStack.Pop() < this.intStack.Pop();
+        bool value = popInt() < popInt();
         this.boolStack.Push(value);
         this.intType = false;
       } else if(strType) {
-        bool value = String.Compare(this.strStack.Pop(), this.strStack.Pop()) < 0;
+        bool value = String.Compare(popString(), popString()) < 0;
         this.boolStack.Push(value);
         this.strType = false;
       } else {
-        bool lhs = this.boolStack.Pop();
-        bool rhs = this.boolStack.Pop();
+        bool lhs = popBool();
+        bool rhs = popBool();
         bool value = (!lhs && rhs) ? true : false; 
         this.boolStack.Push(value);
       }
@@ -149,16 +146,16 @@ namespace MiniPL.semantics.visitor {
     public void visitEqualityOperator(EqualityOperationNode node) {
       readValues(node);
       if(intType) {
-        bool value = this.intStack.Pop() == this.intStack.Pop();
+        bool value = popInt() == popInt();
         this.boolStack.Push(value);
         this.intType = false;
       } else if(strType) {
-        bool value = String.Equals(this.strStack.Pop(), this.strStack.Pop());
+        bool value = String.Equals(popString(), popString());
         this.boolStack.Push(value);
         this.strType = false;
       } else {
-        bool lhs = this.boolStack.Pop();
-        bool rhs = this.boolStack.Pop();
+        bool lhs = popBool();
+        bool rhs = popBool();
         bool value = lhs == rhs; 
         this.boolStack.Push(value);
       }
@@ -166,7 +163,7 @@ namespace MiniPL.semantics.visitor {
 
     public void visitAssert(AssertNode node) {
       node.getChildren()[0].accept(this);
-      if(!this.boolStack.Pop()) {
+      if(!popBool()) {
         this.inputOutput.output("Assertion failed.");
       }
     }
@@ -187,32 +184,11 @@ namespace MiniPL.semantics.visitor {
         child.accept(this);
       }
       if(this.symbolTable.hasInteger(variableName)) {
-        this.symbolTable.updateVariable(variableName, this.intStack.Pop());
-        reviveIntegerStackIfNeeded();
+        this.symbolTable.updateVariable(variableName, popInt());
       } else if(this.symbolTable.hasString(variableName)) {
-        this.symbolTable.updateVariable(variableName, this.strStack.Pop());
-        reviveStringStackIfNeeded();
+        this.symbolTable.updateVariable(variableName, popString());
       } else if(this.symbolTable.hasBool(variableName)) {
-        this.symbolTable.updateVariable(variableName, this.boolStack.Pop());
-        reviveBoolStackIfNeeded();
-      }
-    }
-
-    private void reviveBoolStackIfNeeded() {
-      if(this.boolStack.Count == 0) {
-        this.boolStack.Push(false);
-      }
-    }
-
-    private void reviveStringStackIfNeeded() {
-      if(this.strStack.Count == 0) {
-        this.strStack.Push("");
-      }
-    }
-
-    private void reviveIntegerStackIfNeeded() {
-      if(this.intStack.Count == 0) {
-        this.intStack.Push(0);
+        this.symbolTable.updateVariable(variableName, popBool());
       }
     }
 
@@ -232,9 +208,9 @@ namespace MiniPL.semantics.visitor {
       RangeOperatorNode rangeNode = (RangeOperatorNode)forLoopNode.getChildren()[1];
       StatementListNode forStatements = (StatementListNode)forLoopNode.getChildren()[2];
       rangeNode.getChildren()[0].accept(this);
-      int begin = this.intStack.Pop();
+      int begin = popInt();
       rangeNode.getChildren()[1].accept(this);
-      int end = this.intStack.Pop();
+      int end = popInt();
       for(int i = begin; i <= end; i++) {
         this.symbolTable.updateVariable(controlVariable, i);
         foreach(INode child in forStatements.getChildren()) {
@@ -247,11 +223,35 @@ namespace MiniPL.semantics.visitor {
       INode expression = printNode.getChildren()[0];
       expression.accept(this);
       if(this.intType) {
-        this.inputOutput.output(this.intStack.Pop());
+        this.inputOutput.output(popInt());
         this.intType = false;
       } else if(this.strType) {
-        this.inputOutput.output(this.strStack.Pop());
+        this.inputOutput.output(popString());
         this.strType = false;
+      }
+    }
+
+    private int popInt() {
+      if(this.intStack.Count == 0) {
+        return 0;
+      } else {
+        return this.intStack.Pop();
+      }
+    }
+
+    private string popString() {
+      if(this.strStack.Count == 0) {
+        return "";
+      } else {
+        return this.strStack.Pop();
+      }
+    }
+
+    private bool popBool() {
+      if(this.boolStack.Count == 0) {
+        return false;
+      } else {
+        return this.boolStack.Pop();
       }
     }
 
