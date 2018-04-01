@@ -164,7 +164,7 @@ namespace MiniPL.semantics.visitor {
     public void visitAssert(AssertNode node) {
       node.getChildren()[0].accept(this);
       if(!popBool()) {
-        this.inputOutput.output("Assertion failed.");
+        this.inputOutput.outputLine("Assertion failed.");
       }
     }
 

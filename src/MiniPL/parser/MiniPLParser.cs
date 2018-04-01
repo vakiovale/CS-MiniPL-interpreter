@@ -109,7 +109,7 @@ namespace MiniPL.parser {
     }
 
     private void logError(MiniPLException exception) {
-      io.output(exception.getMessage());
+      io.outputLine(exception.getMessage());
     }
 
     private void failSyntax() {

@@ -16,6 +16,14 @@ namespace MiniPL.io {
     public void output(int value) {
       Console.Write(value);
     }
+
+    public void outputLine(string value) {
+      Console.WriteLine(value);
+    }
+
+    public void outputLine(int value) {
+      Console.WriteLine(value);
+    }
   }
 
 }

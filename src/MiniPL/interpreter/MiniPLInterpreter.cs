@@ -35,9 +35,9 @@ namespace MiniPL.interpreter
           program.accept(interpreterVisitor);
         }
       } catch(MiniPLException exception) {
-        this.io.output(exception.getMessage());
+        this.io.outputLine(exception.getMessage());
       } catch(SemanticException exception) {
-        this.io.output(exception.ToString());
+        this.io.outputLine(exception.getMessage());
       }
     }
 

@@ -6,8 +6,19 @@ namespace MiniPL.exceptions {
 
   public class SemanticException : Exception {
 
-    public SemanticException(string message) : base("SEMANTIC EXCEPTION: " + message) { }
+    private string message;
 
+    public SemanticException(string message) : base(constructMessage(message)) { 
+      this.message = constructMessage(message); 
+    }
+
+    private static string constructMessage(string message) {
+      return "SEMANTIC EXCEPTION: " + message;
+    }
+
+    public string getMessage() {
+      return this.message;
+    }
   }
 
 }

@@ -35,6 +35,14 @@ namespace MiniPL.io {
       this.outputList.Add(value.ToString());
     }
 
+    public void outputLine(string value) {
+      output(value);
+    }
+
+    public void outputLine(int value) {
+      output(value);
+    }
+
     string IInputOutput.input() {
       string read = this.inputList[readIndex];
       this.readIndex++;
