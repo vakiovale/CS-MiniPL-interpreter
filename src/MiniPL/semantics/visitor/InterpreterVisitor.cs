@@ -245,7 +245,10 @@ namespace MiniPL.semantics.visitor {
       if(this.strStack.Count == 0) {
         return "";
       } else {
-        return this.strStack.Pop();
+        string str = this.strStack.Pop();
+        str = str.Replace("\\n", "\n");
+        str = str.Replace("\\t", "\t");
+        return str;
       }
     }
 
