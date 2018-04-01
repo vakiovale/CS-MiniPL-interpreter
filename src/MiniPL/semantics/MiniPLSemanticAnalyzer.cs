@@ -14,11 +14,12 @@ namespace MiniPL.semantics {
 
     public MiniPLSemanticAnalyzer() {
       this.ast = null;
-      this.symbolTable = new SymbolTable();
+      this.symbolTable = null;
     }
 
-    public bool analyze(IAST ast) {
+    public bool analyze(IAST ast, ISymbolTable symbolTable) {
       this.ast = ast;
+      this.symbolTable = symbolTable;
       return analyzeSemantics();
     }
 

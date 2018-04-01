@@ -17,9 +17,12 @@ namespace MiniPL.Tests.semantics.Tests {
 
     private ISemanticAnalyzer analyzer;
 
+    private ISymbolTable symbolTable;
+
     public SemanticAnalysisTest() {
       this.parser = TestHelpers.getParser(TestHelpers.sampleProgram);
       this.analyzer = new MiniPLSemanticAnalyzer();
+      this.symbolTable = new SymbolTable();
     }
 
     [Fact]
@@ -27,7 +30,7 @@ namespace MiniPL.Tests.semantics.Tests {
       this.parser = TestHelpers.getParser("var x : int;");
       Assert.True(this.parser.processAndBuildAST());
       IAST ast = this.parser.getAST();
-      this.analyzer.analyze(ast);
+      this.analyzer.analyze(ast, this.symbolTable);
       Assert.Equal(0, this.analyzer.getInt("x"));
     }
 
@@ -36,7 +39,7 @@ namespace MiniPL.Tests.semantics.Tests {
       this.parser = TestHelpers.getParser("var x : string;");
       Assert.True(this.parser.processAndBuildAST());
       IAST ast = this.parser.getAST();
-      this.analyzer.analyze(ast);
+      this.analyzer.analyze(ast, this.symbolTable);
       Assert.Equal("", this.analyzer.getString("x"));
     }
 
@@ -45,7 +48,7 @@ namespace MiniPL.Tests.semantics.Tests {
       this.parser = TestHelpers.getParser("var trueValue : bool;");
       Assert.True(this.parser.processAndBuildAST());
       IAST ast = this.parser.getAST();
-      this.analyzer.analyze(ast);
+      this.analyzer.analyze(ast, this.symbolTable);
       Assert.True(this.analyzer.variableExists("trueValue"));
       Assert.False(this.analyzer.getBool("trueValue"));
     }
@@ -55,7 +58,7 @@ namespace MiniPL.Tests.semantics.Tests {
       this.parser = TestHelpers.getParser("var x : int;");
       Assert.True(this.parser.processAndBuildAST());
       IAST ast = this.parser.getAST();
-      this.analyzer.analyze(ast);
+      this.analyzer.analyze(ast, this.symbolTable);
       Assert.True(this.analyzer.variableExists("x"));
     }
 
@@ -64,7 +67,7 @@ namespace MiniPL.Tests.semantics.Tests {
       this.parser = TestHelpers.getParser("var x : int; var y : int;");
       Assert.True(this.parser.processAndBuildAST());
       IAST ast = this.parser.getAST();
-      this.analyzer.analyze(ast);
+      this.analyzer.analyze(ast, this.symbolTable);
       Assert.False(this.analyzer.variableExists("z"));
     }
 
@@ -73,7 +76,7 @@ namespace MiniPL.Tests.semantics.Tests {
       this.parser = TestHelpers.getParser("var x : int; var y : int; var z : int;");
       Assert.True(this.parser.processAndBuildAST());
       IAST ast = this.parser.getAST();
-      this.analyzer.analyze(ast);
+      this.analyzer.analyze(ast, this.symbolTable);
       Assert.Equal(0, this.analyzer.getInt("x"));
       Assert.Equal(0, this.analyzer.getInt("y"));
       Assert.Equal(0, this.analyzer.getInt("z"));
@@ -84,7 +87,7 @@ namespace MiniPL.Tests.semantics.Tests {
       this.parser = TestHelpers.getParser("var x : int; var x : string;");
       Assert.True(this.parser.processAndBuildAST());
       IAST ast = this.parser.getAST();
-      Assert.Throws<SemanticException>(() => this.analyzer.analyze(ast));
+      Assert.Throws<SemanticException>(() => this.analyzer.analyze(ast, this.symbolTable));
     }
 
     [Fact]
@@ -92,7 +95,7 @@ namespace MiniPL.Tests.semantics.Tests {
       this.parser = TestHelpers.getParser("var x : bool; var y : int; var z : string;");
       Assert.True(this.parser.processAndBuildAST());
       IAST ast = this.parser.getAST();
-      this.analyzer.analyze(ast);
+      this.analyzer.analyze(ast, this.symbolTable);
       Assert.Equal(false, this.analyzer.getBool("x"));
       Assert.Equal(0, this.analyzer.getInt("y"));
       Assert.Equal("", this.analyzer.getString("z"));
@@ -122,7 +125,7 @@ namespace MiniPL.Tests.semantics.Tests {
       this.parser = TestHelpers.getParser(source);
       Assert.True(this.parser.processAndBuildAST());
       IAST ast = this.parser.getAST();
-      Assert.True(this.analyzer.analyze(ast));
+      Assert.True(this.analyzer.analyze(ast, this.symbolTable));
     }
 
     [Theory]
@@ -143,7 +146,7 @@ namespace MiniPL.Tests.semantics.Tests {
       this.parser = TestHelpers.getParser(source);
       Assert.True(this.parser.processAndBuildAST());
       IAST ast = this.parser.getAST();
-      Assert.Throws<SemanticException>(() => this.analyzer.analyze(ast));
+      Assert.Throws<SemanticException>(() => this.analyzer.analyze(ast, this.symbolTable));
     }
 
     [Theory]
@@ -165,7 +168,7 @@ namespace MiniPL.Tests.semantics.Tests {
       this.parser = TestHelpers.getParser(source);
       Assert.True(this.parser.processAndBuildAST());
       IAST ast = this.parser.getAST();
-      Assert.True(this.analyzer.analyze(ast));
+      Assert.True(this.analyzer.analyze(ast, this.symbolTable));
     }
 
     [Theory]
@@ -176,7 +179,7 @@ namespace MiniPL.Tests.semantics.Tests {
       this.parser = TestHelpers.getParser(source);
       Assert.True(this.parser.processAndBuildAST());
       IAST ast = this.parser.getAST();
-      Assert.Throws<SemanticException>(() => this.analyzer.analyze(ast));
+      Assert.Throws<SemanticException>(() => this.analyzer.analyze(ast, this.symbolTable));
     }
 
     [Theory]
@@ -189,7 +192,7 @@ namespace MiniPL.Tests.semantics.Tests {
       this.parser = TestHelpers.getParser(source);
       Assert.True(this.parser.processAndBuildAST());
       IAST ast = this.parser.getAST();
-      Assert.True(this.analyzer.analyze(ast));
+      Assert.True(this.analyzer.analyze(ast, this.symbolTable));
     }
 
     [Theory]
@@ -203,7 +206,7 @@ namespace MiniPL.Tests.semantics.Tests {
       this.parser = TestHelpers.getParser(source);
       Assert.True(this.parser.processAndBuildAST());
       IAST ast = this.parser.getAST();
-      Assert.Throws<SemanticException>(() => this.analyzer.analyze(ast));
+      Assert.Throws<SemanticException>(() => this.analyzer.analyze(ast, this.symbolTable));
     }
 
     [Theory]
@@ -213,7 +216,7 @@ namespace MiniPL.Tests.semantics.Tests {
       this.parser = TestHelpers.getParser(source);
       Assert.True(this.parser.processAndBuildAST());
       IAST ast = this.parser.getAST();
-      Assert.Throws<SemanticException>(() => this.analyzer.analyze(ast));
+      Assert.Throws<SemanticException>(() => this.analyzer.analyze(ast, this.symbolTable));
     }
 
     [Theory]
@@ -224,7 +227,7 @@ namespace MiniPL.Tests.semantics.Tests {
       this.parser = TestHelpers.getParser(source);
       Assert.True(this.parser.processAndBuildAST());
       IAST ast = this.parser.getAST();
-      Assert.Throws<SemanticException>(() => this.analyzer.analyze(ast));
+      Assert.Throws<SemanticException>(() => this.analyzer.analyze(ast, this.symbolTable));
     }
 
     [Theory]
@@ -233,7 +236,7 @@ namespace MiniPL.Tests.semantics.Tests {
       this.parser = TestHelpers.getParser(source);
       Assert.True(this.parser.processAndBuildAST());
       IAST ast = this.parser.getAST();
-      Assert.True(this.analyzer.analyze(ast));
+      Assert.True(this.analyzer.analyze(ast, this.symbolTable));
     }
 
     [Theory]
@@ -242,7 +245,7 @@ namespace MiniPL.Tests.semantics.Tests {
       this.parser = TestHelpers.getParser(source);
       Assert.True(this.parser.processAndBuildAST());
       IAST ast = this.parser.getAST();
-      Assert.Throws<SemanticException>(() => this.analyzer.analyze(ast));
+      Assert.Throws<SemanticException>(() => this.analyzer.analyze(ast, this.symbolTable));
     }
 
     [Theory]
@@ -251,7 +254,7 @@ namespace MiniPL.Tests.semantics.Tests {
       this.parser = TestHelpers.getParser(source);
       Assert.True(this.parser.processAndBuildAST());
       IAST ast = this.parser.getAST();
-      Assert.True(this.analyzer.analyze(ast));
+      Assert.True(this.analyzer.analyze(ast, this.symbolTable));
     }
 
     [Theory]
@@ -260,7 +263,7 @@ namespace MiniPL.Tests.semantics.Tests {
       this.parser = TestHelpers.getParser(source);
       Assert.True(this.parser.processAndBuildAST());
       IAST ast = this.parser.getAST();
-      Assert.Throws<SemanticException>(() => this.analyzer.analyze(ast));
+      Assert.Throws<SemanticException>(() => this.analyzer.analyze(ast, this.symbolTable));
     }
 
     [Theory]
@@ -269,7 +272,7 @@ namespace MiniPL.Tests.semantics.Tests {
       this.parser = TestHelpers.getParser(source);
       Assert.True(this.parser.processAndBuildAST());
       IAST ast = this.parser.getAST();
-      Assert.True(this.analyzer.analyze(ast));
+      Assert.True(this.analyzer.analyze(ast, this.symbolTable));
     }
 
     [Theory]
@@ -278,7 +281,14 @@ namespace MiniPL.Tests.semantics.Tests {
       this.parser = TestHelpers.getParser(source);
       Assert.True(this.parser.processAndBuildAST());
       IAST ast = this.parser.getAST();
-      Assert.Throws<SemanticException>(() => this.analyzer.analyze(ast));
+      Assert.Throws<SemanticException>(() => this.analyzer.analyze(ast, this.symbolTable));
+    }
+
+    [Fact]
+    public void sampleProgramShouldBeAnalyzedCorrectly() {
+      Assert.True(this.parser.processAndBuildAST());
+      IAST ast = this.parser.getAST();
+      Assert.True(this.analyzer.analyze(ast, this.symbolTable));
     }
   }
 }

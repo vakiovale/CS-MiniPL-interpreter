@@ -29,6 +29,18 @@ namespace MiniPL.parser.AST {
       this.boolVariables.Add(variableName, value);
     }
 
+    public void updateVariable(string variableName, int value) {
+      this.integerVariables[variableName] = value;
+    }
+
+    public void updateVariable(string variableName, string value) {
+      this.stringVariables[variableName] = value;
+    }
+
+    public void updateVariable(string variableName, bool value) {
+      this.boolVariables[variableName] = value;
+    }
+
     public bool getBool(string variableName) {
       return this.boolVariables[variableName];
     }

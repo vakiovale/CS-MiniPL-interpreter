@@ -1,21 +1,20 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using MiniPL.exceptions;
+using MiniPL.logger;
 using MiniPL.parser.AST;
 using MiniPL.tokens;
 
 namespace MiniPL.semantics.visitor {
 
-  public class ExpressionVisitor : INodeVisitor
+  public class InterpreterVisitor : INodeVisitor
   {
     private ISymbolTable symbolTable;
+
+    private ILogger logger;
 
     private bool strType = false;
 
     private bool intType = false;
-
-    private bool boolType = false;
 
     private Stack<int> intStack;
 
@@ -23,8 +22,9 @@ namespace MiniPL.semantics.visitor {
 
     private Stack<bool> boolStack;
 
-    public ExpressionVisitor(ISymbolTable symbolTable) {
+    public InterpreterVisitor(ISymbolTable symbolTable, ILogger logger) {
       this.symbolTable = symbolTable;
+      this.logger = logger;
       this.intStack = new Stack<int>();
       this.strStack = new Stack<string>();
       this.boolStack = new Stack<bool>();
@@ -36,7 +36,6 @@ namespace MiniPL.semantics.visitor {
       this.boolStack.Push(false);
       this.intType = false;
       this.strType = false;
-      this.boolType = false;
     }
 
     public void visitExpression(ExpressionNode node) {
@@ -82,26 +81,11 @@ namespace MiniPL.semantics.visitor {
       lhs.accept(this);
     }
 
-    public int getInt() {
-      return this.intStack.Pop();
-    }
-
-    public string getString() {
-      return this.strStack.Pop();
-    }
 
     public void visitMinus(MinusOperationNode node) {
       readValues(node);
       int value = this.intStack.Pop() - this.intStack.Pop();
       this.intStack.Push(value);
-    }
-
-    public bool getBool() {
-      return this.boolStack.Pop();
-    }
-
-    public void setBoolFlag() {
-      this.boolType = true;
     }
 
     public void visitDivision(DivisionOperationNode node) {
@@ -126,7 +110,7 @@ namespace MiniPL.semantics.visitor {
         bool value = String.Compare(this.strStack.Pop(), this.strStack.Pop()) < 0;
         this.boolStack.Push(value);
         this.strType = false;
-      } else if(boolType) {
+      } else {
         bool lhs = this.boolStack.Pop();
         bool rhs = this.boolStack.Pop();
         bool value = (!lhs && rhs) ? true : false; 
@@ -144,7 +128,7 @@ namespace MiniPL.semantics.visitor {
         bool value = String.Equals(this.strStack.Pop(), this.strStack.Pop());
         this.boolStack.Push(value);
         this.strType = false;
-      } else if(boolType) {
+      } else {
         bool lhs = this.boolStack.Pop();
         bool rhs = this.boolStack.Pop();
         bool value = lhs == rhs; 
@@ -153,7 +137,18 @@ namespace MiniPL.semantics.visitor {
     }
 
     public void visitVarDeclaration(VarDeclarationNode node) {
-      throw new NotImplementedException();
+      IdentifierNode identifier = (IdentifierNode)node.getChildren()[0];
+      string variableName = identifier.getVariableName();
+      foreach(INode innerNode in node.getChildren()[1].getChildren()) {
+        innerNode.accept(this);
+      } 
+      if(this.symbolTable.hasInteger(variableName)) {
+        this.symbolTable.updateVariable(variableName, this.intStack.Pop());
+      } else if(this.symbolTable.hasString(variableName)) {
+        this.symbolTable.updateVariable(variableName, this.strStack.Pop());
+      } else if(this.symbolTable.hasBool(variableName)) {
+        this.symbolTable.updateVariable(variableName, this.boolStack.Pop());
+      }
     }
 
     private void accessInnerNodes(TypeNode node) {
@@ -170,35 +165,30 @@ namespace MiniPL.semantics.visitor {
       throw new NotImplementedException();
     }
 
-    public void visitForLoop(ForLoopNode forLoopNode)
-    {
+    public void visitForLoop(ForLoopNode forLoopNode) {
       throw new NotImplementedException();
     }
 
-    public void visitPrint(PrintNode printNode)
-    {
+    public void visitPrint(PrintNode printNode) {
       throw new NotImplementedException();
     }
 
-    public void visitAssert(AssertNode assertNode)
-    {
+    public void visitAssert(AssertNode assertNode) {
       throw new NotImplementedException();
     }
 
-    public void visitRead(ReadNode readNode)
-    {
+    public void visitRead(ReadNode readNode) {
       throw new NotImplementedException();
     }
 
-    public void visitLogicalNotOperator(LogicalNotOperationNode logicalNotOperationNode)
-    {
+    public void visitLogicalNotOperator(LogicalNotOperationNode logicalNotOperationNode) {
       throw new NotImplementedException();
     }
 
-    public void visitLogicalAndOperator(LogicalAndOperationNode logicalAndOperationNode)
-    {
+    public void visitLogicalAndOperator(LogicalAndOperationNode logicalAndOperationNode) {
       throw new NotImplementedException();
     }
+
   }
 
 }

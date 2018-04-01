@@ -12,6 +12,12 @@ namespace MiniPL.parser.AST {
 
     void addVariable(string variableName, bool value);
 
+    void updateVariable(string variableName, int value);
+
+    void updateVariable(string variableName, string value);
+
+    void updateVariable(string variableName, bool value);
+
     int getInt(string variableName);
 
     string getString(string variableName);

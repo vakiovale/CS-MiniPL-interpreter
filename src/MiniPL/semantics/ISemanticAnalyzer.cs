@@ -6,10 +6,14 @@ namespace MiniPL.semantics {
 
   public interface ISemanticAnalyzer {
 
-    bool analyze(IAST ast);
+    bool analyze(IAST ast, ISymbolTable symbolTable);
+    
     int getInt(string variable);
+
     string getString(string variable);
+
     bool variableExists(string variable);
+
     bool getBool(string v);
   }
 

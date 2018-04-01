@@ -13,17 +13,17 @@ namespace MiniPL.semantics.visitor {
 
     void visitIdentifier(IdentifierNode node);
 
-    void visitAssert(AssertNode assertNode);
+    void visitAssert(AssertNode node);
     
-    void visitRead(ReadNode readNode);
+    void visitRead(ReadNode node);
     
-    void visitLogicalNotOperator(LogicalNotOperationNode logicalNotOperationNode);
+    void visitLogicalNotOperator(LogicalNotOperationNode node);
 
-    void visitLogicalAndOperator(LogicalAndOperationNode logicalAndOperationNode);
+    void visitLogicalAndOperator(LogicalAndOperationNode node);
 
-    void visitPrint(PrintNode printNode);
+    void visitPrint(PrintNode node);
 
-    void visitForLoop(ForLoopNode forLoopNode);
+    void visitForLoop(ForLoopNode node);
 
     void visitIntegerLiteral(IntegerLiteralNode node);
 
