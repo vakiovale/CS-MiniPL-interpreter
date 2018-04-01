@@ -240,5 +240,26 @@ namespace MiniPL.Tests.semantics.Tests {
       this.interpreter.interpret();
       Assert.Equal(readValue, this.symbolTable.getString("x"));
     }
+
+    [Theory]
+    [InlineData("assert(2 < 1);", false)]
+    [InlineData("assert(1 < 2);", true)]
+    [InlineData("assert((1 + 2) = ((3 - 1) + 1));", true)]
+    [InlineData("assert((1+2) = (3-1));", false)]
+    [InlineData("var x : int; assert((1+2) = (4-x));", false)]
+    [InlineData("var x : int := 1; assert((1+2) = (2+x));", true)]
+    [InlineData("var x : bool := 1 < 2; assert(x);", true)]
+    [InlineData("var x : bool := 1 < 2; assert(!x);", false)]
+    [InlineData("var x : bool := 2 < 1; assert(x);", false)]
+    [InlineData("var x : bool := 2 < 1; assert(!x);", true)]
+    public void assertStatementShouldPrintTheCorrectExpression(string source, bool trueValue) {
+      this.interpreter = getInterpreter(source);
+      this.interpreter.interpret();
+      if(trueValue) {
+        Assert.False(contains("Assertion failed."));
+      } else {
+        Assert.True(contains("Assertion failed."));
+      }
+    }
   }
 }

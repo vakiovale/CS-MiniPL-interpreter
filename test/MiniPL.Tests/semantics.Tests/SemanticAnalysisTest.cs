@@ -267,6 +267,7 @@ namespace MiniPL.Tests.semantics.Tests {
 
     [Theory]
     [InlineData("var x : bool; assert(x);")]
+    [InlineData("assert((1+2) = (3-1));")]
     public void semanticsShouldBeOkInAssertStatementForBoolVariables(string source) {
       this.parser = TestHelpers.getParser(source);
       Assert.True(this.parser.processAndBuildAST());

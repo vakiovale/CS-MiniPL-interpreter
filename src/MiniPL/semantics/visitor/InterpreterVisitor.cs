@@ -164,6 +164,13 @@ namespace MiniPL.semantics.visitor {
       }
     }
 
+    public void visitAssert(AssertNode node) {
+      node.getChildren()[0].accept(this);
+      if(!this.boolStack.Pop()) {
+        this.inputOutput.output("Assertion failed.");
+      }
+    }
+
     public void visitVarAssignment(VarAssignmentNode node) {
       updateValue(node);
     }
@@ -246,10 +253,6 @@ namespace MiniPL.semantics.visitor {
         this.inputOutput.output(this.strStack.Pop());
         this.strType = false;
       }
-    }
-
-    public void visitAssert(AssertNode node) {
-      throw new NotImplementedException();
     }
 
     public void visitRead(ReadNode node) {
