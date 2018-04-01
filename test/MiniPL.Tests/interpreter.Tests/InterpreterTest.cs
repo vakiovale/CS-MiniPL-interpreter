@@ -66,6 +66,33 @@ namespace MiniPL.Tests.semantics.Tests {
     }
 
     [Theory]
+    [InlineData("var x : int := 10; x := x * x;", 100)]
+    [InlineData("var x : int := 10; var z : int; z := x + 2; x := (z + x) - 10;", 12)]
+    public void varAssignmentShouldUpdateTheIntegerValue(string source, int value) {
+      this.interpreter = getInterpreter(source);
+      this.interpreter.interpret();
+      Assert.Equal(value, this.symbolTable.getInt("x"));
+    }
+
+    [Theory]
+    [InlineData("var x : string := \"Hello\"; x := x + \" World!\";", "Hello World!")]
+    public void varAssignmentShouldUpdateTheStringValue(string source, string value) {
+      this.interpreter = getInterpreter(source);
+      this.interpreter.interpret();
+      Assert.Equal(value, this.symbolTable.getString("x"));
+    }
+
+    [Theory]
+    [InlineData("var x : bool; x := (10 < 100);", true)]
+    [InlineData("var x : bool; x := (100 < 100);", false)]
+    public void varAssignmentShouldUpdateTheBoolValue(string source, bool value) {
+      this.interpreter = getInterpreter(source);
+      this.interpreter.interpret();
+      Assert.Equal(value, this.symbolTable.getBool("x"));
+      Assert.True(this.symbolTable.hasBool("x"));
+    }
+
+    [Theory]
     [InlineData("var x : string := \"Hello \" + \"World\";", "Hello World")]
     [InlineData("var x : string := (\"Hello \") + \"World\";", "Hello World")]
     [InlineData("var x : string := (\"Hello \") + (\"World\" + \"!\");", "Hello World!")]
@@ -112,6 +139,7 @@ namespace MiniPL.Tests.semantics.Tests {
       this.interpreter = getInterpreter(source);
       this.interpreter.interpret();
       Assert.Equal(value, this.symbolTable.getBool("x"));
+      Assert.True(this.symbolTable.hasBool("x"));
     }
 
     [Fact]
@@ -130,5 +158,24 @@ namespace MiniPL.Tests.semantics.Tests {
       Assert.Equal(value, this.symbolTable.getString("z"));
     }
 
+    [Theory]
+    [InlineData("var x : bool := (2 < 1) < (2 < 1); var y : string := \"Hello\" + \" World\"; var z : int := (3 * 3) + 1;", 10, "Hello World", false)]
+    public void checkMultipleVarDeclarations(string source, int intValue, string strValue, bool boolValue) {
+      this.interpreter = getInterpreter(source);
+      this.interpreter.interpret();
+      Assert.Equal(intValue, this.symbolTable.getInt("z"));
+      Assert.Equal(strValue, this.symbolTable.getString("y"));
+      Assert.Equal(boolValue, this.symbolTable.getBool("x"));
+    }
+
+    [Theory]
+    [InlineData("var x : int := 3 + 4; var y : int := 3 + (x - 2); var z : int := x * y;", 7, 8, 56)]
+    public void checkMultipleIntegerDeclarations(string source, int int1, int int2, int int3) {
+      this.interpreter = getInterpreter(source);
+      this.interpreter.interpret();
+      Assert.Equal(int1, this.symbolTable.getInt("x"));
+      Assert.Equal(int2, this.symbolTable.getInt("y"));
+      Assert.Equal(int3, this.symbolTable.getInt("z"));
+    }
   }
 }

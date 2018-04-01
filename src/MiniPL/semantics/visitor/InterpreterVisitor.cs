@@ -136,7 +136,15 @@ namespace MiniPL.semantics.visitor {
       }
     }
 
+    public void visitVarAssignment(VarAssignmentNode node) {
+      updateValue(node);
+    }
+
     public void visitVarDeclaration(VarDeclarationNode node) {
+      updateValue(node);
+    }
+
+    private void updateValue(INode node) {
       IdentifierNode identifier = (IdentifierNode)node.getChildren()[0];
       string variableName = identifier.getVariableName();
       foreach(INode innerNode in node.getChildren()[1].getChildren()) {
@@ -159,10 +167,6 @@ namespace MiniPL.semantics.visitor {
 
     private bool variableAlreadyDeclared(string variableName) {
       return this.symbolTable.hasVariable(variableName);
-    }
-
-    public void visitVarAssignment(VarAssignmentNode node) {
-      throw new NotImplementedException();
     }
 
     public void visitForLoop(ForLoopNode forLoopNode) {
