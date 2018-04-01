@@ -170,7 +170,20 @@ namespace MiniPL.semantics.visitor {
     }
 
     public void visitForLoop(ForLoopNode forLoopNode) {
-      throw new NotImplementedException();
+      IdentifierNode identifier = (IdentifierNode)forLoopNode.getChildren()[0];
+      string controlVariable = identifier.getVariableName();
+      RangeOperatorNode rangeNode = (RangeOperatorNode)forLoopNode.getChildren()[1];
+      StatementListNode forStatements = (StatementListNode)forLoopNode.getChildren()[2];
+      rangeNode.getChildren()[0].accept(this);
+      int begin = this.intStack.Pop();
+      rangeNode.getChildren()[1].accept(this);
+      int end = this.intStack.Pop();
+      for(int i = begin; i <= end; i++) {
+        this.symbolTable.updateVariable(controlVariable, i);
+        foreach(INode child in forStatements.getChildren()) {
+          child.accept(this);
+        }
+      }
     }
 
     public void visitPrint(PrintNode printNode) {

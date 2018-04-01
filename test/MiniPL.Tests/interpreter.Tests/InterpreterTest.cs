@@ -177,5 +177,16 @@ namespace MiniPL.Tests.semantics.Tests {
       Assert.Equal(int2, this.symbolTable.getInt("y"));
       Assert.Equal(int3, this.symbolTable.getInt("z"));
     }
+
+    [Theory]
+    [InlineData("var counter : int := 0; var x : int; for x in 1..10 do counter := counter + 1; end for;", 10, 10)]
+    [InlineData("var counter : int := 0; var x : int; for x in 1..10 do counter := counter + x; end for;", 55, 10)]
+    [InlineData("var counter : int := 0; var x : int; var y : int := 10; for x in 1..3 do for y in 1..3 do counter := counter + (y + x); end for; end for;", 36, 3)]
+    public void forLoopShouldUpdateCounterVariableCorrectly(string source, int count, int controlVariableAtEnd) {
+      this.interpreter = getInterpreter(source);
+      this.interpreter.interpret();
+      Assert.Equal(count, this.symbolTable.getInt("counter"));
+      Assert.Equal(controlVariableAtEnd, this.symbolTable.getInt("x"));
+    }
   }
 }
