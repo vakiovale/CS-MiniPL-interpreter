@@ -14,13 +14,25 @@ namespace MiniPL.Tests.semantics.Tests {
 
     private ISymbolTable symbolTable;
 
+    private TestLogger logger;
+
     public InterpreterTest() {
       this.symbolTable = new SymbolTable();
+      this.logger = new TestLogger();
       this.interpreter = getInterpreter(TestHelpers.sampleProgram);
     }
 
     private IInterpreter getInterpreter(string source) {
-      return new MiniPLInterpreter(source, this.symbolTable, new ConsoleLogger());
+      return new MiniPLInterpreter(source, this.symbolTable, this.logger);
+    }
+
+    private bool contains(string sentence) {
+      foreach(string errorLog in this.logger.getLogs()) {
+        if(errorLog.Contains(sentence)) {
+          return true;
+        }
+      }
+      return false;
     }
 
     [Fact]
@@ -180,6 +192,10 @@ namespace MiniPL.Tests.semantics.Tests {
 
     [Theory]
     [InlineData("var counter : int := 0; var x : int; for x in 1..10 do counter := counter + 1; end for;", 10, 10)]
+    [InlineData("var counter : int; var x : int; for x in 1..10 do counter := counter + 1; end for;", 10, 10)]
+    [InlineData("var counter : int := 0; var x : int; for x in 0..9 do counter := counter + 1; end for;", 10, 9)]
+    [InlineData("var begin : int; var endIndex : int := begin + 5; var counter : int := 0; var x : int; for x in begin..endIndex+5 do counter := counter + x; end for;", 55, 10)]
+    [InlineData("var counter : int := 0; var x : int := 0 - 5; for x in x..0 do counter := counter + x; end for;", -15, 0)]
     [InlineData("var counter : int := 0; var x : int; for x in 1..10 do counter := counter + x; end for;", 55, 10)]
     [InlineData("var counter : int := 0; var x : int; var y : int := 10; for x in 1..3 do for y in 1..3 do counter := counter + (y + x); end for; end for;", 36, 3)]
     public void forLoopShouldUpdateCounterVariableCorrectly(string source, int count, int controlVariableAtEnd) {
@@ -187,6 +203,16 @@ namespace MiniPL.Tests.semantics.Tests {
       this.interpreter.interpret();
       Assert.Equal(count, this.symbolTable.getInt("counter"));
       Assert.Equal(controlVariableAtEnd, this.symbolTable.getInt("x"));
+    }
+
+    [Theory]
+    [InlineData("var hello : int := 10; print hello + 91;", "101")]
+    [InlineData("var hello : string := \"Hello World\"; print hello;", "Hello World")]
+    [InlineData("var hello : string := \"Hello\"; var world : string := \"World\"; print (hello + \" \") + world;", "Hello World")]
+    public void printStatementShouldPrintCorrectValue(string source, string printValue) {
+      this.interpreter = getInterpreter(source);
+      this.interpreter.interpret();
+      Assert.True(contains(printValue));
     }
   }
 }

@@ -25,21 +25,24 @@ namespace MiniPL.semantics.visitor {
     public InterpreterVisitor(ISymbolTable symbolTable, ILogger logger) {
       this.symbolTable = symbolTable;
       this.logger = logger;
-      this.intStack = new Stack<int>();
-      this.strStack = new Stack<string>();
-      this.boolStack = new Stack<bool>();
-      this.intStack.Clear();
-      this.intStack.Push(0);
-      this.strStack.Clear();
-      this.strStack.Push("");
-      this.boolStack.Clear();
-      this.boolStack.Push(false);
+      initializeStacks();
       this.intType = false;
       this.strType = false;
     }
 
+    private void initializeStacks() {
+      this.intStack = new Stack<int>();
+      this.strStack = new Stack<string>();
+      this.boolStack = new Stack<bool>();
+      reviveIntegerStackIfNeeded();
+      reviveStringStackIfNeeded();
+      reviveBoolStackIfNeeded();
+    }
+
     public void visitExpression(ExpressionNode node) {
-      node.getChildren()[0].accept(this);
+      foreach(INode child in node.getChildren()) {
+        child.accept(this);
+      }
     }
 
     public void visitIdentifier(IdentifierNode node) {
@@ -147,15 +150,37 @@ namespace MiniPL.semantics.visitor {
     private void updateValue(INode node) {
       IdentifierNode identifier = (IdentifierNode)node.getChildren()[0];
       string variableName = identifier.getVariableName();
-      foreach(INode innerNode in node.getChildren()[1].getChildren()) {
-        innerNode.accept(this);
-      } 
+      INode possibleNode = node.getChildren()[1];
+      foreach(INode child in possibleNode.getChildren()) {
+        child.accept(this);
+      }
       if(this.symbolTable.hasInteger(variableName)) {
         this.symbolTable.updateVariable(variableName, this.intStack.Pop());
+        reviveIntegerStackIfNeeded();
       } else if(this.symbolTable.hasString(variableName)) {
         this.symbolTable.updateVariable(variableName, this.strStack.Pop());
+        reviveStringStackIfNeeded();
       } else if(this.symbolTable.hasBool(variableName)) {
         this.symbolTable.updateVariable(variableName, this.boolStack.Pop());
+        reviveBoolStackIfNeeded();
+      }
+    }
+
+    private void reviveBoolStackIfNeeded() {
+      if(this.boolStack.Count == 0) {
+        this.boolStack.Push(false);
+      }
+    }
+
+    private void reviveStringStackIfNeeded() {
+      if(this.strStack.Count == 0) {
+        this.strStack.Push("");
+      }
+    }
+
+    private void reviveIntegerStackIfNeeded() {
+      if(this.intStack.Count == 0) {
+        this.intStack.Push(0);
       }
     }
 
@@ -187,7 +212,15 @@ namespace MiniPL.semantics.visitor {
     }
 
     public void visitPrint(PrintNode printNode) {
-      throw new NotImplementedException();
+      INode expression = printNode.getChildren()[0];
+      expression.accept(this);
+      if(this.intType) {
+        this.logger.log(this.intStack.Pop().ToString());
+        this.intType = false;
+      } else if(this.strType) {
+        this.logger.log(this.strStack.Pop());
+        this.strType = false;
+      }
     }
 
     public void visitAssert(AssertNode assertNode) {
